@@ -38,17 +38,17 @@ setup:
 # ===== DOCKER =====
 
 up:
-	docker compose up -d
+	sudo docker compose up -d
 
 down:
-	docker compose down
+	sudo docker compose down
 
 restart:
-	docker compose down
-	docker compose up -d
+	sudo docker compose down
+	sudo docker compose up -d
 
 logs:
-	docker compose logs -f
+	sudo docker compose logs -f
 
 # ===== DATABASE =====
 
@@ -66,8 +66,8 @@ new-migration:
 	. .venv/bin/activate && dbmate new $(name)
 
 reset-db:
-	docker compose down -v
-	docker compose up -d
+	sudo docker compose down -v
+	sudo docker compose up -d
 	sleep 3
 	. .venv/bin/activate && dbmate up
 
