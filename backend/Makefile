@@ -30,9 +30,11 @@ help:
 # ===== INITIAL SETUP =====
 
 setup:
-	python3 -m venv .venv
+	python3.12 -m venv .venv
 	. .venv/bin/activate && pip install -r requirements.txt
 	sudo docker compose up -d
+	sleep 5
+	. .venv/bin/activate && pip install "fastapi[standard]"
 	. .venv/bin/activate && dbmate up
 
 # ===== DOCKER =====
@@ -68,7 +70,7 @@ new-migration:
 reset-db:
 	sudo docker compose down -v
 	sudo docker compose up -d
-	sleep 3
+	sleep 5
 	. .venv/bin/activate && dbmate up
 
 # ===== DEVELOPMENT =====

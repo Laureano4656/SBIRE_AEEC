@@ -10,7 +10,7 @@ Backend API built with:
 Install the following tools before starting:
 
 
-- [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) (In WSL if in windows)
+- Docker(In WSL if in windows)
 - WSL2 (Windows only)
 - Python 3.12+
 - make:  
@@ -19,8 +19,46 @@ Install the following tools before starting:
     ``sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64``
 
     ``sudo chmod +x /usr/local/bin/dbmate``
+- Compilador de C:
+    ```
+    sudo apt update && sudo apt install -y build-essential
+    ```
+----
+----
+## Install docker
 
-### Initial setup
+### Configure directory
+```
+sudo apt update
+sudo apt install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+```
+```
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+### Install
+```
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+---
+---
+## Install python _deadsnakes_ repositories
+```
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12 python3.12-venv python3.12-dev -y
+```
+
+---
+---
+## Initial setup
 Clone the repository get into it and then:
 ```bash
 make setup
