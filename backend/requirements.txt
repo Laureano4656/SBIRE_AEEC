@@ -1,0 +1,24 @@
+# ── Framework ─────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# ── Base de datos ─────────────────────────────────────────
+asyncpg==0.30.0           # driver async nativo de PostgreSQL (sin ORM)
+
+# ── Validación y configuración ────────────────────────────
+pydantic==2.10.3
+pydantic-settings==2.6.1  # lee variables de entorno para Settings
+
+# ── Migraciones ───────────────────────────────────────────
+alembic==1.14.0           # runner de migraciones SQL (sin autogeneración)
+
+# ── Cron jobs ─────────────────────────────────────────────
+apscheduler==3.10.4       # scheduler para deteccion_job y encuestas_job
+
+# ── LTI 1.3 ──────────────────────────────────────────────
+PyLTI1p3==2.0.0           # validación de JWT LTI firmados por Moodle
+
+# ── Testing ───────────────────────────────────────────────
+pytest==8.3.4
+pytest-asyncio==0.24.0    # soporte async para tests
+httpx==0.28.1             # cliente HTTP para tests de endpoints FastAPI

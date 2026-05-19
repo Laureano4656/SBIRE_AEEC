@@ -1,0 +1,41 @@
+# core/config.py
+# ─────────────────────────────────────────────────────────────────────────────
+# Configuración centralizada de la aplicación.
+# Usa pydantic-settings para leer variables de entorno automáticamente.
+# Nunca hardcodear credenciales aquí — todo viene del .env o del entorno.
+# ─────────────────────────────────────────────────────────────────────────────
+
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    # ── Base de datos ─────────────────────────────────────────────────────────
+    # Formato: postgresql://usuario:password@host:puerto/nombre_db
+    DATABASE_URL: str = "postgresql://laureano:laureano@localhost:5432/sbire"
+
+    # Tamaño del pool de conexiones asyncpg.
+    # min_size: conexiones siempre abiertas (reduce latencia en picos)
+    # max_size: límite superior (evita saturar PostgreSQL)
+    DB_POOL_MIN_SIZE: int = 5
+    DB_POOL_MAX_SIZE: int = 20
+    DB_COMMAND_TIMEOUT: int = 30  # segundos antes de cancelar una query
+
+    # ── API ───────────────────────────────────────────────────────────────────
+    APP_NAME: str = "SBIRE API"
+    APP_VERSION: str = "1.1.0"
+    DEBUG: bool = False
+
+    # ── LTI 1.3 ──────────────────────────────────────────────────────────────
+    # URL del endpoint JWKS de Moodle para validar los JWT de autenticación
+    LTI_JWKS_URL: str = "https://campus.fi.mdp.edu.ar/mod/lti/certs.php"
+    LTI_CLIENT_ID: str = "sbire_client"
+
+    class Config:
+        # Lee automáticamente desde un archivo .env en la raíz del proyecto
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+# Instancia global — se importa desde cualquier módulo con:
+#   from app.core.config import settings
+settings = Settings()
