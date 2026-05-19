@@ -32,7 +32,7 @@ help:
 setup:
 	python3 -m venv .venv
 	. .venv/bin/activate && pip install -r requirements.txt
-	docker compose up -d
+	sudo docker compose up -d
 	. .venv/bin/activate && dbmate up
 
 # ===== DOCKER =====
