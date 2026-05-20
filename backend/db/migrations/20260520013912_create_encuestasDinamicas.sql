@@ -36,9 +36,9 @@ create table asignacion_encuestas(
  id int primary key generated always as identity not null,
  encuesta_id int references encuestas(id),
  estudiante_id int references estudiantes(id),
- fecha_asignacion timestampz not null,
+ fecha_asignacion TIMESTAMPTZ not null,
  completada boolean default false,
- fecha_completada timestampz default null
+ fecha_completada TIMESTAMPTZ default null
 );
 
 create table respuesta(
@@ -48,7 +48,7 @@ create table respuesta(
  opcion_id int references opcion_respuesta(id),
  texto_libre text,
  valencia int,
- fecha_respuesta timestampz
+ fecha_respuesta TIMESTAMPTZ
 );
 -- migrate:down
 
