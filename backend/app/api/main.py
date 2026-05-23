@@ -2,12 +2,16 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from app.routers.carreras_routes import router as carreras_router
+from app.routers.estudiantes_routes import router as estudiantes_router
+from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool #, get_pool
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 app.include_router(carreras_router)
+app.include_router(plan_estudios_router)
+app.include_router(estudiantes_router)
 
 
 @app.get("/")
@@ -82,6 +86,8 @@ app.add_middleware(
 API_PREFIX = "/api/v1"
 
 app.include_router(carreras_router, prefix=API_PREFIX)
+app.include_router(plan_estudios_router, prefix=API_PREFIX)
+app.include_router(estudiantes_router, prefix=API_PREFIX)
 
 # Al agregar nuevas entidades:
 # app.include_router(estudiantes_router, prefix=API_PREFIX)
