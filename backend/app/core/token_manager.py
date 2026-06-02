@@ -38,7 +38,7 @@ class TokenManager:
         now = datetime.now(timezone.utc)
         expires_at = now + SESSION_TOKEN_EXPIRY
 
-        payload = {
+        payload: dict[str, Any] = {
             "sub": str(usuario.id),
             "moodle_id": usuario.moodle_id,
             "rol": usuario.rol.value,

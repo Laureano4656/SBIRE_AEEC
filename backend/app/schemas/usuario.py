@@ -30,4 +30,4 @@ class AuthResponse(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
-    usuario: dict  # resumen del usuario
+    usuario: UsuarioResponse  # resumen del usuario
