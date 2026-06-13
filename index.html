@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración AHP - Semáforos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f9f9f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* Estilos mejorados para los sliders */
+        .slider-wrapper { background: #f4f7f6; border: 1px solid #dce3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; }
+        .ahp-slider { flex-grow: 1; margin: 0 15px; cursor: pointer; }
+        .label { width: 35%; font-weight: bold; font-size: 14px; }
+        .feedback { text-align: center; margin-top: 12px; font-weight: bold; color: #0056b3; font-size: 15px; background: #e9ecef; padding: 5px; border-radius: 4px; }
+        
+        button { background-color: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px;}
+        button:hover { background-color: #004494; }
+        #resultados pre { background: #333; color: #fff; padding: 15px; border-radius: 6px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <h2>Configurador de Semáforos Dinámicos</h2>
+
+    <div id="paso1" class="card">
+        <h3>Paso 1: Seleccionar Indicadores a Medir</h3>
+        <div id="checklist-container"></div>
+        <br>
+        <button onclick="generarSliders()">Siguiente: Configurar Pesos</button>
+    </div>
+
+    <div id="paso2" class="card" style="display:none;">
+        <h3>Paso 2: Comparación por Pares</h3>
+        <p>Mueva el control hacia la derecha para darle mayor importancia al criterio de la izquierda, o hacia la izquierda para priorizar el de la derecha.</p>
+        <div id="sliders-container"></div>
+        <br>
+        <button onclick="enviarAlBackend()">Calcular Pesos Finales</button>
+    </div>
+
+    <div id="resultados" class="card" style="display:none;">
+        <h3>Pesos Calculados (Respuesta del Backend)</h3>
+        <pre id="json-respuesta"></pre>
+        <button onclick="location.reload()">Nueva Configuración</button>
+    </div>
+
+    <script>
+        const catalogo = {
+            "Dimensión Académica": ["Promedio General", "Situación Final", "Materias Recursadas"],
+            "Dimensión Sociodemográfica": ["Horas de Trabajo", "Distancia a la Facultad"],
+            "Dimensión Hábitos": ["Horas de Estudio", "Actividades Externas"]
+        };
+
+        let jerarquiaActiva = {};
+
+        window.onload = () => {
+            const container = document.getElementById('checklist-container');
+            for (const [dimension, criterios] of Object.entries(catalogo)) {
+                let html = `<h4>${dimension}</h4>`;
+                criterios.forEach(crit => {
+                    html += `<label><input type="checkbox" value="${crit}" data-dim="${dimension}" checked> ${crit}</label><br>`;
+                });
+                container.innerHTML += html;
+            }
+        };
+
+        function generarPares(arr) {
+            let pares = [];
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = i + 1; j < arr.length; j++) {
+                    pares.push([arr[i], arr[j]]);
+                }
+            }
+            return pares;
+        }
+
+        function generarSliders() {
+            jerarquiaActiva = {};
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            
+            checkboxes.forEach(cb => {
+                const dim = cb.getAttribute('data-dim');
+                if (!jerarquiaActiva[dim]) jerarquiaActiva[dim] = [];
+                jerarquiaActiva[dim].push(cb.value);
+            });
+
+            const dimensionesActivas = Object.keys(jerarquiaActiva);
+            if (dimensionesActivas.length === 0) return alert("Seleccione al menos un criterio.");
+
+            let htmlSliders = "";
+
+            if (dimensionesActivas.length > 1) {
+                htmlSliders += `<h4>Comparación de Dimensiones Principales</h4>`;
+                generarPares(dimensionesActivas).forEach(par => {
+                    htmlSliders += crearHTMLSlider("Índice de Riesgo", par[0], par[1]);
+                });
+            }
+
+            for (const dim of dimensionesActivas) {
+                const criterios = jerarquiaActiva[dim];
+                if (criterios.length > 1) {
+                    htmlSliders += `<h4>Criterios: ${dim}</h4>`;
+                    generarPares(criterios).forEach(par => {
+                        htmlSliders += crearHTMLSlider(dim, par[0], par[1]);
+                    });
+                }
+            }
+
+            document.getElementById('sliders-container').innerHTML = htmlSliders || "<p>No hay suficientes variables.</p>";
+            document.getElementById('paso1').style.display = 'none';
+            document.getElementById('paso2').style.display = 'block';
+        }
+
+        // Nueva estructura HTML que incluye el div de feedback
+        function crearHTMLSlider(nodoPadre, itemA, itemB) {
+            return `
+                <div class="slider-wrapper" data-padre="${nodoPadre}" data-i="${itemA}" data-j="${itemB}">
+                    <div class="slider-row">
+                        <span class="label" style="text-align: right;">${itemA}</span>
+                        <input type="range" min="-8" max="8" value="0" class="ahp-slider" oninput="actualizarEtiqueta(this, '${itemA}', '${itemB}')">
+                        <span class="label" style="text-align: left;">${itemB}</span>
+                    </div>
+                    <div class="feedback">Ambos tienen la misma importancia (1x)</div>
+                </div>
+            `;
+        }
+
+        // Función que actualiza el texto en tiempo real
+        function actualizarEtiqueta(slider, itemA, itemB) {
+            let v = parseInt(slider.value);
+            let texto = "";
+            let feedbackDiv = slider.closest('.slider-wrapper').querySelector('.feedback');
+
+            if (v > 0) {
+                // Derecha = Favorece Item A (Según tu pedido)
+                let intensidad = v + 1;
+                texto = `${itemA} es ${intensidad}x más importante`;
+            } else if (v < 0) {
+                // Izquierda = Favorece Item B
+                let intensidad = Math.abs(v) + 1;
+                texto = `${itemB} es ${intensidad}x más importante`;
+            } else {
+                texto = "Ambos tienen la misma importancia (1x)";
+            }
+            feedbackDiv.innerText = texto;
+        }
+
+        // Lógica matemática invertida para que coincida con tu preferencia visual
+        function sliderASaaty(valorSlider) {
+            let v = parseInt(valorSlider);
+            if (v > 0) return v + 1;                      // Mover Derecha = Favorece Item A 
+            if (v < 0) return 1.0 / (Math.abs(v) + 1);    // Mover Izquierda = Favorece Item B
+            return 1.0;                                   // Medio
+        }
+
+        async function enviarAlBackend() {
+            let requestData = { nodo_raiz: "Índice de Riesgo", jerarquia: {}, comparaciones_por_nodo: {} };
+
+            const dims = Object.keys(jerarquiaActiva);
+            if (dims.length > 1) requestData.jerarquia["Índice de Riesgo"] = dims;
+            for (const [dim, criterios] of Object.entries(jerarquiaActiva)) {
+                if (criterios.length > 1) requestData.jerarquia[dim] = criterios;
+            }
+
+            const wrappers = document.querySelectorAll('.slider-wrapper');
+            wrappers.forEach(wrapper => {
+                const padre = wrapper.getAttribute('data-padre');
+                const crit_i = wrapper.getAttribute('data-i');
+                const crit_j = wrapper.getAttribute('data-j');
+                const valorRango = wrapper.querySelector('.ahp-slider').value;
+                
+                const valorSaaty = sliderASaaty(valorRango);
+
+                if (!requestData.comparaciones_por_nodo[padre]) requestData.comparaciones_por_nodo[padre] = [];
+
+                requestData.comparaciones_por_nodo[padre].push({
+                    criterio_i: crit_i,
+                    valor: valorSaaty,
+                    criterio_j: crit_j
+                });
+            });
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/calcular-ahp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                document.getElementById('json-respuesta').textContent = JSON.stringify(data, null, 4);
+                document.getElementById('paso2').style.display = 'none';
+                document.getElementById('resultados').style.display = 'block';
+
+            } catch (error) {
+                alert("Error al conectar con el backend: " + error);
+            }
+        }
+    </script>
+</body>
+</html>
