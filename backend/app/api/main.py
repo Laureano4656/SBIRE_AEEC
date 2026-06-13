@@ -1,7 +1,19 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
+from app.routers.asignaciones_encuestas_routes import router as asignaciones_encuestas_router
+from app.routers.asistencias_routes import router as asistencias_router
 from app.routers.carreras_routes import router as carreras_router
+from app.routers.correlativas_routes import router as correlativas_router
+from app.routers.cursadas_routes import router as cursadas_router
+from app.routers.encuestas_routes import router as encuestas_router
+from app.routers.inscripciones_cuatrimestres_routes import router as inscripciones_cuatrimestres_router
+from app.routers.intentos_finales_routes import router as intentos_finales_router
+from app.routers.materias_routes import router as materias_router
+from app.routers.opciones_respuesta_routes import router as opciones_respuesta_router
+from app.routers.parciales_routes import router as parciales_router
+from app.routers.preguntas_routes import router as preguntas_router
+from app.routers.respuestas_routes import router as respuestas_router
 from app.routers.estudiantes_routes import router as estudiantes_router
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
@@ -88,6 +100,18 @@ API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(carreras_router, prefix=API_PREFIX)
+app.include_router(materias_router, prefix=API_PREFIX)
+app.include_router(correlativas_router, prefix=API_PREFIX)
+app.include_router(inscripciones_cuatrimestres_router, prefix=API_PREFIX)
+app.include_router(cursadas_router, prefix=API_PREFIX)
+app.include_router(parciales_router, prefix=API_PREFIX)
+app.include_router(intentos_finales_router, prefix=API_PREFIX)
+app.include_router(asistencias_router, prefix=API_PREFIX)
+app.include_router(encuestas_router, prefix=API_PREFIX)
+app.include_router(preguntas_router, prefix=API_PREFIX)
+app.include_router(opciones_respuesta_router, prefix=API_PREFIX)
+app.include_router(asignaciones_encuestas_router, prefix=API_PREFIX)
+app.include_router(respuestas_router, prefix=API_PREFIX)
 app.include_router(plan_estudios_router, prefix=API_PREFIX)
 app.include_router(estudiantes_router, prefix=API_PREFIX)
 
