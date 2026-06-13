@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 from comparacion import Comparacion
 import numpy as np
+from app.services.peso_criterios_services import calcular_ahp_jerarquico
+from app.models.comparacion import AHPRequest
 
 app = FastAPI(title="Motor AHP - Summit Labs")
 
