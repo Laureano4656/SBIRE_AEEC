@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from app.api.deps import get_conn
 from app.schemas.respuesta import RespuestaCreate, RespuestaResponse, RespuestaUpdate
@@ -33,8 +33,22 @@ async def crear_respuesta(
     body: RespuestaCreate,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> RespuestaResponse:
+    # 1. Buscamos el texto original de la pregunta para el contexto de la IA
+    # (Asegurate de que la columna se llame 'texto' o 'enunciado' en tu tabla pregunta)
+    query_pregunta = "SELECT texto FROM pregunta WHERE id = $1"
+    texto_pregunta = await conn.fetchval(query_pregunta, body.pregunta_id)
+
+    if not texto_pregunta:
+        raise HTTPException(status_code=404, detail="Pregunta no encontrada en la base de datos")
+
+    # 2. Instanciamos el servicio
     service = RespuestaService(conn)
-    item = await service.crear(**body.model_dump())
+    
+    # 3. Pasamos el body y el texto de la pregunta a nuestro nuevo método
+    # Nota: Tu método guardar_respuesta_analizada en RespuestaService tiene que 
+    # estar preparado para recibir 'body' (que es de tipo RespuestaCreate)
+    item = await service.guardar_respuesta_analizada(body, texto_pregunta)
+    
     return RespuestaResponse.model_validate(item)
 
 
