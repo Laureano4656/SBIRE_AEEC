@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     # Generar con: python -c "import secrets; print(secrets.token_urlsafe(32))"
     JWT_SECRET_KEY: str = "change-me-in-production"
 
+    # ── GEMINI API KEY ──────────────────────────────────────────────────────────────
+    GEMINI_API_KEY: str 
+    
     class Config:
         # Lee automáticamente desde un archivo .env en la raíz del proyecto
         env_file = ".env"
