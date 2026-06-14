@@ -14,6 +14,7 @@ from app.routers.opciones_respuesta_routes import router as opciones_respuesta_r
 from app.routers.parciales_routes import router as parciales_router
 from app.routers.preguntas_routes import router as preguntas_router
 from app.routers.respuestas_routes import router as respuestas_router
+from app.routers.criterios_routes import router as criterios_router
 from app.routers.estudiantes_routes import router as estudiantes_router
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
@@ -82,7 +83,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://campus.fi.mdp.edu.ar",  # producción
-        "http://localhost:3000",           # desarrollo frontend
+        "http://localhost:3000",
+        "http://127.0.0.1:5501",           # desarrollo frontend
         "http://localhost:8080",           # desarrollo Moodle local
     ],
     allow_credentials=True,
@@ -114,6 +116,7 @@ app.include_router(asignaciones_encuestas_router, prefix=API_PREFIX)
 app.include_router(respuestas_router, prefix=API_PREFIX)
 app.include_router(plan_estudios_router, prefix=API_PREFIX)
 app.include_router(estudiantes_router, prefix=API_PREFIX)
+app.include_router(criterios_router, prefix=API_PREFIX)
 
 # Al agregar nuevas entidades:
 # app.include_router(estudiantes_router, prefix=API_PREFIX)
