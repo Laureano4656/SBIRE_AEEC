@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import HTTPException, logger, status
+from fastapi import HTTPException, status
 
 from app.models.usuario import RolUsuario, Usuario
 from app.repositories.usuario_repository import UsuarioRepository
@@ -63,8 +63,10 @@ class UsuarioService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="moodle_id es requerido.",
             )
+        print(f"Extracted claims: {user_claims}")
         # TODO mapear rol de LTI al rol del sistema
-        rol=user_claims["rol"],
+        rol=user_claims["rol"]
+        
         # debo mapear el rol al rol del sistema
         # if rol == "student":
         #     rol = RolUsuario.estudiante
@@ -73,18 +75,19 @@ class UsuarioService:
         # else:
         #     rol = RolUsuario.
             
-        nombre  =user_claims.get("nombre"),
-        apellido=user_claims.get("apellido"),
-        email=user_claims.get("email"),
-        carrera_id=user_claims.get("carrera_id"),
+        nombre  =user_claims.get("nombre")
+        apellido=user_claims.get("apellido")
+        email=user_claims.get("email")
+        carrera_id=user_claims.get("carrera_id")
+        print (f"Mapped claims: rol={rol}, nombre={nombre}, apellido={apellido}, email={email}, carrera_id={carrera_id}")
         usuario =  await self.repo.upsert_from_lti(
             moodle_id=moodle_id,
-            rol=rol.value,
+            rol=rol,
             nombre=self._normalize_optional(nombre),
             apellido=self._normalize_optional(apellido),
             email=self._normalize_optional(email),
             carrera_id=carrera_id,
-            max_casos_activos=5 if rol == RolUsuario.ESTUDIANTE else None,
+            max_casos_activos=5 if rol == RolUsuario.estudiante else None,
         )
         try:
             session_token = TokenManager.create_session_token(usuario)
@@ -102,9 +105,12 @@ class UsuarioService:
             usuario={
                 "id": usuario.id,
                 "nombre": usuario.nombre,
+                "moodle_id": usuario.moodle_id,
+                "max_casos_activos": usuario.max_casos_activos,
+                "activo": usuario.activo,
                 "apellido": usuario.apellido,
                 "email": usuario.email,
-                "rol": usuario.rol.value,
+                "rol": usuario.rol,
                 "carrera_id": usuario.carrera_id,
             },
         )

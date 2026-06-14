@@ -27,9 +27,10 @@ class Settings(BaseSettings):
 
     # ── LTI 1.3 ──────────────────────────────────────────────────────────────
     # URL del endpoint JWKS de Moodle para validar los JWT de autenticación
-    LTI_JWKS_URL: str = "https://campus.fi.mdp.edu.ar/mod/lti/certs.php"
-    LTI_CLIENT_ID: str = "sbire_client"
-
+    LTI_JWKS_URL: str = "http://localhost:8080/mod/lti/certs.php"
+    LTI_CLIENT_ID: str = "PmTFD2BvvquxJsc"
+    MOODLE_AUTH_URL: str = "http://localhost:8080/mod/lti/auth.php"
+    REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/lti/launch"
     # ── JWT ───────────────────────────────────────────────────────────────────
     # Clave secreta para firmar tokens de sesión. NUNCA debe estar en git.
     # Generar con: python -c "import secrets; print(secrets.token_urlsafe(32))"
