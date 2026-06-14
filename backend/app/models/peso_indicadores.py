@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
 
-class PesoCriterios(BaseModel):
-    """Representa una fila completa de la tabla `peso_criterios`."""
+class PesoIndicadores(BaseModel):
+    """Representa una fila completa de la tabla `peso_indicadores`."""
 
     id: int
-    criterio_id: int
-    valor: float
+    id_indicador: int
+    peso_global: float
 
     class Config:
         # Permite construir desde objetos con atributos (asyncpg.Record)

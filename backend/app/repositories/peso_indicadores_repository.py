@@ -1,4 +1,4 @@
-# repositories/carrera_repository.py
+# repositories/peso_indicadores_repository.py
 # ─────────────────────────────────────────────────────────────────────────────
 # Repository de Carrera — único responsable de las queries SQL de esta entidad.
 #
@@ -12,10 +12,10 @@
 
 import asyncpg
 
-from app.models.peso_criterios import PesoCriterios
+from app.models.peso_indicadores import PesoIndicadores
 from app.repositories.base import BaseRepository
 
 
-class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
+class PesoIndicadoresRepository(BaseRepository[PesoIndicadores]):
     def __init__(self, conn: asyncpg.Connection) -> None:
-        super().__init__(model=PesoCriterios, conn=conn)
+        super().__init__(model=PesoIndicadores, conn=conn)
