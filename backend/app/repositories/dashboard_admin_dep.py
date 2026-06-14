@@ -364,3 +364,26 @@ class dashboardAdminRepository:
             estudiante_id
         )
         return [QuestionAnswersResponse(**dict(row)) for row in rows]
+    
+    async def set_threshold(self, umbral_rojo: float, umbral_amarillo: float) -> dict:
+        row = await self.conn.fetchrow(
+            """
+            UPDATE configuracion_indicador
+            SET umbral_rojo = $1, umbral_amarillo = $2
+            RETURNING *
+            """,
+            umbral_rojo, umbral_amarillo
+        )
+        return dict(row)
+    
+    async def set_weight(self, id_indicador: int, nuevo_peso: float) -> dict:
+        row = await self.conn.fetchrow(
+            """
+            UPDATE configuracion_indicador
+            SET peso = $1
+            WHERE id = $2
+            RETURNING *
+            """,
+            nuevo_peso, id_indicador
+        )
+        return dict(row)
