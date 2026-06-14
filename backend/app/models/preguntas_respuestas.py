@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+import datetime
+
 class OpcionResponse(BaseModel):
     id: int
     texto: str
@@ -43,3 +45,24 @@ class AsignacionEncuestaResponse(BaseModel):
 class AsignacionEncuestaCreate(BaseModel):
     encuesta_id: int
     estudiante_id: int
+    
+class OpcionCreate(BaseModel):
+    texto: str
+    orden: int
+
+class PreguntaCreate(BaseModel):
+    texto: str
+    tipo: str
+    orden: int
+    obligatoria: bool = True
+    condicion_pregunta_id: int | None = None
+    opciones: list[OpcionCreate] = []
+
+class EncuestaCreateFull(BaseModel):
+    titulo: str
+    modalidad: str
+    fecha_desde: datetime | None = None
+    fecha_hasta: datetime | None = None
+    periodica: bool = False
+    frecuencia_dias: int | None = None
+    preguntas: list[PreguntaCreate] = []
