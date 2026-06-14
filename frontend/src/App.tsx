@@ -1,122 +1,119 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useState } from "react";
+import type { Student, TimelineEvent, Interview, Survey } from "./types.ts";
+import {
+  INITIAL_STUDENTS,
+  INITIAL_INTERVIEWS,
+  INITIAL_SURVEYS,
+  INITIAL_TIMELINE_SOFIA,
+} from "./data.ts";
+import LoginScreen from "./components/LoginScreen.tsx";
+import AdminPanel from "./components/AdminPanel.tsx";
+import StudentPanel from "./components/StudentPanel.tsx";
+import TeacherPanel from "./components/DocentePanel.tsx";
+export default function App() {
+  const [currentRole, setCurrentRole] = useState<
+    "login" | "admin" | "student" | "teacher"
+  >("login");
+
+  // Shared Global State for exact real-time response feeling
+  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
+  const [interviews, setInterviews] = useState<Interview[]>(INITIAL_INTERVIEWS);
+  const [surveys] = useState<Survey[]>(INITIAL_SURVEYS);
+
+  // Timeline events mapped by student ID
+  const [timelineEventsMap, setTimelineEventsMap] = useState<{
+    [studentId: string]: TimelineEvent[];
+  }>({
+    sofia_martinez: INITIAL_TIMELINE_SOFIA,
+    lucas_garcia: [],
+    ana_rodriguez: [],
+    mateo_garcia: [],
+    mateo_alvarado: [],
+  });
+
+  const handleLogin = (role: "admin" | "student" | "teacher") => {
+    setCurrentRole(role);
+  };
+
+  const handleLogout = () => {
+    setCurrentRole("login");
+  };
+
+  const handleUpdateStudent = (updatedStudent: Student) => {
+    setStudents((prev) =>
+      prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s)),
+    );
+
+    // Sync planned interviews or calendar items if state alerts change
+    if (updatedStudent.riskLevel === "SEGURO") {
+      // Complete any scheduled interviews for this student
+      setInterviews((prev) =>
+        prev.map((i) =>
+          i.studentId === updatedStudent.id
+            ? { ...i, status: "COMPLETADA" }
+            : i,
+        ),
+      );
+    }
+  };
+
+  const handleAddTimelineEvent = (studentId: string, event: TimelineEvent) => {
+    setTimelineEventsMap((prev) => {
+      const currentList = prev[studentId] || [];
+      return {
+        ...prev,
+        [studentId]: [event, ...currentList],
+      };
+    });
+
+    // If an interview was registered, add to interviews lists as well
+    if (event.type === "ENTREVISTA" && event.description.includes("agendada")) {
+      const match = event.description.match(/el día ([\d-]+) a las ([\d:]+)/);
+      const dateString = match ? match[1] : "Prontamente";
+      const timeString = match ? match[2] : "A coordinar";
+
+      const foundStudent = students.find((s) => s.id === studentId);
+
+      const newInterview: Interview = {
+        id: "interview_" + Date.now(),
+        studentId: studentId,
+        studentName: foundStudent ? foundStudent.fullName : "Estudiante",
+        date: dateString,
+        time: timeString + " hs",
+        modality: event.description.includes("Virtual")
+          ? "Virtual"
+          : "Presencial",
+        location: "Aula de Tutorías o Zoom Link",
+        status: "PENDIENTE",
+      };
+      setInterviews((prev) => [newInterview, ...prev]);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-brand-surface font-sans antialiased">
+      {currentRole === "login" && <LoginScreen onLogin={handleLogin} />}
 
-      <div className="ticks"></div>
+      {currentRole === "admin" && (
+        <AdminPanel
+          students={students}
+          interviews={interviews}
+          surveys={surveys}
+          timelineEventsMap={timelineEventsMap}
+          onUpdateStudent={handleUpdateStudent}
+          onAddTimelineEvent={handleAddTimelineEvent}
+          onLogout={handleLogout}
+        />
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {currentRole === "student" && <StudentPanel onLogout={handleLogout} />}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {currentRole === "teacher" && <TeacherPanel onLogout={handleLogout} />}
+    </div>
+  );
 }
-
-export default App

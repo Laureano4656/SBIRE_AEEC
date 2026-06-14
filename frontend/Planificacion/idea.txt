@@ -1,0 +1,7 @@
+La idea es crear un curso en el moodle y usar los roles como equivalencias en los roles
+de nuestro sistema:
+
+    -Profesor con permisos de edicion  Administrador departamental
+    -Profesor sin permisos de edicion  Docente
+    -Creador del curso                 Administrador
+    -Estudiante                        Estudiante
