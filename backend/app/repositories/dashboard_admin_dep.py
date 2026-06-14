@@ -1,6 +1,5 @@
 import datetime
 
-from app.models import Estudiante, estudiante 
 from app.models import EstudianteDashboardResponse
 from app.models import GeneralEstudianteDashboardResponse
 from app.models import QuestionAnswersResponse
@@ -11,31 +10,18 @@ import asyncpg
 
 class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
-        super().__init__(conn, dashboardAdminRepository)
+        self.conn = conn
 
-    async def students_count(self, anio, carrera) -> int:
-        conditions = []
-        params = []
-
-        if anio is not None:
-            params.append(anio)
-            conditions.append(f"anio_ingreso = ${len(params)}")
-
-        if carrera is not None:
-            params.append(carrera)
-            conditions.append(f"carrera = ${len(params)}")
-
-        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-
+    async def students_count(self, anio: int | None = None, carrera_id: int | None = None) -> int:
         row = await self.conn.fetchrow(
-            f"""
+            """
             SELECT COUNT(*) AS count
-            FROM usuarios
-            {where_clause}
+            FROM estudiantes
+            WHERE ($1::int IS NULL OR anio_ingreso = $1)
+            AND ($2::int IS NULL OR carrera_id = $2)
             """,
-            *params
+            anio, carrera_id
         )
-
         return row["count"]
     
     async def total_critics(self) -> int:
@@ -52,7 +38,7 @@ class dashboardAdminRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM alertas WHERE (estado = 'nuevo' OR estado = 'en_revision')  
+            FROM alertas WHERE (estado = 'nueva' OR estado = 'en_revision')  
             """
         )
 
@@ -62,35 +48,36 @@ class dashboardAdminRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM alertas
-            WHERE date_part('month', fecha) = date_part('month', CURRENT_DATE)
-            AND date_part('year', fecha) = date_part('year', CURRENT_DATE) AND (estado = 'intervenida' OR estado = 'resuelta')
+            FROM intervenciones
+            WHERE date_part('month', creado_en) = date_part('month', CURRENT_DATE)
+            AND date_part('year', creado_en) = date_part('year', CURRENT_DATE)
             """
         )
 
         return row["count"]
     
-    async def count_by_risk(self, carrera: str, anio: int):
+    async def count_by_risk(self, carrera_id: int, anio: int):
         rows = await self.conn.fetch(
             """
             SELECT
-                e.carrera,
-                e.anio, 
+                c.nombre AS carrera,
+                e.anio_ingreso, 
                 CASE
-                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) THEN 'rojo'
-                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id = 1)  THEN 'amarillo'
+                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1) THEN 'rojo'
+                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1) THEN 'amarillo'
                     ELSE 'verde'
                 END AS tipo_riesgo,
                 COUNT(*) AS count
             FROM score_total s
-            INNER JOIN estudiante e ON s.estudiante_id = e.id
-            WHERE e.carrera = $1 AND e.anio = $2
-            GROUP BY tipo_riesgo
+            INNER JOIN estudiantes e ON s.estudiante_id = e.id
+            INNER JOIN carreras c ON e.carrera_id = c.id
+            WHERE e.carrera_id = $1 AND e.anio_ingreso = $2
+            GROUP BY tipo_riesgo, c.nombre, e.anio_ingreso
             """,
-            carrera, anio
+            carrera_id, anio
         )
-  
         return {row["tipo_riesgo"]: row["count"] for row in rows}
+    
     
     async def monthly_evolution_score(self, anio): 
         rows = await self.conn.fetch(
@@ -99,8 +86,8 @@ class dashboardAdminRepository:
                 date_part('month', creado_en) AS month,
                 AVG(valor) AS average_score
             FROM score_total s
-            INNER JOIN estudiante e ON s.estudiante_id = e.id
-            WHERE e.anio = $1 
+            INNER JOIN estudiantes e ON s.estudiante_id = e.id
+            WHERE e.anio_ingreso = $1 
             GROUP BY month
             ORDER BY month
             """,
@@ -118,12 +105,13 @@ class dashboardAdminRepository:
                 e.nombre,
                 e.apellido,
                 e.dni,
-                e.carrera,
+                c.nombre AS carrera,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
-            FROM estudiante e
+            FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
@@ -148,12 +136,13 @@ class dashboardAdminRepository:
                 e.nombre,
                 e.apellido,
                 e.dni,
-                e.carrera,
+                c.nombre AS carrera,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 a.generada_en AS ultima_fecha_recalculo
-            FROM estudiante e
+            FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
@@ -164,7 +153,7 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE carrera = $1
+            WHERE c.nombre = $1
             """,
             carrera
         )
@@ -178,12 +167,13 @@ class dashboardAdminRepository:
                 e.nombre,
                 e.apellido,
                 e.dni,
-                e.carrera,
+                c.nombre AS carrera,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 a.generada_en AS ultima_fecha_recalculo
-            FROM estudiante e
+            FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
@@ -194,7 +184,7 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE e.anio = $1
+            WHERE e.anio_ingreso = $1
             """,
             anio
         )
@@ -208,12 +198,13 @@ class dashboardAdminRepository:
                 e.nombre,
                 e.apellido,
                 e.dni,
-                e.carrera,
+                c.nombre AS carrera,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 a.generada_en AS ultima_fecha_recalculo
-            FROM estudiante e
+            FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
@@ -239,17 +230,37 @@ class dashboardAdminRepository:
     async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardResponse | None:
         row = await self.conn.fetchrow("""
             SELECT
-            e.nombre,
-            e.apellido,
-            e.anio_ingreso,
-            e.carrera,
-            s.valor,
+                e.nombre,
+                e.apellido,
+                e.anio_ingreso::text AS anio,
+                c.nombre AS carrera,
+                COALESCE(aprobadas.materias_aprobadas, 0) AS materias_aprobadas,
+                COALESCE(totales.materias_totales, 0) AS materias_totales,
+                s.valor AS score_riesgo
             FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
                 ORDER BY estudiante_id, creado_en DESC
             ) s ON e.id = s.estudiante_id
+            LEFT JOIN (
+                SELECT
+                    estudiante_id,
+                    COUNT(DISTINCT materia_id) AS materias_aprobadas
+                FROM cursadas
+                WHERE estado = 'aprobada'
+                GROUP BY estudiante_id
+            ) aprobadas ON aprobadas.estudiante_id = e.id
+            LEFT JOIN (
+                SELECT
+                    pe.carrera_id,
+                    COUNT(DISTINCT m.id) AS materias_totales
+                FROM plan_estudios pe
+                INNER JOIN materias m ON m.plan_id = pe.id
+                WHERE pe.activo = TRUE
+                GROUP BY pe.carrera_id
+            ) totales ON totales.carrera_id = e.carrera_id
             WHERE e.legajo = $1
         """, legajo)
         return GeneralEstudianteDashboardResponse(**dict(row)) if row else None
@@ -260,16 +271,16 @@ class dashboardAdminRepository:
             SELECT 
                 'alerta' AS tipo,
                 estado AS descripcion,
-                creado_en AS fecha
+                generada_en AS fecha
             FROM alertas
             WHERE estudiante_id = $1
 
             UNION ALL
 
             SELECT 
-            'intervencion' AS tipo,
-            tipo AS descripcion,
-            i.creado_en AS fecha
+                'intervencion' AS tipo,
+                tipo AS descripcion,
+                i.creado_en AS fecha
             FROM intervenciones i
             INNER JOIN alertas a ON i.alerta_id = a.id
             WHERE a.estudiante_id = $1
@@ -280,14 +291,14 @@ class dashboardAdminRepository:
         )
         return [dict(row) for row in rows]
     
-    async def create_intervention(self, alerta_id: int, tutor_id: int, tipo: str, descripcion: str, fecha: datetime.date) -> dict:
+    async def create_intervention(self, alerta_id: int, tutor_id: int, tipo: str, descripcion: str, fecha: datetime.date, resultado: str = 'neutro') -> dict:
         row = await self.conn.fetchrow(
             """
-            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, descripcion, fecha)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
             """,
-            alerta_id, tutor_id, tipo, descripcion, fecha
+            alerta_id, tutor_id, tipo, resultado, descripcion, fecha
         )
         return dict(row)
     
@@ -297,7 +308,7 @@ class dashboardAdminRepository:
             UPDATE alertas
             SET 
             estado = $1,
-            fecha_cierre = CASE WHEN $1 = 'resuelta' THEN NOW() ELSE fecha_cierre END
+            fecha_cierre = CASE WHEN $1 = ANY(ARRAY['resuelta', 'falso_positivo']) THEN NOW() ELSE fecha_cierre END
             WHERE id = $2
             RETURNING *
             """,
@@ -358,11 +369,12 @@ class dashboardAdminRepository:
         rows = await self.conn.fetch(
             """
             SELECT 
-                p.pregunta,
-                r.texto_libre
-                FROM respuestas r
-                INNER JOIN preguntas p on r.pregunta_id = p.id
-                WHERE r.estudiante_id = $1 
+                p.texto AS pregunta,
+                r.texto_libre AS respuesta
+            FROM respuesta r
+            INNER JOIN preguntas p ON r.pregunta_id = p.id
+            INNER JOIN asignacion_encuestas ae ON r.asignacion_id = ae.id
+            WHERE ae.estudiante_id = $1
             """,
             estudiante_id
         )

@@ -31,11 +31,13 @@ class PlanEstudioService:
         nombre: str,
         anio_vigencia: int,
         activo: bool,
+        carrera_id: int | None = None,
     ) -> PlanEstudio:
         return await self.repo.create(
             nombre=nombre,
             anio_vigencia=anio_vigencia,
             activo=activo,
+            carrera_id=carrera_id,
         )
 
     async def actualizar(

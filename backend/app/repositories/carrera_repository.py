@@ -29,7 +29,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         if solo_activas:
             rows = await self.conn.fetch(
                 """
-                SELECT id, nombre, codigo, duracion_cuatrimestres, activo
+                SELECT id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
                 FROM carreras
                 WHERE activo = TRUE
                 ORDER BY nombre ASC
@@ -38,7 +38,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         else:
             rows = await self.conn.fetch(
                 """
-                SELECT id, nombre, codigo, duracion_cuatrimestres, activo
+                SELECT id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
                 FROM carreras
                 ORDER BY nombre ASC
                 """
@@ -52,7 +52,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         """
         row = await self.conn.fetchrow(
             """
-            SELECT id, nombre, codigo, duracion_cuatrimestres, activo
+            SELECT id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
             FROM carreras
             WHERE id = $1
             """,
@@ -67,7 +67,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         """
         row = await self.conn.fetchrow(
             """
-            SELECT id, nombre, codigo, duracion_cuatrimestres, activo
+            SELECT id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
             FROM carreras
             WHERE codigo = $1
             """,
@@ -84,7 +84,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         
         new_id = await self.conn.fetchval(
             """
-            INSERT INTO carreras (nombre, codigo, duracion_cuatrimestres, activo)
+            INSERT INTO carreras (nombre, codigo, duracion_cuatrimestre, activo)
             VALUES ($1, $2, $3, TRUE)
             RETURNING id
             """,
@@ -94,7 +94,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         )
         row = await self.conn.fetchrow(
             """
-            SELECT id, nombre, codigo, duracion_cuatrimestres, activo
+            SELECT id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
             FROM carreras
             WHERE id = $1
             """,
@@ -124,7 +124,7 @@ class CarreraRepository(BaseRepository[Carrera]):
             contador += 1
 
         if duracion_cuatrimestres is not None:
-            campos.append(f"duracion_cuatrimestres = ${contador}")
+            campos.append(f"duracion_cuatrimestre = ${contador}")
             valores.append(duracion_cuatrimestres)
             contador += 1
 
@@ -145,7 +145,7 @@ class CarreraRepository(BaseRepository[Carrera]):
             UPDATE carreras
             SET {set_clause}
             WHERE id = ${contador}
-            RETURNING id, nombre, codigo, duracion_cuatrimestres, activo
+            RETURNING id, nombre, codigo, duracion_cuatrimestre AS duracion_cuatrimestres, activo
             """,
             *valores,
         )
@@ -177,7 +177,7 @@ class CarreraRepository(BaseRepository[Carrera]):
         count = await self.conn.fetchval(
             """
             SELECT COUNT(*)
-            FROM estudiante
+            FROM estudiantes
             WHERE carrera_id = $1 AND activo = TRUE
             """,
             id,

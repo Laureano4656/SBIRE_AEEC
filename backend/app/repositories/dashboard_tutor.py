@@ -1,11 +1,12 @@
-from app.models.intervenciones import EntrevistaCreate
+from app.models.estudiante_dashboard import EstudianteDashboardResponse
+from app.models.intervenciones import EntrevistaCreate, IntervencionCreate
 import asyncpg
 import datetime
-from app.models.estudiante_dashboard import EstudianteDashboardResponse
+
 
 class dashboardTutorRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
-        super().__init__(conn, dashboardTutorRepository)
+        self.conn = conn
     
     async def get_students_by_tutor(self, tutor_id: int) -> list[EstudianteDashboardResponse]:
         # Implementar la lógica para obtener los estudiantes asignados a un tutor
@@ -14,15 +15,17 @@ class dashboardTutorRepository:
             """
             SELECT DISTINCT ON (e.id)
                 e.nombre,
+                e.apellido,
                 e.dni,
-                e.carrera,
-                e.tramo,
+                c.nombre AS carrera,
+                e.porcentaje_carrera AS porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
             FROM intervenciones i
             INNER JOIN alertas a ON i.alerta_id = a.id
             INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
                 SELECT DISTINCT ON (estudiante_id) *
                 FROM score_total
@@ -34,21 +37,28 @@ class dashboardTutorRepository:
             """,
             tutor_id
         )
-        return [EstudianteDashboardResponse(**row) for row in rows]
+        return [EstudianteDashboardResponse(**dict(row)) for row in rows]
     
-    async def take_alert(self, tutor_id: int, alerta_id: int, tipo: str, descripcion: str, fecha: datetime.date) -> dict:
+    async def take_alert(
+        self,
+        tutor_id: int,
+        alerta_id: int,
+        tipo: str = 'seguimiento_virtual',
+        descripcion: str = '',
+        fecha: datetime.date | None = None,
+    ) -> dict:
         async with self.conn.transaction():
             # Cambiar estado de la alerta a intervenida
             alerta = await self.conn.fetchrow(
-                """
-                UPDATE alertas
-                SET estado = 'intervenida'
-                WHERE id = $1
-                AND estado IN ('nueva', 'sin_atender')
-                RETURNING *
-                """,
-                alerta_id
-            )
+            """
+            UPDATE alertas
+            SET estado = 'intervenida'
+            WHERE id = $1
+            AND estado IN ('nueva', 'en_revision')
+            RETURNING *
+            """,
+            alerta_id
+        )
             
             if not alerta:
              return None  # La alerta no existe o ya fue tomada
@@ -56,11 +66,11 @@ class dashboardTutorRepository:
         # Crear la intervencion automaticamente
         intervencion = await self.conn.fetchrow(
             """
-            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, descripcion, fecha)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
+            VALUES ($1, $2, $3, 'neutro', $4, $5)
             RETURNING *
             """,
-            alerta_id, tutor_id, 'seguimiento virtual', descripcion, fecha
+            alerta_id, tutor_id, tipo, descripcion, fecha
         )   
 
         return {
@@ -68,16 +78,21 @@ class dashboardTutorRepository:
             "intervencion": dict(intervencion)
         }
         
-    async def schedule_interview(self, tutor_id: int, data: EntrevistaCreate) -> dict:
+    async def schedule_interview(self, tutor_id: int, dataI:IntervencionCreate , data: EntrevistaCreate) -> dict:
         async with self.conn.transaction():
             # Primero crear la intervencion
             intervencion = await self.conn.fetchrow(
                 """
-                INSERT INTO intervenciones (alerta_id, tutor_id, tipo, descripcion, fecha)
-                VALUES ($1, $2, 'entrevista', $3, $4)
+                INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING *
                 """,
-                data.alerta_id, tutor_id, data.notas_previas, data.fecha_propuesta
+                dataI.alerta_id,
+                tutor_id,
+                dataI.tipo,
+                dataI.resultado,
+                dataI.descripcion,
+                dataI.fecha,
             )
 
             # Luego crear la entrevista vinculada a esa intervencion
@@ -115,7 +130,7 @@ class dashboardTutorRepository:
         row = await self.conn.fetchrow(
             """
             UPDATE alertas
-            SET estado = 'cerrada', fecha_cierre = NOW()
+            SET estado = 'resuelta', fecha_cierre = NOW()
             WHERE id = $1
             RETURNING *
             """,

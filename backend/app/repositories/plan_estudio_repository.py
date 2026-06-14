@@ -49,13 +49,15 @@ class PlanEstudioRepository(BaseRepository[PlanEstudio]):
         nombre: str,
         anio_vigencia: int,
         activo: bool,
+        carrera_id: int | None = None,
     ) -> PlanEstudio:
         row = await self.conn.fetchrow(
             """
-            INSERT INTO plan_estudios ( nombre, anio_vigencia, activo)
-            VALUES ($1, $2, $3)
+            INSERT INTO plan_estudios (carrera_id, nombre, anio_vigencia, activo)
+            VALUES ($1, $2, $3, $4)
             RETURNING id, carrera_id, nombre, anio_vigencia, activo
             """,
+            carrera_id,
             nombre,
             anio_vigencia,
             activo,
