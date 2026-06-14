@@ -1,0 +1,1451 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState } from "react";
+import type { Student, TimelineEvent, Interview, Survey } from "../types.ts";
+import StudentProfileView from "./StudentProfileView.tsx";
+import AHPConfigPanel from "./AHPConfigPanel.tsx";
+
+interface AdminPanelProps {
+  students: Student[];
+  interviews: Interview[];
+  surveys: Survey[];
+  timelineEventsMap: { [studentId: string]: TimelineEvent[] };
+  onUpdateStudent: (updated: Student) => void;
+  onAddTimelineEvent: (studentId: string, event: TimelineEvent) => void;
+  onLogout: () => void;
+}
+
+export default function AdminPanel({
+  students,
+  surveys,
+  timelineEventsMap,
+  onUpdateStudent,
+  onAddTimelineEvent,
+  onLogout,
+}: AdminPanelProps) {
+  const [activeMenu, setActiveMenu] = useState<
+    "panel" | "estudiantes" | "encuestas" | "reportes" | "configuracion"
+  >("panel");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
+
+  // Filters for student tracking
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterYear, setFilterYear] = useState("Todos");
+  const [filterCareer, setFilterCareer] = useState("Todas");
+  const [filterRisk, setFilterRisk] = useState<
+    "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO"
+  >("TODOS");
+
+  // Surveys state
+  const [localSurveys, setLocalSurveys] = useState<Survey[]>(surveys);
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [newSurveyTitle, setNewSurveyTitle] = useState("");
+  const [newSurveyType, setNewSurveyType] = useState<"Única" | "Periódica">(
+    "Única",
+  );
+  const [newSurveyDesc, setNewSurveyDesc] = useState("");
+
+  // Notifications bell simulator
+  const [notifications, setNotifications] = useState([
+    "Sofía Martínez registró nuevo ausentismo prolongado en Análisis II (14/10/2023)",
+    "Mateo Alvarado tiene alertada su inactividad en campus virtual por más de 7 días",
+    "Nueva respuesta de encuesta crítica recibida para Ingeniería Industrial",
+  ]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Selected student object helper
+  const selectedStudent = students.find((s) => s.id === selectedStudentId);
+
+  // Filter students based on year, career, search state, risk
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch =
+      student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.dni.includes(searchQuery) ||
+      student.legajo.includes(searchQuery);
+
+    const matchesYear =
+      filterYear === "Todos" || student.year.toString() === filterYear;
+    const matchesCareer =
+      filterCareer === "Todas" ||
+      student.career.toLowerCase().includes(filterCareer.toLowerCase());
+
+    const matchesRisk =
+      filterRisk === "TODOS" ||
+      (filterRisk === "CRÍTICO" && student.riskLevel === "CRÍTICO") ||
+      (filterRisk === "MEDIO" && student.riskLevel === "MEDIO") ||
+      (filterRisk === "BAJO" &&
+        (student.riskLevel === "BAJO" || student.riskLevel === "SEGURO"));
+
+    return matchesSearch && matchesYear && matchesCareer && matchesRisk;
+  });
+
+  // Survey creators
+  const handleCreateSurvey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSurveyTitle) return;
+
+    const newSurvey: Survey = {
+      id: "sur_" + Date.now(),
+      title: newSurveyTitle,
+      description: newSurveyDesc || "Formulario de relevamiento institucional.",
+      type: newSurveyType,
+      status: "Borrador",
+      creationDate: new Date().toLocaleDateString("es-AR"),
+      responsesCount: 0,
+      responseRate: 0,
+      urgentCasesCount: 0,
+    };
+
+    setLocalSurveys([newSurvey, ...localSurveys]);
+    setShowSurveyModal(false);
+    setNewSurveyTitle("");
+    setNewSurveyDesc("");
+  };
+
+  // Status Badge Helper
+  const getAlertPill = (status: Student["statusAlerta"]) => {
+    switch (status) {
+      case "NUEVA":
+        return (
+          <span className="bg-[#ffdad6] text-[#93000a] px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full animate-pulse"></span>
+            NUEVA
+          </span>
+        );
+      case "EN REVISIÓN":
+        return (
+          <span className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+            EN REVISIÓN
+          </span>
+        );
+      case "INTERVENIDA":
+        return (
+          <span className="bg-[#e2f3f5] text-[#006e6e] px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-[#006a6a] rounded-full"></span>
+            INTERVENIDA
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-[#f3f4f5] text-[#43474f] px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-0.5">
+            SIN ALERTA
+          </span>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex text-[#191c1d] bg-[#f8f9fa]">
+      {/* Sidebar Navigation */}
+      <aside className="w-64 bg-white border-r border-brand-outline-variant flex flex-col fixed left-0 top-0 h-screen z-20">
+        <div className="px-6 py-8 border-b border-brand-outline-variant bg-[#f8f9fa]">
+          <h1 className="text-2xl font-black text-brand-primary tracking-tight">
+            SBIRE
+          </h1>
+        </div>
+
+        <nav className="flex-1 py-6 space-y-1">
+          <button
+            onClick={() => {
+              setActiveMenu("panel");
+              setSelectedStudentId(null);
+            }}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "panel" && !selectedStudentId
+                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[#43474f] text-lg">
+              dashboard
+            </span>
+            Panel Institucional
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveMenu("estudiantes");
+              setSelectedStudentId(null);
+            }}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "estudiantes" || selectedStudentId
+                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[#43474f] text-lg">
+              groups
+            </span>
+            Mis Estudiantes
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveMenu("encuestas");
+              setSelectedStudentId(null);
+            }}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "encuestas"
+                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[#43474f] text-lg">
+              edit_note
+            </span>
+            Encuestas
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveMenu("reportes");
+              setSelectedStudentId(null);
+            }}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "reportes"
+                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[#43474f] text-lg">
+              query_stats
+            </span>
+            Reportes
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveMenu("configuracion");
+              setSelectedStudentId(null);
+            }}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "configuracion"
+                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[#43474f] text-lg">
+              settings
+            </span>
+            Configuración
+          </button>
+        </nav>
+
+        {/* Academic Administrator avatar */}
+        <div className="p-4 border-t border-brand-outline-variant bg-[#f8f9fa] mt-auto">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <img
+                alt="Dr. Juan Pérez Avatar"
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-full border border-brand-outline-variant object-cover shadow-sm"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#006a6a] rounded-full border-2 border-white"></span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-xs truncate text-brand-primary block">
+                Dr. Juan Pérez
+              </p>
+              <p className="text-[10px] text-[#43474f] font-semibold tracking-wide uppercase">
+                Tutor Académico
+              </p>
+            </div>
+            <button
+              onClick={onLogout}
+              title="Cerrar sesión"
+              className="p-1 hover:text-brand-error text-[#43474f] rounded transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-lg">logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64 min-h-screen flex flex-col">
+        {/* Top Navbar */}
+        <header className="bg-white border-b border-brand-outline-variant h-16 flex items-center justify-between px-8 sticky top-0 z-10 shadow-xs">
+          <div className="flex items-center">
+            <h2 className="text-sm font-black text-brand-primary uppercase tracking-widest">
+              {selectedStudentId
+                ? "Expediente del Estudiante"
+                : activeMenu === "panel"
+                  ? "Panel General de Control"
+                  : activeMenu === "estudiantes"
+                    ? "Seguimiento de Alertas Estudiantiles"
+                    : activeMenu === "encuestas"
+                      ? "Gestión de Relevamientos"
+                      : activeMenu === "reportes"
+                        ? "Diagnósticos e Históricos"
+                        : "Configuración del Entorno"}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-6">
+            {/* Search Input */}
+            <div className="relative w-64">
+              <span className="material-symbols-outlined absolute left-2.5 top-2.5 text-brand-outline text-lg">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Buscar por DNI, Legajo, Apellido..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (activeMenu !== "estudiantes") {
+                    setActiveMenu("estudiantes");
+                  }
+                }}
+                className="w-full pl-9 pr-3 py-1.5 border border-brand-outline rounded bg-[#f3f4f5] text-xs focus:ring-1 focus:ring-brand-primary transition-all"
+              />
+            </div>
+
+            <nav className="flex gap-4 text-xs font-semibold text-[#43474f]">
+              <a
+                href="#docs"
+                className="hover:text-brand-primary transition-colors"
+              >
+                Documentación
+              </a>
+            </nav>
+
+            {/* Notification Bell Simulator */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-1 overflow-visible hover:text-brand-primary transition-all cursor-pointer text-[#43474f]"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  notifications
+                </span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-brand-error rounded-full ring-2 ring-white"></span>
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 bg-white border border-brand-outline-variant rounded shadow-xl w-80 p-4 space-y-3 text-xs z-30 animate-fade-in">
+                  <h4 className="font-bold text-brand-primary border-b border-brand-outline-variant pb-1.5 flex justify-between items-center">
+                    <span>Notificaciones Sistema</span>
+                    <button
+                      onClick={() => setNotifications([])}
+                      className="text-[10px] text-brand-secondary underline hover:opacity-85 font-medium"
+                    >
+                      Limpiar todo
+                    </button>
+                  </h4>
+                  <ul className="space-y-2.5 drop-shadow-xs max-h-60 overflow-y-auto">
+                    {notifications.map((notif, index) => (
+                      <li
+                        key={index}
+                        className="pb-1.5 border-b border-[#edeeef] last:border-none leading-normal"
+                      >
+                        • {notif}
+                      </li>
+                    ))}
+                    {notifications.length === 0 && (
+                      <p className="text-center py-4 text-brand-outline">
+                        No hay notificaciones sin leer.
+                      </p>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Content canvas with generous negative space & standard padding */}
+        <main className="p-8 flex-1 overflow-x-hidden">
+          {selectedStudentId && selectedStudent ? (
+            /* Selected Student Detailed view */
+            <StudentProfileView
+              student={selectedStudent}
+              timelineEvents={timelineEventsMap[selectedStudent.id] || []}
+              onBack={() => setSelectedStudentId(null)}
+              onUpdateStudent={onUpdateStudent}
+              onAddTimelineEvent={onAddTimelineEvent}
+            />
+          ) : activeMenu === "panel" ? (
+            /* Institutional dashboard panel */
+            <div className="space-y-8 animate-fade-in z-0">
+              {/* Welcome Section */}
+              <div>
+                <h3 className="text-3xl font-bold text-brand-primary tracking-tight">
+                  Hola, Administrador Departamental
+                </h3>
+                <p className="text-[#43474f] font-medium text-sm mt-1">
+                  Resumen general
+                </p>
+              </div>
+
+              {/* Metric Cards Bento Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+                  <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
+                    TOTAL ESTUDIANTES
+                  </span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl font-black text-brand-primary">
+                      1,248
+                    </span>
+                    <span className="bg-[#e2f3f5] text-[#006e6e] text-xs font-bold px-2 py-0.5 rounded flex items-center">
+                      <span className="material-symbols-outlined text-[10px] font-bold">
+                        arrow_upward
+                      </span>
+                      2.4%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
+                    Cohortes 2019 - 2024
+                  </p>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+                  <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
+                    RIESGO CRÍTICO
+                  </span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl font-black text-brand-error">
+                      156
+                    </span>
+                    <span className="bg-red-50 text-brand-error text-xs font-bold px-2 py-0.5 rounded flex items-center gap-0.5 border border-brand-error/25">
+                      <span className="material-symbols-outlined text-[10px] font-bold">
+                        warning
+                      </span>
+                      12.5%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
+                    Requieren acción inmediata
+                  </p>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+                  <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
+                    ALERTAS PENDIENTES
+                  </span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl font-black text-[#5a9ef1]">
+                      42
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
+                    Sistemas automáticos activos
+                  </p>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+                  <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
+                    INTERVENCIONES (MES)
+                  </span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-3xl font-black text-[#006a6a]">
+                      89
+                    </span>
+                    <span className="bg-green-50 text-[#006e6e] text-xs font-bold px-2 py-0.5 rounded flex items-center gap-0.5">
+                      <span className="material-symbols-outlined text-[10px] font-bold">
+                        done
+                      </span>
+                      +12
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
+                    Gestión integral de tutorías
+                  </p>
+                </div>
+              </div>
+
+              {/* Charts Section: Donut + Evolution Area */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Donut general semáforo */}
+                <div className="bg-white border border-brand-outline-variant rounded p-6 shadow-xs flex flex-col">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1 mb-5">
+                    <span className="material-symbols-outlined text-lg">
+                      donut_large
+                    </span>
+                    Semáforo General de Alumnos
+                  </h4>
+
+                  <div className="flex-1 flex flex-col justify-center items-center relative py-4">
+                    {/* SVG circle donut */}
+                    <svg
+                      className="w-40 h-40 transform -rotate-90"
+                      viewBox="0 0 36 36"
+                    >
+                      <circle
+                        cx="18"
+                        cy="18"
+                        fill="transparent"
+                        r="15.915"
+                        stroke="#edeeef"
+                        strokeWidth="3"
+                      ></circle>
+                      {/* Critical Section 12% */}
+                      <circle
+                        cx="18"
+                        cy="18"
+                        fill="transparent"
+                        r="15.915"
+                        stroke="#ba1a1a"
+                        strokeWidth="3.2"
+                        strokeDasharray="12 100"
+                        strokeDashoffset="0"
+                      ></circle>
+                      {/* Medium Section 25% */}
+                      <circle
+                        cx="18"
+                        cy="18"
+                        fill="transparent"
+                        r="15.915"
+                        stroke="#d97706"
+                        strokeWidth="3.2"
+                        strokeDasharray="25 100"
+                        strokeDashoffset="-12"
+                      ></circle>
+                      {/* Safe Section 63% */}
+                      <circle
+                        cx="18"
+                        cy="18"
+                        fill="transparent"
+                        r="15.915"
+                        stroke="#006a6a"
+                        strokeWidth="3.2"
+                        strokeDasharray="63 100"
+                        strokeDashoffset="-37"
+                      ></circle>
+                    </svg>
+
+                    <div className="absolute inset-x-0 top-18 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-black text-brand-primary">
+                        1,248
+                      </span>
+                      <span className="text-[9px] text-brand-outline font-bold uppercase">
+                        Población Activa
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-3 gap-2 text-center">
+                    <div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#006a6a] mx-auto mb-1"></div>
+                      <p className="text-[10px] font-bold text-brand-primary">
+                        63% Seguro
+                      </p>
+                    </div>
+                    <div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mx-auto mb-1"></div>
+                      <p className="text-[10px] font-bold text-brand-primary">
+                        25% Medio
+                      </p>
+                    </div>
+                    <div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] mx-auto mb-1"></div>
+                      <p className="text-[10px] font-bold text-[#ba1a1a]">
+                        12% Crítico
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Risk evolution per Cohort */}
+                <div className="lg:col-span-2 bg-white border border-brand-outline-variant rounded p-6 shadow-xs flex flex-col justify-between">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-lg">
+                        trending_up
+                      </span>
+                      Evolución de Alertas por Cohorte
+                    </h4>
+
+                    <div className="flex gap-1.5">
+                      <span className="px-2 py-0.5 bg-[#f3f4f5] border border-brand-outline-variant rounded text-[10px] font-semibold text-[#43474f]">
+                        2022
+                      </span>
+                      <span className="px-2 py-0.5 bg-brand-primary text-white border border-brand-primary rounded text-[10px] font-extrabold">
+                        2023
+                      </span>
+                      <span className="px-2 py-0.5 bg-[#f3f4f5] border border-brand-outline-variant rounded text-[10px] font-semibold text-[#43474f]">
+                        2024
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* SVG line / area chart representing screenshot */}
+                  <div className="relative flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
+                    <svg
+                      className="w-full h-full"
+                      viewBox="0 0 540 140"
+                      preserveAspectRatio="none"
+                    >
+                      <defs>
+                        <linearGradient
+                          id="areaGrad"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#001e40"
+                            stopOpacity="0.15"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#001e40"
+                            stopOpacity="0.0"
+                          />
+                        </linearGradient>
+                      </defs>
+                      {/* Grid lines */}
+                      <line
+                        x1="0"
+                        y1="35"
+                        x2="540"
+                        y2="35"
+                        stroke="#c3c6d1"
+                        strokeWidth="0.5"
+                        strokeDasharray="4 4"
+                      />
+                      <line
+                        x1="0"
+                        y1="70"
+                        x2="540"
+                        y2="70"
+                        stroke="#c3c6d1"
+                        strokeWidth="0.5"
+                        strokeDasharray="4 4"
+                      />
+                      <line
+                        x1="0"
+                        y1="105"
+                        x2="540"
+                        y2="105"
+                        stroke="#c3c6d1"
+                        strokeWidth="0.5"
+                        strokeDasharray="4 4"
+                      />
+                      {/* Area Path */}
+                      <path
+                        d="M 0,110 C 60,95 120,115 180,90 C 240,65 300,75 360,50 C 420,30 480,45 540,25 L 540,140 L 0,140 Z"
+                        fill="url(#areaGrad)"
+                      />
+                      {/* Trend Line */}
+                      <path
+                        d="M 0,110 C 60,95 120,115 180,90 C 240,65 300,75 360,50 C 420,30 480,45 540,25"
+                        fill="none"
+                        stroke="#001e40"
+                        strokeWidth="2.5"
+                      />
+                      {/* Points */}
+                      <circle cx="180" cy="90" r="3.5" fill="#006a6a" />
+                      <circle cx="360" cy="50" r="3.5" fill="#ba1a1a" />
+                      <circle cx="540" cy="25" r="3.5" fill="#003366" />
+                    </svg>
+
+                    <div className="absolute inset-x-0 bottom-1 flex justify-between px-3 text-[9px] text-[#43474f] font-bold">
+                      <span>MARZO</span>
+                      <span>MAYO</span>
+                      <span>JULIO</span>
+                      <span>SEPTIEMBRE</span>
+                      <span>NOVIEMBRE</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#43474f] italic mt-3 leading-normal">
+                    Tendencia descendente generalizada en las alertas del
+                    segundo trimestre de Ingeniería Industrial (-3.2%).
+                  </p>
+                </div>
+              </div>
+
+              {/* Critical Alerts Recent list */}
+              <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+                <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-lg">
+                      emergency
+                    </span>
+                    Alertas Críticas Recientes
+                  </h4>
+                  <button
+                    onClick={() => {
+                      setActiveMenu("estudiantes");
+                      setFilterRisk("CRÍTICO");
+                    }}
+                    className="text-xs text-brand-primary font-bold hover:underline"
+                  >
+                    Ver listado completo
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-6">Estudiante</th>
+                        <th className="p-3">Carrera / Año</th>
+                        <th className="p-3 text-center">Nivel Riesgo</th>
+                        <th className="p-3 text-center">Último Recálculo</th>
+                        <th className="p-3 text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-outline-variant">
+                      {students
+                        .filter(
+                          (s) =>
+                            s.riskLevel === "CRÍTICO" ||
+                            s.riskLevel === "MEDIO",
+                        )
+                        .slice(0, 4)
+                        .map((s) => (
+                          <tr
+                            key={s.id}
+                            className="hover:bg-[#f8f9fa] transition-colors"
+                          >
+                            <td className="p-3 pl-6 font-bold text-brand-primary">
+                              {s.lastNames}, {s.firstNames}
+                            </td>
+                            <td className="p-3 font-medium">
+                              {s.career} ({s.year}° Año)
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="bg-[#ffdad6] text-[#93000a] text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full"></span>
+                                CRÍTICO ({s.riskValue})
+                              </span>
+                            </td>
+                            <td className="p-3 text-center text-brand-outline font-medium">
+                              {s.lastRecalculation}
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                onClick={() => setSelectedStudentId(s.id)}
+                                className="text-brand-primary hover:text-brand-primary-container hover:underline font-bold"
+                              >
+                                Intervenir
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : activeMenu === "estudiantes" ? (
+            /* Student alerts tracking listing view */
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
+                    Listado de Seguimiento
+                  </h3>
+                  <p className="text-xs text-[#43474f] mt-1">
+                    Administración y filtros de alumnos bajo monitoreo del
+                    Sistema Travesía.
+                  </p>
+                </div>
+
+                {/* Export button block */}
+                <button
+                  onClick={() => alert("Exportando reporte en formato CSV...")}
+                  className="flex items-center gap-1 bg-white border border-brand-outline-variant hover:bg-[#edeeef] text-brand-primary text-xs font-bold py-2 px-4 rounded transition-all cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    download
+                  </span>
+                  Exportar Reporte
+                </button>
+              </div>
+
+              {/* Filtering bar representing second screenshot */}
+              <div className="bg-white border border-brand-outline-variant rounded p-4 flex flex-col md:flex-row gap-4 items-center justify-between text-xs font-semibold shadow-xs">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#43474f] uppercase block mb-1">
+                      Año Académico
+                    </span>
+                    <select
+                      value={filterYear}
+                      onChange={(e) => setFilterYear(e.target.value)}
+                      className="border border-brand-outline-variant rounded bg-white p-1.5 pr-6 cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand-primary text-xs"
+                    >
+                      <option value="Todos">Todos</option>
+                      <option value="1">1er Año</option>
+                      <option value="2">2do Año</option>
+                      <option value="3">3er Año</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#43474f] uppercase block mb-1">
+                      Carrera
+                    </span>
+                    <select
+                      value={filterCareer}
+                      onChange={(e) => setFilterCareer(e.target.value)}
+                      className="border border-brand-outline-variant rounded bg-white p-1.5 pr-6 cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand-primary text-xs"
+                    >
+                      <option value="Todas">Todas</option>
+                      <option value="Industrial">Ing. Industrial</option>
+                      <option value="Informática">Ing. Informática</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#43474f] uppercase block mb-1">
+                      Riesgo
+                    </span>
+                    <div className="flex border border-brand-outline-variant rounded overflow-hidden">
+                      <button
+                        onClick={() => setFilterRisk("TODOS")}
+                        className={`px-3 py-1.5 cursor-pointer font-bold ${
+                          filterRisk === "TODOS"
+                            ? "bg-brand-primary text-white"
+                            : "bg-white text-brand-primary"
+                        }`}
+                      >
+                        TODOS
+                      </button>
+                      <button
+                        onClick={() => setFilterRisk("CRÍTICO")}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "CRÍTICO"
+                            ? "bg-[#ffdad6] text-[#ba1a1a]"
+                            : "bg-white text-brand-primary"
+                        }`}
+                      >
+                        CRÍTICO
+                      </button>
+                      <button
+                        onClick={() => setFilterRisk("MEDIO")}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "MEDIO"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-white text-brand-primary"
+                        }`}
+                      >
+                        MEDIO
+                      </button>
+                      <button
+                        onClick={() => setFilterRisk("BAJO")}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "BAJO"
+                            ? "bg-[#e2f3f5] text-[#006e6e]"
+                            : "bg-white text-brand-primary"
+                        }`}
+                      >
+                        BAJO
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right self-stretch md:self-auto">
+                  <button
+                    onClick={() => {
+                      setFilterYear("Todos");
+                      setFilterCareer("Todas");
+                      setFilterRisk("TODOS");
+                      setSearchQuery("");
+                    }}
+                    className="text-brand-error uppercase tracking-wider text-[10px] font-bold hover:underline"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid table showing current students */}
+              {/* Left side: Table list */}
+              <div className="xl:col-span-3 bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-center border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                          ESTUDIANTE / DNI
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          TRAMO
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          ÍNDICE RISK
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          ESTADO ALERTA
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          ACCIONES
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-outline-variant">
+                      {filteredStudents.map((s) => (
+                        <tr
+                          key={s.id}
+                          className="hover:bg-[#f8f9fa] transition-all"
+                        >
+                          <td className="p-3 pl-5">
+                            <div
+                              className="font-bold text-brand-primary hover:underline cursor-pointer"
+                              onClick={() => setSelectedStudentId(s.id)}
+                            >
+                              {s.lastNames}, {s.firstNames}
+                            </div>
+                            <div className="text-[10px] text-brand-outline font-semibold">
+                              DNI: {s.dni} | {s.career}
+                            </div>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className="bg-[#edeeef] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
+                              TRAMO {s.tramo}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span
+                              className={`font-black text-xs ${
+                                s.riskValue >= 7.5
+                                  ? "text-[#ba1a1a]"
+                                  : s.riskValue >= 4.0
+                                    ? "text-amber-600"
+                                    : "text-[#006e6e]"
+                              }`}
+                            >
+                              {s.riskValue.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            {getAlertPill(s.statusAlerta)}
+                          </td>
+                          <td className="p-3 text-center flex items-center justify-center gap-2">
+                            {/* Eyeball profile click */}
+                            <button
+                              onClick={() => setSelectedStudentId(s.id)}
+                              title="Ver Ficha Académica"
+                              className="p-1 text-brand-primary hover:bg-brand-primary-container/10 rounded transition-all cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-base">
+                                visibility
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => setSelectedStudentId(s.id)}
+                              title="Planificar Intervención"
+                              className="p-1 text-[#006a6a] hover:bg-brand-secondary/10 rounded transition-all cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-base">
+                                playlist_add_check
+                              </span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+
+                      {filteredStudents.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="p-8 text-center text-brand-outline font-medium"
+                          >
+                            No se encontraron estudiantes que coincidan con los
+                            filtros de búsqueda.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Summary bar */}
+                <div className="p-4 bg-[#f8f9fa] border-t border-brand-outline-variant flex justify-between items-center text-xs text-[#43474f]">
+                  <span className="font-semibold">
+                    Mostrando {filteredStudents.length} de {students.length}{" "}
+                    estudiantes asignados
+                  </span>
+                  <div className="flex gap-1">
+                    <button className="px-2.5 py-1 border border-brand-outline-variant rounded bg-white font-bold opacity-50 cursor-not-allowed">
+                      Anterior
+                    </button>
+                    <button className="px-3 py-1 bg-brand-primary text-white rounded font-bold">
+                      1
+                    </button>
+                    <button className="px-3 py-1 border border-brand-outline-variant rounded bg-white hover:bg-[#edeeef] font-bold">
+                      2
+                    </button>
+                    <button className="px-2.5 py-1 border border-brand-outline-variant rounded bg-white hover:bg-[#edeeef] font-bold">
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : activeMenu === "encuestas" ? (
+            /* Managed Surveys & Creation */
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
+                    Gestión de Encuestas
+                  </h3>
+                  <p className="text-xs text-[#43474f] mt-1">
+                    Administración de cuestionarios destinados a medir y mapear
+                    las alertas contextuales externas.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSurveyModal(true)}
+                  className="flex items-center gap-1.5 bg-brand-primary text-white py-2 px-4 rounded text-xs font-bold hover:bg-[#002f5e] transition-all cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    add_circle
+                  </span>
+                  Crear Nueva Encuesta
+                </button>
+              </div>
+
+              {/* Stat Highlights at top of surveys panel */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-brand-outline block uppercase tracking-wider">
+                      Encuestas Activas
+                    </span>
+                    <span className="text-3xl font-black text-brand-primary mt-1 block">
+                      {localSurveys.filter((s) => s.status === "Activa").length}
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-brand-secondary bg-brand-secondary/5 p-3 rounded-full text-2xl">
+                    mark_email_unread
+                  </span>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-brand-outline block uppercase tracking-wider">
+                      Tasa de Respuesta Prom.
+                    </span>
+                    <span className="text-3xl font-black text-brand-primary mt-1 block">
+                      68.4%
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-brand-primary bg-brand-primary-container/10 p-3 rounded-full text-2xl">
+                    percent
+                  </span>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#ba1a1a] block uppercase tracking-wider">
+                      Pendientes de Análisis
+                    </span>
+                    <span className="text-3xl font-black text-brand-error mt-1 block">
+                      03
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-brand-error bg-red-50 p-3 rounded-full text-2xl">
+                    pending_actions
+                  </span>
+                </div>
+              </div>
+
+              {/* List of Surveys as in screenshot 6 */}
+              <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-brand-outline-variant flex justify-between bg-[#f8f9fa] items-center">
+                  <h4 className="font-bold text-brand-primary text-xs uppercase tracking-wider">
+                    Listado de Relevamientos
+                  </h4>
+                  <span className="text-[10px] text-brand-outline font-bold">
+                    Total: {localSurveys.length} cuestionarios
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                          Nombre de la Encuesta
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          Tipo
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          Estado
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          Fecha Creación
+                        </th>
+                        <th className="p-3 border-b border-brand-outline-variant text-center">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-outline-variant">
+                      {localSurveys.map((sur) => (
+                        <tr
+                          key={sur.id}
+                          className="hover:bg-[#f8f9fa] transition-colors"
+                        >
+                          <td className="p-4 pl-5">
+                            <div className="font-extrabold text-brand-primary text-sm">
+                              {sur.title}
+                            </div>
+                            <div className="text-[11px] text-[#43474f] font-medium mt-0.5">
+                              {sur.description}
+                            </div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="bg-[#edeeef] text-brand-primary px-2 py-0.5 rounded text-[10px] font-bold">
+                              {sur.type}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${
+                                sur.status === "Activa"
+                                  ? "bg-[#e2f3f5] text-[#006e6e]"
+                                  : sur.status === "Borrador"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : "bg-red-150 text-brand-error"
+                              }`}
+                            >
+                              {sur.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center font-medium text-brand-outline">
+                            {sur.creationDate}
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="flex justify-center items-center gap-2">
+                              {sur.status === "Activa" && (
+                                <button
+                                  onClick={() =>
+                                    alert(
+                                      `Analizando ${sur.responsesCount} respuestas...`,
+                                    )
+                                  }
+                                  className="text-brand-secondary hover:underline font-bold"
+                                >
+                                  Ver Respuestas ({sur.responsesCount})
+                                </button>
+                              )}
+                              {sur.status === "Borrador" && (
+                                <button
+                                  onClick={() => {
+                                    const updated = localSurveys.map((s) =>
+                                      s.id === sur.id
+                                        ? { ...s, status: "Activa" as const }
+                                        : s,
+                                    );
+                                    setLocalSurveys(updated);
+                                  }}
+                                  className="text-brand-primary hover:underline font-bold"
+                                >
+                                  Activar
+                                </button>
+                              )}
+                              {sur.status === "Finalizada" && (
+                                <span className="text-brand-outline font-medium italic">
+                                  Terminada
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Retention Recommendations and Programmed alerts boxes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-lg text-brand-secondary">
+                      lightbulb
+                    </span>
+                    Recomendación de Retención Activa
+                  </h4>
+                  <p className="text-xs text-[#43474f] leading-relaxed mt-2">
+                    Según los últimos datos cruzados de la{" "}
+                    <strong>Encuesta de Ingreso</strong>, el factor
+                    "Complicación de Horarios Laborales" ha aumentado un 15%
+                    como causa primaria de riesgo crítico durante este
+                    cuatrimestre. Recomendamos flexibilizar horarios en turnos
+                    nocturnos o tutorías asincrónicas virtuales.
+                  </p>
+                  <button
+                    onClick={() =>
+                      alert("Abriendo diagnóstico integral de deserción...")
+                    }
+                    className="text-brand-primary hover:underline font-bold text-xs mt-3 block"
+                  >
+                    Ver reporte detallado →
+                  </button>
+                </div>
+
+                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h4 className="font-semibold text-brand-primary text-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-lg">
+                        alarm
+                      </span>
+                      Programar Envío de Seguimiento
+                    </h4>
+                    <p className="text-xs text-[#3a5f94] max-w-[300px] leading-relaxed">
+                      Automatiza correos recordatorios para aquellos alumnos que
+                      cuenten con riesgo medio y no hayan respondido encuestas
+                      en más de 10 días académicos.
+                    </p>
+                    <div className="flex gap-2 pt-2">
+                      <span className="bg-[#f3f4f5] border border-brand-outline-variant text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
+                        Próximo: Lunes 9:00 AM
+                      </span>
+                      <span className="bg-[#e2f3f5] text-[#006e6e] px-2 py-0.5 rounded text-[10px] font-bold">
+                        240 Estudiantes
+                      </span>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-brand-primary text-4xl bg-brand-primary-container/10 p-3 rounded-full">
+                    schedule
+                  </span>
+                </div>
+              </div>
+
+              {/* Create survey modal inline simulator */}
+              {showSurveyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#191c1d]/60 backdrop-blur-xs animate-fade-in">
+                  <div className="bg-white border border-brand-outline-variant rounded shadow-2xl max-w-md w-full p-6 space-y-4">
+                    <h2 className="text-lg font-bold text-brand-primary flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-xl">
+                        add_box
+                      </span>
+                      Nueva Encuesta de Relevamiento
+                    </h2>
+                    <form onSubmit={handleCreateSurvey} className="space-y-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                          Título de la Encuesta
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newSurveyTitle}
+                          onChange={(e) => setNewSurveyTitle(e.target.value)}
+                          placeholder="ej: Satisfacción Cursadas Q2"
+                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                          Tipo de Relevamiento
+                        </label>
+                        <select
+                          value={newSurveyType}
+                          onChange={(e) =>
+                            setNewSurveyType(
+                              e.target.value as "Única" | "Periódica",
+                            )
+                          }
+                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
+                        >
+                          <option value="Única">
+                            Única (Un solo envío al ingresar)
+                          </option>
+                          <option value="Periódica">
+                            Periódica (Envío por cuatrimestre)
+                          </option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                          Descripción o Alcance
+                        </label>
+                        <textarea
+                          value={newSurveyDesc}
+                          onChange={(e) => setNewSurveyDesc(e.target.value)}
+                          rows={3}
+                          placeholder="Propósito, marco institucional y a quién va dirigida..."
+                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
+                        ></textarea>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowSurveyModal(false)}
+                          className="px-3 py-2 border border-brand-outline-variant text-[#43474f] rounded text-xs font-semibold hover:bg-[#e7e8e9] transition-all"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-brand-primary text-white rounded text-xs font-bold hover:bg-[#002f5e] transition-all"
+                        >
+                          Crear y Guardar Borrador
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : activeMenu === "reportes" ? (
+            /* Report generator and static diagnostic tools */
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
+                  Reportes e Históricos
+                </h3>
+                <p className="text-xs text-[#43474f] mt-1">
+                  Módulo de Inteligencia de Datos para la toma de decisiones
+                  institucionales y auditorías académicas.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="border border-brand-outline-variant rounded p-6 bg-white space-y-4 shadow-sm">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lg">
+                      summarize
+                    </span>
+                    Reporte de Eficiencia de Acompañamiento
+                  </h4>
+                  <p className="text-xs text-[#43474f] leading-normal font-medium">
+                    Analiza la tasa de éxito (salida de riesgo crítico a
+                    regularidad estable) de los estudiantes que recibieron
+                    llamadas directas de la secretaría académica y completaron
+                    entrevistas.
+                  </p>
+
+                  <div className="p-3.5 bg-[#f8f9fa] border-l-4 border-[#006a6a] text-xs space-y-1">
+                    <p className="font-bold text-brand-secondary">
+                      Métrica Clave: 78.4% de éxito
+                    </p>
+                    <p className="text-brand-outline">
+                      Se constató que 4 de cada 5 tutorías directas resolvieron
+                      alertas antes de exámenes parciales.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() =>
+                        alert(
+                          "Generando archivo PDF con visualizaciones académicas...",
+                        )
+                      }
+                      className="px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded flex items-center gap-1 hover:bg-[#002f5e]"
+                    >
+                      <span className="material-symbols-outlined text-sm">
+                        picture_as_pdf
+                      </span>{" "}
+                      Descargar PDF
+                    </button>
+                    <button
+                      onClick={() => alert("Exportando base tabular CSV...")}
+                      className="px-4 py-2 border border-brand-outline-variant text-[#43474f] text-xs font-semibold rounded flex items-center gap-1 hover:bg-[#f3f4f5]"
+                    >
+                      <span className="material-symbols-outlined text-sm">
+                        table_chart
+                      </span>{" "}
+                      Exportar CSV
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border border-brand-outline-variant rounded p-6 bg-white space-y-4 shadow-sm">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lg">
+                      bar_chart
+                    </span>
+                    Filtro Avanzado de Factores de Riesgo
+                  </h4>
+                  <p className="text-xs text-[#43474f] leading-normal font-medium">
+                    Distribución absoluta de causantes del desapego o deserción
+                    detectada con mayor frecuencia este año en Ingeniería de la
+                    UNMdP:
+                  </p>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <div className="flex justify-between font-bold text-brand-primary mb-1">
+                        <span>Rendimiento Académico / Aplazos Continuos</span>
+                        <span>42%</span>
+                      </div>
+                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
+                        <div
+                          className="bg-[#ba1a1a] h-full"
+                          style={{ width: "42%" }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between font-bold text-brand-primary mb-1">
+                        <span>Conflictos de Horarios Laborales</span>
+                        <span>35%</span>
+                      </div>
+                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
+                        <div
+                          className="bg-[#006a6a] h-full"
+                          style={{ width: "35%" }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between font-bold text-brand-primary mb-1">
+                        <span>Problemas Familiares / De Salud</span>
+                        <span>23%</span>
+                      </div>
+                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
+                        <div
+                          className="bg-amber-500 h-full"
+                          style={{ width: "23%" }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <AHPConfigPanel />
+          )}
+        </main>
+      </div>
+
+      {/* Dynamic Floating Action Button for prompt intervention entry */}
+      {!selectedStudentId && activeMenu === "panel" && (
+        <button
+          onClick={() => {
+            setActiveMenu("estudiantes");
+            alert(
+              "Por favor, seleccione un estudiante de la grilla principal para registrar su intervención.",
+            );
+          }}
+          title="Nueva Intervención Rápida"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-brand-primary hover:bg-[#002f5e] text-white rounded-full shadow-2xl flex items-center justify-center transition-all cursor-pointer active:scale-95 group z-30"
+        >
+          <span className="material-symbols-outlined text-2xl">add</span>
+          <span className="absolute right-16 bg-brand-primary text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Nueva Intervención
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
