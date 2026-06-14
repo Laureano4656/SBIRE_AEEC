@@ -12,10 +12,10 @@
 
 import asyncpg
 
-from app.models.comparacion import PesoCriterios
+from app.models.peso_criterios import PesoCriterios
 from app.repositories.base import BaseRepository
 
 
 class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
     def __init__(self, conn: asyncpg.Connection) -> None:
-        super().__init__(conn, PesoCriterios)
+        super().__init__(model=PesoCriterios, conn=conn)

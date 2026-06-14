@@ -181,7 +181,7 @@
             });
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/calcular-ahp", {
+                const response = await fetch("http://127.0.0.1:8000/api/v1/calcular_ahp", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(requestData)

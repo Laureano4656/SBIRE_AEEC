@@ -1,12 +1,11 @@
 
 import asyncpg
 from fastapi import HTTPException, status
-from typing import List
+from typing import List, Dict
+import numpy as np
 
-from backend.app.comparacion import Comparacion
+from app.models.comparacion import Comparacion
 from app.repositories.peso_criterios_repository import PesoCriteriosRepository
-
-from numpy import np as np
 
 
 class PesoCriteriosServices:
@@ -17,7 +16,7 @@ class PesoCriteriosServices:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.repo = PesoCriteriosRepository(conn)
 
-    async def resolver_matriz_ahp(criterios: List[str], comparaciones: List[Comparacion]):
+    async def resolver_matriz_ahp(self,criterios: List[str], comparaciones: List[Comparacion]):
         n = len(criterios)
         if n == 1:
             return {criterios[0]: 1.0}, 0.0
@@ -44,7 +43,7 @@ class PesoCriteriosServices:
 
         return {criterios[i]: round(pesos[i], 4) for i in range(n)}, round(cr, 4)
 
-    async def calcular_ahp_jerarquico(nodo_actual: str, jerarquia: Dict[str, List[str]], comparaciones_por_nodo: Dict[str, List[Comparacion]], peso_global_padre=1.0, resultados=None, reportes_cr=None):
+    async def calcular_ahp_jerarquico(self, nodo_actual: str, jerarquia: Dict[str, List[str]], comparaciones_por_nodo: Dict[str, List[Comparacion]], peso_global_padre=1.0, resultados=None, reportes_cr=None):
         if resultados is None:
             resultados = {}
             reportes_cr = {}
