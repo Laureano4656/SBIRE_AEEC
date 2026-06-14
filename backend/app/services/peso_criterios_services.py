@@ -62,3 +62,4 @@ class PesoCriteriosServices:
             resultados[nodo_actual] = round(peso_global_padre, 4)
 
         return resultados, reportes_cr
+    

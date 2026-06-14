@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 from app.models.comparacion import Comparacion
 from app.services.peso_criterios_services import PesoCriteriosServices
-from app.models.comparacion import AHPRequest
+from app.models.configuracion import AHPRequest
 from fastapi import APIRouter, Depends, status
 from app.api.deps import get_conn
 import asyncpg
@@ -22,6 +22,7 @@ async def calcular_ahp(datos: AHPRequest, conn: asyncpg.Connection = Depends(get
         jerarquia=datos.jerarquia,
         comparaciones_por_nodo=datos.comparaciones_por_nodo
     )
+
     return {
         "pesos_globales": pesos_finales,
         "consistencia_matrices": consistencias
