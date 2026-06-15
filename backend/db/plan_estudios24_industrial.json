@@ -1,0 +1,504 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-B",
+        "codigo": "INGM105",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Química",
+        "codigo": "ING1103",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Fundamentos de la Programación",
+        "codigo": "ING6101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Física B-II",
+        "codigo": "INGF103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Probabilidad y Estadística",
+        "codigo": "INGM108",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Mecánica del Sólido",
+        "codigo": "ING2218",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Proyecto de Ingeniería Industrial I",
+        "codigo": "ING8501",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "anual": true,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Administración Estratégica",
+        "codigo": "ING8302",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Probabilidad y Estadística"
+        ]
+    },
+    {
+        "materia": "Conceptos de Economía Industrial",
+        "codigo": "ING8414",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Máquinas y Equipos Industriales I",
+        "codigo": "ING3209",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Física B-II"
+        ]
+    },
+    {
+        "materia": "Termodinámica Industrial",
+        "codigo": "ING2221",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física A",
+            "Fundamentos de Química",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Administración de Operaciones",
+        "codigo": "ING8301",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Administración Estratégica"
+        ]
+    },
+    {
+        "materia": "Investigación Operativa A",
+        "codigo": "ING8201",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Probabilidad y Estadística"
+        ]
+    },
+    {
+        "materia": "Gestión de la Tecnología y la Innovación",
+        "codigo": "ING8308",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Administración Estratégica"
+        ]
+    },
+    {
+        "materia": "Tecnología de los Materiales",
+        "codigo": "ING2219",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Mecánica del Sólido",
+            "Fundamentos de Química"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Administración Estratégica",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Mecánica de Fluidos",
+        "codigo": "ING2217",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Mecánica del Sólido",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Proyecto de Ingeniería Industrial II",
+        "codigo": "ING8502",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "anual": true,
+        "correlativas": [
+            "Administración Estratégica",
+            "Proyecto de Ingeniería Industrial I"
+        ]
+    },
+    {
+        "materia": "Planificación y Control de la Producción",
+        "codigo": "ING8310",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Administración de Operaciones",
+            "Investigación Operativa A"
+        ]
+    },
+    {
+        "materia": "Investigación Operativa B",
+        "codigo": "ING8202",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Investigación Operativa A"
+        ]
+    },
+    {
+        "materia": "Sistemas de Representación para Ingeniería",
+        "codigo": "ING2104",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Física Experimental A",
+        "codigo": "INGF106",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Física B-II"
+        ]
+    },
+    {
+        "materia": "Gestión de la Logística Integral y Cadena de Suministros",
+        "codigo": "ING8307",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Administración de Operaciones",
+            "Investigación Operativa A"
+        ]
+    },
+    {
+        "materia": "Electiva I",
+        "codigo": null,
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Depende de la electiva elegida"
+        ]
+    },
+    {
+        "materia": "Diseño de Instalaciones y Procesos",
+        "codigo": "ING8303",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Termodinámica Industrial",
+            "Máquinas y Equipos Industriales I",
+            "Mecánica de Fluidos"
+        ]
+    },
+    {
+        "materia": "Sistemas de Gestión y Mejora Continua",
+        "codigo": "ING8311",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Planificación y Control de la Producción"
+        ]
+    },
+    {
+        "materia": "Comportamiento Organizacional y Relaciones del Trabajo en el Ejercicio Profesional",
+        "codigo": "ING8402",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+            "Planificación y Control de la Producción"
+        ]
+    },
+    {
+        "materia": "Gestión Comercial de las Organizaciones",
+        "codigo": "ING8306",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Conceptos de Economía Industrial",
+            "Planificación y Control de la Producción"
+        ]
+    },
+    {
+        "materia": "Inglés Profesional A",
+        "codigo": "ING8415",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Inglés II"
+        ]
+    },
+    {
+        "materia": "Proyecto de Ingeniería Industrial III",
+        "codigo": "ING8503",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "anual": true,
+        "correlativas": [
+            "Planificación y Control de la Producción",
+            "Investigación Operativa B",
+            "Proyecto de Ingeniería Industrial II"
+        ]
+    },
+    {
+        "materia": "Formulación y Evaluación de Proyectos",
+        "codigo": "ING8305",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Investigación Operativa B",
+            "Administración de Operaciones"
+        ]
+    },
+    {
+        "materia": "Introducción a los Procesos de Fabricación",
+        "codigo": "ING2220",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Mecánica del Sólido",
+            "Física Experimental A",
+            "Tecnología de los Materiales"
+        ]
+    },
+    {
+        "materia": "Tecnología de Control",
+        "codigo": "ING2222",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Diseño de Instalaciones y Procesos",
+            "Sistemas de Representación para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Electiva II",
+        "codigo": null,
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Depende de la electiva elegida"
+        ]
+    },
+    {
+        "materia": "Inglés Profesional B",
+        "codigo": "ING8416",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Inglés Profesional A"
+        ]
+    },
+    {
+        "materia": "Sustentabilidad, Higiene y Seguridad",
+        "codigo": "ING8312",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Sistemas de Gestión y Mejora Continua",
+            "Diseño de Instalaciones y Procesos",
+            "Tecnología de Control"
+        ]
+    },
+    {
+        "materia": "Desarrollo Económico y Comercio Internacional",
+        "codigo": "ING8418",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Conceptos de Economía Industrial",
+            "Gestión de la Logística Integral y Cadena de Suministros"
+        ]
+    },
+    {
+        "materia": "Sistemas Informáticos de Gestión",
+        "codigo": "ING8417",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Fundamentos de la Programación",
+            "Proyecto de Ingeniería Industrial II"
+        ]
+    },
+    {
+        "materia": "Electiva III",
+        "codigo": null,
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Depende de la electiva elegida"
+        ]
+    },
+    {
+        "materia": "Proyecto de Ingeniería Industrial IV (Trabajo Final)",
+        "codigo": "ING8504",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "anual": true,
+        "correlativas": [
+            "Sistemas de Gestión y Mejora Continua",
+            "Formulación y Evaluación de Proyectos",
+            "Proyecto de Ingeniería Industrial III"
+        ]
+    },
+    {
+        "materia": "Gestión Integral del Mantenimiento",
+        "codigo": "ING8309",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Planificación y Control de la Producción",
+            "Introducción a los Procesos de Fabricación"
+        ]
+    },
+    {
+        "materia": "Empresas y Servicios Basadas en el Conocimiento",
+        "codigo": "ING8304",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Gestión de la Tecnología y la Innovación",
+            "Comportamiento Organizacional y Relaciones del Trabajo en el Ejercicio Profesional"
+        ]
+    },
+    {
+        "materia": "Electiva VI",
+        "codigo": null,
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Depende de la electiva elegida"
+        ]
+    },
+    {
+        "materia": "Optativa I",
+        "codigo": null,
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Depende de la optativa elegida"
+        ]
+    },
+    {
+        "materia": "Optativa II",
+        "codigo": null,
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Depende de la optativa elegida"
+        ]
+    }
+]
