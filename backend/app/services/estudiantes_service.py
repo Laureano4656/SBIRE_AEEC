@@ -5,7 +5,6 @@ from fastapi import HTTPException, status
 from app.models.estudiante import Estudiante
 from app.repositories.estudiante_repository import EstudianteRepository
 
-
 class EstudianteService:
     """
     Service de Estudiante — lógica de negocio.
