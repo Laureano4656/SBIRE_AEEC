@@ -26,8 +26,5 @@ httpx==0.28.1             # cliente HTTP para tests de endpoints FastAPI
 # ── Inteligencia Artificial ───────────────────────────────
 google-genai==0.5.0
 
-# ── Inteligencia Artificial ───────────────────────────────
-google-genai==0.5.0
-
 # ── Maths ───────────────────────────────────────────────
 numpy==2.4.6          # para resolver calculos matematicos

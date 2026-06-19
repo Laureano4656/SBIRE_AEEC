@@ -9,7 +9,7 @@ alter table respuesta
 alter table preguntas
  add column min float,
  add column max float,
- add column cant_opciones int;
+ add column cant_opciones int,
  add column id_indicador int,
  add constraint fk_indicador
   foreign key (id_indicador) references indicador(id);
