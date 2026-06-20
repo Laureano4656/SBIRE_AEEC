@@ -20,7 +20,7 @@ class CarreraCreate(BaseModel):
         description="Código único de la carrera",
         examples=["II"],
     )
-    duracion_cuatrimestres: int = Field(
+    duracion_cuatrimestre: int = Field(
         ...,
         ge=1,
         le=20,
@@ -42,7 +42,7 @@ class CarreraUpdate(BaseModel):
     """
 
     nombre: str | None = Field(None, min_length=3, max_length=200)
-    duracion_cuatrimestres: int | None = Field(None, ge=1, le=20)
+    duracion_cuatrimestre: int | None = Field(None, ge=1, le=20)
     activo: bool | None = None
 
 
@@ -56,7 +56,7 @@ class CarreraResponse(BaseModel):
     id: int
     nombre: str
     codigo: str
-    duracion_cuatrimestres: int
+    duracion_cuatrimestre: int
     activo: bool
 
     class Config:

@@ -1,34 +1,25 @@
 import asyncpg
-
 from app.models.usuario import Usuario
-from app.repositories.base import BaseRepository
+from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 
-
-class UsuarioRepository(BaseRepository[Usuario]):
+class UsuarioRepository(CrudRepository[Usuario]):
     def __init__(self, conn: asyncpg.Connection) -> None:
-        super().__init__(conn, Usuario)
-
-    def _table_name(self) -> str:
-        return "usuarios"
-
-    async def get_by_id(self, id: int) -> Usuario | None:
-        row = await self.conn.fetchrow(
-            """
-            SELECT id, carrera_id, nombre, apellido, email, moodle_id, rol,
-                   max_casos_activos, activo, creado_en, actualizado_en
-            FROM usuarios
-            WHERE id = $1
-            """,
-            id,
+        super().__init__(
+            conn,
+            Usuario,
+            CrudTableConfig(
+                table_name="usuarios",
+                columns=("id", "carrera_id", "nombre", "apellido", "email", "moodle_id", "rol",
+                         "max_casos_activos", "activo", "creado_en", "actualizado_en"),
+                active_column="activo"
+            )
         )
-        return self._map(row)
 
     async def get_by_moodle_id(self, moodle_id: str) -> Usuario | None:
         row = await self.conn.fetchrow(
-            """
-            SELECT id, carrera_id, nombre, apellido, email, moodle_id, rol,
-                   max_casos_activos, activo, creado_en, actualizado_en
-            FROM usuarios
+            f"""
+            SELECT {self._select_clause()}
+            FROM {self.config.table_name}
             WHERE moodle_id = $1
             """,
             moodle_id,
@@ -46,8 +37,8 @@ class UsuarioRepository(BaseRepository[Usuario]):
         max_casos_activos: int | None = None,
     ) -> Usuario:
         row = await self.conn.fetchrow(
-            """
-            INSERT INTO usuarios (
+            f"""
+            INSERT INTO {self.config.table_name} (
                 carrera_id,
                 nombre,
                 apellido,
@@ -64,8 +55,7 @@ class UsuarioRepository(BaseRepository[Usuario]):
                 email = COALESCE(EXCLUDED.email, usuarios.email),
                 rol = EXCLUDED.rol,
                 carrera_id = COALESCE(EXCLUDED.carrera_id, usuarios.carrera_id)
-            RETURNING id, carrera_id, nombre, apellido, email, moodle_id, rol,
-                      max_casos_activos, activo, creado_en, actualizado_en
+            RETURNING {self._select_clause()}
             """,
             carrera_id,
             nombre,

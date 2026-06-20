@@ -1,2 +1,0 @@
-hola penso
-formidable

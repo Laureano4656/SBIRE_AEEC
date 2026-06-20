@@ -7,7 +7,7 @@ class Carrera(BaseModel):
     id: int
     nombre: str
     codigo: str
-    duracion_cuatrimestres: int
+    duracion_cuatrimestre: int
     activo: bool
 
     class Config:
