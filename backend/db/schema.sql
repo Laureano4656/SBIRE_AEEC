@@ -523,6 +523,34 @@ ALTER TABLE public.estudiantes ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
 
 
 --
+-- Name: importacion_archivo; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.importacion_archivo (
+    id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    nombre_archivo character varying(255) NOT NULL,
+    fecha_importacion timestamp without time zone DEFAULT now() NOT NULL,
+    filas_importadas integer NOT NULL,
+    filas_errores integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: importacion_archivo_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.importacion_archivo ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.importacion_archivo_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: indicador; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1027,6 +1055,14 @@ ALTER TABLE ONLY public.estudiantes
 
 
 --
+-- Name: importacion_archivo importacion_archivo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT importacion_archivo_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: indicador indicador_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1492,6 +1528,14 @@ ALTER TABLE ONLY public.score_total
 
 
 --
+-- Name: importacion_archivo fk_usuario; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
 -- Name: usuarios fk_usuario_carrera; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1620,4 +1664,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260614083525'),
     ('20260615205151'),
     ('20260615205417'),
-    ('20260615205758');
+    ('20260615205758'),
+    ('20260620161556');

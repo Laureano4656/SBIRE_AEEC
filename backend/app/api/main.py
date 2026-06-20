@@ -16,6 +16,7 @@ from app.routers.preguntas_routes import router as preguntas_router
 from app.routers.respuestas_routes import router as respuestas_router
 from app.routers.criterios_routes import router as criterios_router
 from app.routers.estudiantes_routes import router as estudiantes_router
+from app.routers.importacion_archivo_routes import router as importacion_archivo_router
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
 from app.core.config import settings
@@ -116,6 +117,7 @@ app.include_router(asignaciones_encuestas_router, prefix=API_PREFIX)
 app.include_router(respuestas_router, prefix=API_PREFIX)
 app.include_router(plan_estudios_router, prefix=API_PREFIX)
 app.include_router(estudiantes_router, prefix=API_PREFIX)
+app.include_router(importacion_archivo_router, prefix=API_PREFIX)
 app.include_router(criterios_router, prefix=API_PREFIX)
 
 # Al agregar nuevas entidades:

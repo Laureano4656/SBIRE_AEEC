@@ -14,3 +14,14 @@ class EstudianteRepository(CrudRepository[Estudiante]):
                 active_column="activo"
             )
         )
+
+    async def get_by_legajo_and_carrera(self, legajo: str, carrera_id: int) -> Estudiante | None:
+        row = await self.conn.fetchrow(
+            f"""
+            SELECT {self._select_clause()}
+            FROM {self.config.table_name}
+            WHERE legajo = $1 AND carrera_id = $2
+            """,
+            legajo, carrera_id,
+        )
+        return self._map(row)

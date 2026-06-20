@@ -28,3 +28,6 @@ google-genai==0.5.0
 
 # ── Maths ───────────────────────────────────────────────
 numpy==2.4.6          # para resolver calculos matematicos
+
+# ── Procesamiento de archivos ───────────────────────────
+openpyxl==3.1.5       # lectura de archivos XLSX
