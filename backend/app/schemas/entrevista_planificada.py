@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class EntrevistaCreate(BaseModel):
+class EntrevistaPlanificadaCreate(BaseModel):
     alerta_id: int
     tutor_id: int
     estudiante_id: int
