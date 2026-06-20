@@ -58,10 +58,10 @@ DECLARE
     v_SYN_OPTATIVA_II int;
 BEGIN
     -- 1. Crear o recuperar Plan de Estudios
-    SELECT id INTO v_plan_id FROM plan_estudios WHERE carrera_id = 4 AND anio_vigencia = 2024 LIMIT 1;
+    SELECT id INTO v_plan_id FROM plan_estudios WHERE carrera_id = 1 AND anio_vigencia = 2024 LIMIT 1;
     IF v_plan_id IS NULL THEN
         INSERT INTO plan_estudios (carrera_id, nombre, anio_vigencia, activo)
-        VALUES (4, 'Plan 2024 Industrial', 2024, true) RETURNING id INTO v_plan_id;
+        VALUES (1, 'Plan 2024 Industrial', 2024, true) RETURNING id INTO v_plan_id;
     END IF;
 
     -- 2. Insertar Materias

@@ -28,10 +28,10 @@ with open("db/seed_materias_plan24.sql", "w", encoding="utf-8") as f:
     f.write("    -- 1. Crear o recuperar Plan de Estudios\n")
     # Asumimos que el plan de estudios ya existe, pero si no, lo creamos. Esto es útil para correr este script varias veces sin errores.
     # Si es para otra carrera o año, hay que cambiar la condición del SELECT e INSERT.
-    f.write("    SELECT id INTO v_plan_id FROM plan_estudios WHERE carrera_id = 4 AND anio_vigencia = 2024 LIMIT 1;\n")
+    f.write("    SELECT id INTO v_plan_id FROM plan_estudios WHERE carrera_id = 1 AND anio_vigencia = 2024 LIMIT 1;\n")
     f.write("    IF v_plan_id IS NULL THEN\n")
     f.write("        INSERT INTO plan_estudios (carrera_id, nombre, anio_vigencia, activo)\n")
-    f.write("        VALUES (4, 'Plan 2024 Industrial', 2024, true) RETURNING id INTO v_plan_id;\n")
+    f.write("        VALUES (1, 'Plan 2024 Industrial', 2024, true) RETURNING id INTO v_plan_id;\n")
     f.write("    END IF;\n\n")
 
     f.write("    -- 2. Insertar Materias\n")
