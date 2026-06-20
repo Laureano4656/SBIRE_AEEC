@@ -1,10 +1,8 @@
 import asyncpg
 
-from app.models.preguntas_respuestas import (
-    AsignacionEncuestaResponse,
-    EncuestaResponse,
-    RespuestaItem,
-)
+from app.schemas.asignacion_encuesta import AsignacionEncuestaResponse
+from app.schemas.encuesta import EncuestaResponse
+from app.schemas.respuesta import RespuestaItem
 
 
 class dashboardEstudiantesRepository:
@@ -95,26 +93,3 @@ class dashboardEstudiantesRepository:
             estudiante_id,
         )
         return [AsignacionEncuestaResponse(**dict(row)) for row in rows]
-
-    async def submit_survey_answers(self, asignacion_id: int, respuestas: list[RespuestaItem]) -> None:
-        async with self.conn.transaction():
-            for respuesta in respuestas:
-                await self.conn.execute(
-                    """
-                    INSERT INTO respuesta (asignacion_id, pregunta_id, opcion_id, texto_libre, fecha_respuesta)
-                    VALUES ($1, $2, $3, $4, NOW())
-                    """,
-                    asignacion_id,
-                    respuesta.pregunta_id,
-                    respuesta.opcion_id,
-                    respuesta.texto_libre,
-                )
-
-            await self.conn.execute(
-                """
-                UPDATE asignacion_encuestas
-                SET completada = true, fecha_completada = NOW()
-                WHERE id = $1
-                """,
-                asignacion_id,
-            )

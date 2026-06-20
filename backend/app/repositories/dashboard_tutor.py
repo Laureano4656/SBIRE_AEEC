@@ -1,5 +1,5 @@
 from app.models.estudiante_dashboard import EstudianteDashboardResponse
-from app.models.intervenciones import EntrevistaCreate, IntervencionCreate
+from app.schemas.intervenciones import EntrevistaCreate, IntervencionCreate
 import asyncpg
 import datetime
 
@@ -10,8 +10,7 @@ class dashboardTutorRepository:
     
     async def get_students_by_tutor(self, tutor_id: int) -> list[EstudianteDashboardResponse]:
         # Implementar la lógica para obtener los estudiantes asignados a un tutor
-        async with self.conn.transaction() as conn:
-            rows = await conn.fetch(
+        rows = await self.conn.fetch(
             """
             SELECT DISTINCT ON (e.id)
                 e.nombre,
@@ -38,104 +37,6 @@ class dashboardTutorRepository:
             tutor_id
         )
         return [EstudianteDashboardResponse(**dict(row)) for row in rows]
-    
-    async def take_alert(
-        self,
-        tutor_id: int,
-        alerta_id: int,
-        tipo: str = 'seguimiento_virtual',
-        descripcion: str = '',
-        fecha: datetime.date | None = None,
-    ) -> dict:
-        async with self.conn.transaction():
-            # Cambiar estado de la alerta a intervenida
-            alerta = await self.conn.fetchrow(
-            """
-            UPDATE alertas
-            SET estado = 'intervenida'
-            WHERE id = $1
-            AND estado IN ('nueva', 'en_revision')
-            RETURNING *
-            """,
-            alerta_id
-        )
-            
-            if not alerta:
-             return None  # La alerta no existe o ya fue tomada
 
-        # Crear la intervencion automaticamente
-        intervencion = await self.conn.fetchrow(
-            """
-            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
-            VALUES ($1, $2, $3, 'neutro', $4, $5)
-            RETURNING *
-            """,
-            alerta_id, tutor_id, tipo, descripcion, fecha
-        )   
-
-        return {
-            "alerta": dict(alerta),
-            "intervencion": dict(intervencion)
-        }
-        
-    async def schedule_interview(self, tutor_id: int, dataI:IntervencionCreate , data: EntrevistaCreate) -> dict:
-        async with self.conn.transaction():
-            # Primero crear la intervencion
-            intervencion = await self.conn.fetchrow(
-                """
-                INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING *
-                """,
-                dataI.alerta_id,
-                tutor_id,
-                dataI.tipo,
-                dataI.resultado,
-                dataI.descripcion,
-                dataI.fecha,
-            )
-
-            # Luego crear la entrevista vinculada a esa intervencion
-            entrevista = await self.conn.fetchrow(
-                """
-                INSERT INTO entrevista_planificada 
-                    (alerta_id, tutor_id, estudiante_id, fecha_propuesta, modalidad, notas_previas, estado, intervencion_id)
-                VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $7)
-                RETURNING *
-                """,
-                data.alerta_id, tutor_id, data.estudiante_id,
-                data.fecha_propuesta, data.modalidad, data.notas_previas,
-                intervencion["id"]
-            )
-
-            return {
-                "intervencion": dict(intervencion),
-                "entrevista": dict(entrevista)
-            }
-    
-    async def close_alert(self, tutor_id: int, alerta_id: int) -> dict | None:
-        tiene_acceso = await self.conn.fetchval(
-            """
-            SELECT EXISTS (
-                SELECT 1 FROM intervenciones
-                WHERE tutor_id = $1 AND alerta_id = $2
-            )
-            """,
-            tutor_id, alerta_id
-        )
-
-        if not tiene_acceso:
-            return None
-
-        row = await self.conn.fetchrow(
-            """
-            UPDATE alertas
-            SET estado = 'resuelta', fecha_cierre = NOW()
-            WHERE id = $1
-            RETURNING *
-            """,
-            alerta_id
-        )
-        return dict(row)
 
     

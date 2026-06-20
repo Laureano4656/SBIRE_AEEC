@@ -1,12 +1,8 @@
 import datetime
 
-from app.models import EstudianteDashboardResponse
-from app.models import GeneralEstudianteDashboardResponse
-from app.models import QuestionAnswersResponse
-from app.models import IndicadorConPesoCreate
-from app.models.preguntas_respuestas import AsignacionEncuestaResponse, EncuestaCreateFull
-from app.schemas.asignacion_encuesta import AsignacionEncuestaCreate
 import asyncpg
+
+from app.schemas.dashboard_admin_dep import EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, PreguntasRespuestasResponse
 
 class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -98,7 +94,7 @@ class dashboardAdminRepository:
         return {row["month"]: row["average_score"] for row in rows}
     
     
-    async def get_student_by_dni(self, dni: str) -> EstudianteDashboardResponse | None:
+    async def get_student_by_dni(self, dni: str) -> EstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow(
             """
             SELECT 
@@ -127,9 +123,9 @@ class dashboardAdminRepository:
             dni
         )
 
-        return EstudianteDashboardResponse(**dict(row)) if row else None
+        return EstudianteDashboardAdminResponse(**dict(row)) if row else None
 
-    async def get_students_by_career(self, carrera: str) -> list[EstudianteDashboardResponse]:
+    async def get_students_by_career(self, carrera: str) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
             SELECT 
@@ -140,7 +136,7 @@ class dashboardAdminRepository:
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
-                a.generada_en AS ultima_fecha_recalculo
+                s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
@@ -158,9 +154,9 @@ class dashboardAdminRepository:
             carrera
         )
 
-        return [EstudianteDashboardResponse(**dict(row)) for row in rows]
-    
-    async def get_students_by_year(self, anio: int) -> list[EstudianteDashboardResponse]:
+        return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
+
+    async def get_students_by_year(self, anio: int) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
             SELECT 
@@ -171,7 +167,7 @@ class dashboardAdminRepository:
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
-                a.generada_en AS ultima_fecha_recalculo
+                s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
@@ -189,9 +185,9 @@ class dashboardAdminRepository:
             anio
         )
 
-        return [EstudianteDashboardResponse(**dict(row)) for row in rows]
-    
-    async def get_students_by_risk(self, risk_level: str) -> list[EstudianteDashboardResponse]:
+        return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
+
+    async def get_students_by_risk(self, risk_level: str) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
                 SELECT 
@@ -202,7 +198,7 @@ class dashboardAdminRepository:
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
-                a.generada_en AS ultima_fecha_recalculo
+                s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
             INNER JOIN (
@@ -217,22 +213,22 @@ class dashboardAdminRepository:
             ) a ON e.id = a.estudiante_id
             WHERE 
                 CASE
-                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) THEN 'rojo'
-                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id = 1)  THEN 'amarillo'
+                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) THEN 'rojo'
+                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1)  THEN 'amarillo'
                     ELSE 'verde'
                 END = $1
             """,
             risk_level
         )
 
-        return [EstudianteDashboardResponse(**dict(row)) for row in rows]
-    
-    async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardResponse | None:
+        return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
+
+    async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow("""
             SELECT
                 e.nombre,
                 e.apellido,
-                e.anio_ingreso::text AS anio,
+                e.anio_ingreso AS anio,
                 c.nombre AS carrera,
                 COALESCE(aprobadas.materias_aprobadas, 0) AS materias_aprobadas,
                 COALESCE(totales.materias_totales, 0) AS materias_totales,
@@ -263,9 +259,9 @@ class dashboardAdminRepository:
             ) totales ON totales.carrera_id = e.carrera_id
             WHERE e.legajo = $1
         """, legajo)
-        return GeneralEstudianteDashboardResponse(**dict(row)) if row else None
+        return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     
-    async def chronological_alerts(self, estudiante_id: str) -> list[dict]:
+    async def chronological_alerts(self, estudiante_id: str) -> list[EventoCronologicoResponse]:
         rows = await self.conn.fetch(
             """
             SELECT 
@@ -289,171 +285,97 @@ class dashboardAdminRepository:
             """,
             estudiante_id
         )
-        return [dict(row) for row in rows]
+        return [EventoCronologicoResponse(**dict(row)) for row in rows]
     
-    async def create_intervention(self, alerta_id: int, tutor_id: int, tipo: str, descripcion: str, fecha: datetime.date, resultado: str = 'neutro') -> dict:
-        row = await self.conn.fetchrow(
-            """
-            INSERT INTO intervenciones (alerta_id, tutor_id, tipo, resultado, descripcion, fecha)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *
-            """,
-            alerta_id, tutor_id, tipo, resultado, descripcion, fecha
-        )
-        return dict(row)
-    
-    async def change_state_alert(self, alerta_id: int, new_state: str) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            UPDATE alertas
-            SET 
-            estado = $1,
-            fecha_cierre = CASE WHEN $1 = ANY(ARRAY['resuelta', 'falso_positivo']) THEN NOW() ELSE fecha_cierre END
-            WHERE id = $2
-            RETURNING *
-            """,
-            new_state, alerta_id
-        )
-        return dict(row)
-    
-    async def create_interview(self, alerta_id: int, tutor_id: int, estudiante_id: int, fecha_propuesta: datetime, modalidad: str,  notas_previas: str, intervencion_id: int) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            INSERT INTO entrevista_planificada 
-                (alerta_id, tutor_id, estudiante_id, fecha_propuesta, modalidad, notas_previas, estado, intervencion_id)
-            VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $7)
-            RETURNING *
-            """,
-            alerta_id, tutor_id, estudiante_id, fecha_propuesta, modalidad, notas_previas, intervencion_id
-        )
+    # async def get_answers(self, estudiante_id: int) -> list[PreguntasRespuestasResponse]:
+    #     rows = await self.conn.fetch(
+    #         """
+    #         SELECT 
+    #             p.texto AS pregunta,
+    #             r.texto_libre AS respuesta
+    #         FROM respuesta r
+    #         INNER JOIN preguntas p ON r.pregunta_id = p.id
+    #         INNER JOIN asignacion_encuestas ae ON r.asignacion_id = ae.id
+    #         WHERE ae.estudiante_id = $1
+    #         """,
+    #         estudiante_id
+    #     )
+    #     return [PreguntasRespuestasResponse(**dict(row)) for row in rows]
 
-        return dict(row)
-    
-    async def change_state_interview(self, entrevista_id: int, new_state: str) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            UPDATE entrevista_planificada
-            SET estado = $1
-            WHERE id = $2
-            RETURNING *
-            """,
-            new_state, entrevista_id
-        )
-        return dict(row)
+    # async def create_full_survey(self, data: EncuestaCreateFull) -> dict:
+    #     async with self.conn.transaction():
+    #         # Crear la encuesta
+    #         encuesta = await self.conn.fetchrow(
+    #             """
+    #             INSERT INTO encuestas (titulo, estado, modalidad, fecha_desde, fecha_hasta, periodica, frecuencia_dias)
+    #             VALUES ($1, 'borrador', $2, $3, $4, $5, $6)
+    #             RETURNING *
+    #             """,
+    #             data.titulo, data.modalidad, data.fecha_desde,
+    #             data.fecha_hasta, data.periodica, data.frecuencia_dias
+    #         )
+
+    #         preguntas_creadas = []
+
+    #         for pregunta in data.preguntas:
+    #             # Crear cada pregunta
+    #             p = await self.conn.fetchrow(
+    #                 """
+    #                 INSERT INTO preguntas (encuesta_id, texto, tipo, orden, obligatoria, condicion_pregunta_id)
+    #                 VALUES ($1, $2, $3, $4, $5, $6)
+    #                 RETURNING *
+    #                 """,
+    #                 encuesta["id"], pregunta.texto, pregunta.tipo,
+    #                 pregunta.orden, pregunta.obligatoria, pregunta.condicion_pregunta_id
+    #             )
+
+    #             opciones_creadas = []
+
+    #             for opcion in pregunta.opciones:
+    #                 # Crear opciones si la pregunta las tiene
+    #                 o = await self.conn.fetchrow(
+    #                     """
+    #                     INSERT INTO opcion_respuesta (pregunta_id, texto, orden)
+    #                     VALUES ($1, $2, $3)
+    #                     RETURNING *
+    #                     """,
+    #                     p["id"], opcion.texto, opcion.orden
+    #                 )
+    #                 opciones_creadas.append(dict(o))
+
+    #             preguntas_creadas.append({**dict(p), "opciones": opciones_creadas})
+
+    #         return {**dict(encuesta), "preguntas": preguntas_creadas}
         
-    async def reschedule_interview(self, entrevista_id: int, new_date: datetime) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            UPDATE entrevista_planificada
-            SET fecha_propuesta = $1
-            WHERE id = $2
-            RETURNING *
-            """,
-            new_date, entrevista_id
-        )
-        return dict(row)
-    
-    async def update_interview(self, entrevista_id: int, new_state: str) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            UPDATE entrevista_planificada
-            SET estado = $1
-            WHERE id = $2
-            RETURNING *
-            """,
-            new_state, entrevista_id
-        )
-        return dict(row)
-    
-    async def get_answers(self, estudiante_id: int) -> list[QuestionAnswersResponse]:
-        rows = await self.conn.fetch(
-            """
-            SELECT 
-                p.texto AS pregunta,
-                r.texto_libre AS respuesta
-            FROM respuesta r
-            INNER JOIN preguntas p ON r.pregunta_id = p.id
-            INNER JOIN asignacion_encuestas ae ON r.asignacion_id = ae.id
-            WHERE ae.estudiante_id = $1
-            """,
-            estudiante_id
-        )
-        return [QuestionAnswersResponse(**dict(row)) for row in rows]
-    
-    async def create_full_survey(self, data: EncuestaCreateFull) -> dict:
-        async with self.conn.transaction():
-            # Crear la encuesta
-            encuesta = await self.conn.fetchrow(
-                """
-                INSERT INTO encuestas (titulo, estado, modalidad, fecha_desde, fecha_hasta, periodica, frecuencia_dias)
-                VALUES ($1, 'borrador', $2, $3, $4, $5, $6)
-                RETURNING *
-                """,
-                data.titulo, data.modalidad, data.fecha_desde,
-                data.fecha_hasta, data.periodica, data.frecuencia_dias
-            )
-
-            preguntas_creadas = []
-
-            for pregunta in data.preguntas:
-                # Crear cada pregunta
-                p = await self.conn.fetchrow(
-                    """
-                    INSERT INTO preguntas (encuesta_id, texto, tipo, orden, obligatoria, condicion_pregunta_id)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                    RETURNING *
-                    """,
-                    encuesta["id"], pregunta.texto, pregunta.tipo,
-                    pregunta.orden, pregunta.obligatoria, pregunta.condicion_pregunta_id
-                )
-
-                opciones_creadas = []
-
-                for opcion in pregunta.opciones:
-                    # Crear opciones si la pregunta las tiene
-                    o = await self.conn.fetchrow(
-                        """
-                        INSERT INTO opcion_respuesta (pregunta_id, texto, orden)
-                        VALUES ($1, $2, $3)
-                        RETURNING *
-                        """,
-                        p["id"], opcion.texto, opcion.orden
-                    )
-                    opciones_creadas.append(dict(o))
-
-                preguntas_creadas.append({**dict(p), "opciones": opciones_creadas})
-
-            return {**dict(encuesta), "preguntas": preguntas_creadas}
+    # async def change_status_survey(self, encuesta_id: int, new_status: str) -> dict:
+    #     row = await self.conn.fetchrow(
+    #         """
+    #         UPDATE encuestas
+    #         SET estado = $1
+    #         WHERE id = $2
+    #         RETURNING *
+    #         """,
+    #         new_status, encuesta_id
+    #     )
+    #     return dict(row)
         
-    async def change_status_survey(self, encuesta_id: int, new_status: str) -> dict:
-        row = await self.conn.fetchrow(
-            """
-            UPDATE encuestas
-            SET estado = $1
-            WHERE id = $2
-            RETURNING *
-            """,
-            new_status, encuesta_id
-        )
-        return dict(row)
-        
-    async def assign_survey(self, data: AsignacionEncuestaCreate) -> AsignacionEncuestaResponse:
-        row = await self.conn.fetchrow(
-            """
-            INSERT INTO asignacion_encuestas (encuesta_id, estudiante_id, fecha_asignacion, completada)
-            VALUES ($1, $2, NOW(), false)
-            RETURNING 
-                id AS asignacion_id,
-                encuesta_id,
-                (SELECT titulo FROM encuestas WHERE id = $1) AS titulo,
-                (SELECT modalidad FROM encuestas WHERE id = $1) AS modalidad,
-                fecha_asignacion,
-                completada,
-                fecha_completada
-            """,
-            data.encuesta_id, data.estudiante_id
-        )
-        return AsignacionEncuestaResponse(**dict(row))
+    # async def assign_survey(self, data: AsignacionEncuestaCreate) -> AsignacionEncuestaResponse:
+    #     row = await self.conn.fetchrow(
+    #         """
+    #         INSERT INTO asignacion_encuestas (encuesta_id, estudiante_id, fecha_asignacion, completada)
+    #         VALUES ($1, $2, NOW(), false)
+    #         RETURNING 
+    #             id AS asignacion_id,
+    #             encuesta_id,
+    #             (SELECT titulo FROM encuestas WHERE id = $1) AS titulo,
+    #             (SELECT modalidad FROM encuestas WHERE id = $1) AS modalidad,
+    #             fecha_asignacion,
+    #             completada,
+    #             fecha_completada
+    #         """,
+    #         data.encuesta_id, data.estudiante_id
+    #     )
+    #     return AsignacionEncuestaResponse(**dict(row))
     
     async def change_roles(self, user_id: int, new_role: str) -> dict:
         row = await self.conn.fetchrow(

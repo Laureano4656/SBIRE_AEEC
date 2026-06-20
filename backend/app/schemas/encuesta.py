@@ -36,3 +36,28 @@ class EncuestaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class OpcionResponse(BaseModel):
+    id: int
+    texto: str
+    orden: int
+
+class PreguntaResponse(BaseModel):
+    id: int
+    texto: str
+    tipo: str
+    orden: int
+    obligatoria: bool
+    condicion_pregunta_id: int | None
+    opciones: list[OpcionResponse] = []
+
+class EncuestaListResponse(BaseModel):
+    id: int
+    titulo: str
+    modalidad: Literal["unica_ingreso", "periodica", "aleatoria"]
+    preguntas: list[PreguntaResponse]
+        
+    
+
+    class Config:
+        from_attributes = True

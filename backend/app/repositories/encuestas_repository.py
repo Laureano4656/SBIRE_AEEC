@@ -1,11 +1,47 @@
+from dataclasses import fields
+
 from app.models import RespuestaItem
-from app.models import EncuestaResponse
 from app.models import SubmitEncuestaRequest
 from app.models import AsignacionEncuestaResponse
 from app.models import AsignacionEncuestaCreate
+from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 import asyncpg
 
-async def get_survey_with_questions(self, encuesta_id: int) -> EncuestaResponse | None:
+from app.schemas.encuesta import EncuestaCreate, EncuestaListResponse, EncuestaResponse, EncuestaUpdate
+
+
+class EncuestasRepository(CrudRepository[EncuestaResponse]):
+    def __init__(self, conn: asyncpg.Connection) -> None:
+        super().__init__(
+            conn,
+            EncuestaResponse,
+            CrudTableConfig(
+                table_name="encuestas",
+                columns=(
+                    "id", "titulo", "estado", "modalidad", "fecha_desde", "fecha_hasta",
+                    "periodica", "frecuencia_dias"
+                ),
+                order_by="id DESC"
+            )
+        )
+    
+    async def create_encuesta(self, encuesta: EncuestaCreate) -> EncuestaResponse:
+        return await self.create(
+            titulo=encuesta.titulo,
+            estado=encuesta.estado,
+            modalidad=encuesta.modalidad,
+            fecha_desde=encuesta.fecha_desde,
+            fecha_hasta=encuesta.fecha_hasta,
+            periodica=encuesta.periodica,
+            frecuencia_dias=encuesta.frecuencia_dias
+        )
+        
+    async def update_encuesta(self, encuesta_id: int, encuesta: EncuestaUpdate) -> EncuestaResponse:
+        fields = encuesta.model_dump(exclude_none=True)
+        return await self.update(encuesta_id, **fields)
+    
+
+async def get_survey_with_questions(self, encuesta_id: int) -> EncuestaListResponse | None:
         # Trae la encuesta con todas sus preguntas y opciones
         rows = await self.conn.fetch(
             """
@@ -70,65 +106,4 @@ async def get_survey_with_questions(self, encuesta_id: int) -> EncuestaResponse 
             key=lambda p: p["orden"]
         )
 
-        return EncuestaResponse(**encuesta)
-
-async def submit_survey_answers(self, asignacion_id: int, respuestas: list[RespuestaItem]) -> None:
-    async with self.conn.transaction():
-        for respuesta in respuestas:
-            await self.conn.execute(
-                """
-                INSERT INTO respuesta (asignacion_id, pregunta_id, opcion_id, texto_libre, fecha_respuesta)
-                VALUES ($1, $2, $3, $4, NOW())
-                """,
-                asignacion_id,
-                respuesta.pregunta_id,
-                respuesta.opcion_id,
-                respuesta.texto_libre
-            )
-
-        await self.conn.execute(
-            """
-            UPDATE asignacion_encuestas
-            SET completada = true, fecha_completada = NOW()
-            WHERE id = $1
-            """,
-            asignacion_id
-        )
-
-async def get_assigned_surveys(self, estudiante_id: int) -> list[AsignacionEncuestaResponse]:
-    rows = await self.conn.fetch(
-        """
-        SELECT 
-            a.id AS asignacion_id,
-            e.id AS encuesta_id,
-            e.titulo,
-            e.modalidad,
-            a.fecha_asignacion,
-            a.completada,
-            a.fecha_completada
-        FROM asignacion_encuestas a
-        INNER JOIN encuestas e ON a.encuesta_id = e.id
-        WHERE a.estudiante_id = $1
-        ORDER BY a.fecha_asignacion DESC
-        """,
-        estudiante_id
-    )
-    return [AsignacionEncuestaResponse(**dict(row)) for row in rows]
-
-async def assign_survey(self, data: AsignacionEncuestaCreate) -> AsignacionEncuestaResponse:
-    row = await self.conn.fetchrow(
-        """
-        INSERT INTO asignacion_encuestas (encuesta_id, estudiante_id, fecha_asignacion, completada)
-        VALUES ($1, $2, NOW(), false)
-        RETURNING 
-            id AS asignacion_id,
-            encuesta_id,
-            (SELECT titulo FROM encuestas WHERE id = $1) AS titulo,
-            (SELECT modalidad FROM encuestas WHERE id = $1) AS modalidad,
-            fecha_asignacion,
-            completada,
-            fecha_completada
-        """,
-        data.encuesta_id, data.estudiante_id
-    )
-    return AsignacionEncuestaResponse(**dict(row))
+        return EncuestaListResponse(**encuesta)
