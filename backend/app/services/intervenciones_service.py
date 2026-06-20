@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 import asyncpg
 # asumo que el modelo de sqlalchemy/pydantic base se llama Intervencion
 from app.models.intervencion import Intervencion 
@@ -21,6 +23,6 @@ class IntervencionService(CrudService[Intervencion]):
         # usamos el get_by_id que heredaste del crudservice base para validar
         intervencion = await self.get_by_id(intervencion_id)
         if not intervencion:
-            raise ValueError(f"intervencion con id {intervencion_id} no encontrada")
+            raise HTTPException(status_code=404, detail=f"intervencion con id {intervencion_id} no encontrada")
             
         return await self.repo.update_intervencion(intervencion_id, resultado, descripcion)

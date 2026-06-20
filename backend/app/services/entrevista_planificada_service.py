@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 import asyncpg
 from datetime import datetime
 from app.models.entrevista_planificada import EntrevistaPlanificada 
@@ -16,17 +18,17 @@ class EntrevistaPlanificadaService(CrudService[EntrevistaPlanificada]):
     async def reprogramar_entrevista(self, entrevista_id: int, nueva_fecha: datetime) -> EntrevistaPlanificadaResponse:
         entrevista = await self.get_by_id(entrevista_id)
         if not entrevista:
-            raise ValueError("entrevista no encontrada")
+            raise HTTPException(status_code=404, detail=f"entrevista con id {entrevista_id} no encontrada")
         return await self.repo.reschedule_interview(entrevista_id, nueva_fecha)
 
     async def cancelar_entrevista(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
         entrevista = await self.get_by_id(entrevista_id)
         if not entrevista:
-            raise ValueError("entrevista no encontrada")
+            raise HTTPException(status_code=404, detail=f"entrevista con id {entrevista_id} no encontrada")
         return await self.repo.cancel_interview(entrevista_id)
 
     async def completar_entrevista(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
         entrevista = await self.get_by_id(entrevista_id)
         if not entrevista:
-            raise ValueError("entrevista no encontrada")
+            raise HTTPException(status_code=404, detail=f"entrevista con id {entrevista_id} no encontrada")
         return await self.repo.complete_interview(entrevista_id)
