@@ -1,25 +1,42 @@
+import json
 import asyncpg
 from http.client import HTTPException
+from typing import Any
+
 from app.models.pregunta import Pregunta
 from app.services.crud_service import CrudService
-from app.repositories.pregunta_repository import PreguntaRepository
-from app.schemas.pregunta import PreguntaCreate, PreguntaUpdate, PreguntaResponse
 
 class PreguntaService(CrudService[Pregunta]):
     def __init__(self, conn: asyncpg.Connection) -> None:
-        # instanciamos tu repo personalizado
-        repo_custom = PreguntaRepository(conn)
-        
-        # se lo inyectamos al crudservice base
-        super().__init__(repo_custom, "Pregunta")
+        super().__init__(
+            CrudRepository(
+                conn,
+                Pregunta,
+                CrudTableConfig(
+                    table_name="pregunta", # Ojo acá: asegurate que coincida con el nombre en tu BD ("pregunta" o "preguntas")
+                    columns=(
+                        "id",
+                        "indicador_id",
+                        "carrera_id",
+                        "texto_pregunta",
+                        "evento_disparador",
+                        "tipo_pregunta",
+                        "configuracion_riesgo",
+                        "activa",
+                    ),
+                    active_column="activa" # Esto engancha perfecto con tu CrudRepository para el borrado lógico
+                ),
+            ),
+            "Pregunta",
+        )
 
-    async def crear_pregunta(self, data: PreguntaCreate) -> PreguntaResponse:
-        return await self.repo.create_pregunta(data)
+    # Sobrescribimos para serializar el JSON antes de mandarlo al Repositorio Genérico
+    async def crear(self, **kwargs: Any) -> Pregunta:
+        if "configuracion_riesgo" in kwargs and kwargs["configuracion_riesgo"] is not None:
+            kwargs["configuracion_riesgo"] = json.dumps(kwargs["configuracion_riesgo"])
+        return await super().crear(**kwargs)
 
-    async def actualizar_pregunta(self, pregunta_id: int, data: PreguntaUpdate) -> PreguntaResponse:
-        # reutilizamos el get_by_id del padre para validar que la pregunta exista
-        pregunta_existente = await self.get_by_id(pregunta_id)
-        if not pregunta_existente:
-            raise HTTPException(status_code=404, detail=f"pregunta con id {pregunta_id} no encontrada")
-
-        return await self.repo.update_pregunta(pregunta_id, data)
+    async def actualizar(self, id: int, **kwargs: Any) -> Pregunta:
+        if "configuracion_riesgo" in kwargs and kwargs["configuracion_riesgo"] is not None:
+            kwargs["configuracion_riesgo"] = json.dumps(kwargs["configuracion_riesgo"])
+        return await super().actualizar(id, **kwargs)

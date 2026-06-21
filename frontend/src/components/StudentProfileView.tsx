@@ -296,9 +296,6 @@ export default function StudentProfileView({
                           Final
                         </th>
                         <th className="p-3 border-b border-brand-outline-variant text-center">
-                          Asistencia
-                        </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
                           Estado
                         </th>
                       </tr>
@@ -322,17 +319,6 @@ export default function StudentProfileView({
                           </td>
                           <td className="p-3 text-center font-bold text-rose-900">
                             {sub.finalGrade}
-                          </td>
-                          <td className="p-3 text-center font-semibold">
-                            <span
-                              className={
-                                sub.assistance < 75
-                                  ? "text-brand-error"
-                                  : "text-[#006a6a]"
-                              }
-                            >
-                              {sub.assistance}%
-                            </span>
                           </td>
                           <td className="p-3 text-center">
                             <span

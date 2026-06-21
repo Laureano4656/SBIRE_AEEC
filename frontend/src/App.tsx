@@ -4,6 +4,7 @@
  */
 
 import { useState } from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import type { Student, TimelineEvent, Interview, Survey } from "./types.ts";
 import {
   INITIAL_STUDENTS,
@@ -11,15 +12,13 @@ import {
   INITIAL_SURVEYS,
   INITIAL_TIMELINE_SOFIA,
 } from "./data.ts";
-import LoginScreen from "./components/LoginScreen.tsx";
+import ValidationScreen from "./components/ValidationScreen.tsx";
 import AdminPanel from "./components/AdminPanel.tsx";
 import StudentPanel from "./components/StudentPanel.tsx";
 import TeacherPanel from "./components/DocentePanel.tsx";
-export default function App() {
-  const [currentRole, setCurrentRole] = useState<
-    "login" | "admin" | "student" | "teacher"
-  >("login");
+import TutorPanel from "./components/TutorPanel.tsx";
 
+export default function App() {
   // Shared Global State for exact real-time response feeling
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [interviews, setInterviews] = useState<Interview[]>(INITIAL_INTERVIEWS);
@@ -36,12 +35,8 @@ export default function App() {
     mateo_alvarado: [],
   });
 
-  const handleLogin = (role: "admin" | "student" | "teacher") => {
-    setCurrentRole(role);
-  };
-
   const handleLogout = () => {
-    setCurrentRole("login");
+    navigate("/");
   };
 
   const handleUpdateStudent = (updatedStudent: Student) => {
@@ -95,25 +90,41 @@ export default function App() {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-brand-surface font-sans antialiased">
-      {currentRole === "login" && <LoginScreen onLogin={handleLogin} />}
+    <Routes>
+      <Route
+        path="/"
+        element={<ValidationScreen onValidated={() => navigate("/admin")} />}
+      />
 
-      {currentRole === "admin" && (
-        <AdminPanel
-          students={students}
-          interviews={interviews}
-          surveys={surveys}
-          timelineEventsMap={timelineEventsMap}
-          onUpdateStudent={handleUpdateStudent}
-          onAddTimelineEvent={handleAddTimelineEvent}
-          onLogout={handleLogout}
-        />
-      )}
+      <Route
+        path="/admin"
+        element={
+          <AdminPanel
+            interviews={interviews}
+            onAddTimelineEvent={handleAddTimelineEvent}
+            onLogout={handleLogout}
+            onUpdateStudent={handleUpdateStudent}
+            students={students}
+            surveys={surveys}
+            timelineEventsMap={timelineEventsMap}
+          />
+        }
+      />
 
-      {currentRole === "student" && <StudentPanel onLogout={handleLogout} />}
+      <Route
+        path="/student"
+        element={<StudentPanel onLogout={handleLogout} />}
+      />
 
-      {currentRole === "teacher" && <TeacherPanel onLogout={handleLogout} />}
-    </div>
+      <Route
+        path="/teacher"
+        element={<TeacherPanel onLogout={handleLogout} />}
+      />
+
+      <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
+    </Routes>
   );
 }

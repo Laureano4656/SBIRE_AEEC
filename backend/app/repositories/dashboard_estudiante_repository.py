@@ -2,6 +2,7 @@ import asyncpg
 
 from app.schemas.asignacion_encuesta import AsignacionEncuestaResponse
 from app.schemas.encuesta import EncuestaResponse
+from app.schemas.materia import MateriaListResponse
 from app.schemas.pregunta import PreguntaResponse
 from app.schemas.respuesta import RespuestaItem, RespuestaResponse
 from app.schemas.usuario import UsuarioResponse
@@ -123,7 +124,57 @@ class dashboardEstudiantesRepository:
     async def get_preguntas_respuestas(self, estudiante_id: int) -> list[PreguntaResponse,RespuestaResponse]:
         pass
         
-        
+    async def materias_aprobadas(self, estudiante_id: int) -> int:
+        row = await self.conn.fetchrow(
+            """
+            SELECT COUNT(DISTINCT materia_id) AS total
+            FROM cursadas
+            WHERE estudiante_id = $1
+            AND estado = 'aprobada'
+            """,
+            estudiante_id,
+        )
+        return row["total"] if row else 0
+    
+    async def materias_totales(self, estudiante_id: int) -> int:
+        row = await self.conn.fetchrow(
+            """
+            SELECT COUNT(DISTINCT m.id) AS total
+            FROM plan_estudios pe
+            INNER JOIN materias m ON m.plan_id = pe.id
+            INNER JOIN estudiantes e ON e.carrera_id = pe.carrera_id
+            WHERE pe.activo = TRUE
+            AND e.id = $1
+            AND pe.anio_vigencia = (
+                SELECT MAX(anio_vigencia)
+                FROM plan_estudios
+                WHERE carrera_id = e.carrera_id
+                AND anio_vigencia <= e.anio_ingreso
+                AND activo = TRUE
+            )
+            """,
+            estudiante_id,
+        )
+        return row["total"] if row else 0
+
+    async def listado_materias_cursadas(self, estudiante_id: int) -> list[MateriaListResponse]:
+        rows = await self.conn.fetch(
+            """
+            SELECT
+                m.id,
+                m.nombre,
+                m.codigo,
+                m.cuatrimestre_sugerido,
+                m.es_basica_critica,
+                c.estado
+            FROM cursadas c
+            INNER JOIN materias m ON m.id = c.materia_id
+            WHERE c.estudiante_id = $1
+            ORDER BY m.cuatrimestre_sugerido, m.nombre
+            """,
+            estudiante_id,
+        )
+        return [MateriaListResponse(**dict(row)) for row in rows]
 
     async def encuestas_sin_responder(self, estudiante_id: int) -> int:
         row = await self.conn.fetchrow(

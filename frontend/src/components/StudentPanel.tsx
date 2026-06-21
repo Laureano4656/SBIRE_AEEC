@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import type { Student } from "../types.ts";
+import React, { useEffect, useRef, useState } from "react";
 import { SUBJECTS_MATEO } from "../data.ts";
 
 interface StudentPanelProps {
@@ -24,10 +23,23 @@ interface StudentSurvey {
   title: string;
   description: string;
   category: string;
-  dueDate: string;
+  /** Solo aplica a encuestas pendientes; las completadas usan completedAt. */
+  dueDate?: string;
   status: "PENDIENTE" | "COMPLETADA";
   completedAt?: string;
   questions: Question[];
+}
+
+interface ChatMessage {
+  id: number;
+  sender: "user" | "tutor";
+  text: string;
+  time: string;
+}
+
+interface ToastMessage {
+  text: string;
+  variant: "success" | "error" | "info";
 }
 
 export default function StudentPanel({ onLogout }: StudentPanelProps) {
@@ -36,7 +48,10 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
   >("trayectoria");
   const [showTutorChat, setShowTutorChat] = useState(false);
 
-  // Dynamic surveys state list
+  // Dynamic surveys state list.
+  // FIX: las preguntas "select" de encuestas PENDIENTES ahora arrancan sin
+  // valor (""). Antes venían precargadas con una opción ya elegida, lo que
+  // permitía "enviar" la encuesta sin que el estudiante eligiera nada.
   const [surveys, setSurveys] = useState<StudentSurvey[]>([
     {
       id: "enc_infra_2026",
@@ -53,7 +68,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             "¿Cómo calificarías la infraestructura (aulas híbridas y wifi) de la Facultad de Ingeniería?",
           type: "select",
           options: ["excelente", "buena", "regular", "insuficiente"],
-          value: "excelente",
+          value: "",
         },
         {
           id: "infra_q2",
@@ -61,7 +76,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             "¿Cuentas con conflictos horarios con tu empleo actual para rendir exámenes prácticos?",
           type: "select",
           options: ["si", "no", "no_aplica"],
-          value: "no",
+          value: "",
         },
         {
           id: "infra_q3",
@@ -90,7 +105,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             "Más de 40 horas",
             "No trabajo actualmente",
           ],
-          value: "No trabajo actualmente",
+          value: "",
         },
         {
           id: "lab_q2",
@@ -98,7 +113,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             "¿Tu empleador respeta el otorgamiento de licencias por examen oficial?",
           type: "select",
           options: ["Siempre", "A veces", "Nunca", "No Aplica"],
-          value: "No Aplica",
+          value: "",
         },
         {
           id: "lab_q3",
@@ -115,7 +130,6 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
       description:
         "Evaluación directa de la calidad del asesoramiento tutorial recibido durante tu trayecto por materias críticas del primer tramo.",
       category: "Acompañamiento",
-      dueDate: "Completada",
       status: "COMPLETADA",
       completedAt: "12/06/2026",
       questions: [
@@ -147,22 +161,21 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
     },
   ]);
 
-  // Active survey being completed or inspected in modal
+  // Active survey being completed or inspected in modal.
   const [selectedSurveyToFill, setSelectedSurveyToFill] =
     useState<StudentSurvey | null>(null);
   const [selectedSurveyToInspect, setSelectedSurveyToInspect] =
     useState<StudentSurvey | null>(null);
 
-  // Active survey tab ('pendientes' | 'completadas')
+  // Active survey tab ('pendientes' | 'completadas').
   const [activeSurveyTab, setActiveSurveyTab] = useState<
     "pendientes" | "completadas"
   >("pendientes");
 
-  // Chat simulator states
-  const [chatMessages, setChatMessages] = useState<
-    Array<{ sender: "user" | "tutor"; text: string; time: string }>
-  >([
+  // Chat simulator state.
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
+      id: 0,
       sender: "tutor",
       text: "¡Hola Mateo! Soy tu Tutor Académico asignado (Dr. Juan Pérez). Veo que vienes con un excelente progreso. ¿En qué te puedo asesorar hoy?",
       time: "12:00",
@@ -170,88 +183,151 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
   ]);
   const [userMsg, setUserMsg] = useState("");
 
-  // Handle saving the dynamic answers of a survey
+  // FIX: in-app toast en lugar de alert() bloqueante del navegador.
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  // Ids incrementales para mensajes de chat (en vez de usar el index como key).
+  const nextMessageId = useRef(1);
+  // Referencia al timeout de la respuesta simulada del tutor, para poder
+  // cancelarlo si el componente se desmonta o si el usuario envía otro
+  // mensaje antes de que llegue la respuesta anterior.
+  const chatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (
+    text: string,
+    variant: ToastMessage["variant"] = "info",
+  ) => {
+    setToast({ text, variant });
+  };
+
+  // Auto-ocultar el toast.
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  // FIX: limpiar el timeout pendiente del chat al desmontar el componente,
+  // para evitar el warning "no se puede actualizar un componente desmontado".
+  useEffect(() => {
+    return () => {
+      if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+    };
+  }, []);
+
+  // Cerrar cualquier modal/drawer abierto con la tecla Escape.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (selectedSurveyToFill) setSelectedSurveyToFill(null);
+      else if (selectedSurveyToInspect) setSelectedSurveyToInspect(null);
+      else if (showTutorChat) setShowTutorChat(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedSurveyToFill, selectedSurveyToInspect, showTutorChat]);
+
+  // Handle saving the dynamic answers of a survey.
   const handleSurveyOptionChange = (questionId: string, newValue: string) => {
     if (!selectedSurveyToFill) return;
-    const updatedQuestions = selectedSurveyToFill.questions.map((q) => {
-      if (q.id === questionId) {
-        return { ...q, value: newValue };
-      }
-      return q;
-    });
+    const updatedQuestions = selectedSurveyToFill.questions.map((q) =>
+      q.id === questionId ? { ...q, value: newValue } : q,
+    );
     setSelectedSurveyToFill({
       ...selectedSurveyToFill,
       questions: updatedQuestions,
     });
   };
 
-  // Submit survey responses
+  // Submit survey responses.
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSurveyToFill) return;
 
-    // Update global state with the completed survey data
+    // FIX: validar que todas las preguntas de selección tengan una
+    // respuesta antes de permitir el envío. Las preguntas de texto libre
+    // ("Observaciones") quedan opcionales a propósito.
+    const missingAnswer = selectedSurveyToFill.questions.find(
+      (q) => q.type === "select" && !q.value,
+    );
+    if (missingAnswer) {
+      showToast(
+        "Faltan preguntas por responder. Revisá el formulario antes de enviarlo.",
+        "error",
+      );
+      return;
+    }
+
     setSurveys((prev) =>
-      prev.map((s) => {
-        if (s.id === selectedSurveyToFill.id) {
-          return {
-            ...s,
-            status: "COMPLETADA",
-            completedAt: new Date().toLocaleDateString("es-AR"),
-            questions: selectedSurveyToFill.questions,
-          };
-        }
-        return s;
-      }),
+      prev.map((s) =>
+        s.id === selectedSurveyToFill.id
+          ? {
+              ...s,
+              status: "COMPLETADA",
+              completedAt: new Date().toLocaleDateString("es-AR"),
+              questions: selectedSurveyToFill.questions,
+            }
+          : s,
+      ),
     );
 
     setSelectedSurveyToFill(null);
-    alert(
+    showToast(
       "¡Encuesta enviada exitosamente! Tu aporte ayuda a perfeccionar las trayectorias de la Facultad de Ingeniería.",
+      "success",
     );
   };
 
   const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userMsg.trim()) return;
+    const trimmed = userMsg.trim();
+    if (!trimmed) return;
 
-    const newMsgs = [
-      ...chatMessages,
-      { sender: "user" as const, text: userMsg, time: "Ahora" },
-    ];
-    setChatMessages(newMsgs);
-    const typed = userMsg;
+    const userMessageId = nextMessageId.current++;
+    setChatMessages((prev) => [
+      ...prev,
+      { id: userMessageId, sender: "user", text: trimmed, time: "Ahora" },
+    ]);
     setUserMsg("");
 
-    // Simulated tutor response based on keywords
-    setTimeout(() => {
+    // Si había una respuesta simulada pendiente, la cancelamos para no
+    // duplicar mensajes del tutor.
+    if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+
+    // Simulated tutor response based on keywords.
+    chatTimeoutRef.current = setTimeout(() => {
+      const lower = trimmed.toLowerCase();
       let responseText =
         "Comprendo tu inquietud. Registré tu consulta académica. Nos vemos el próximo lunes en el horario de tutoría para repasar las opciones de becas y correlatividades.";
-      if (
-        typed.toLowerCase().includes("hola") ||
-        typed.toLowerCase().includes("saludo")
-      ) {
+
+      if (lower.includes("hola") || lower.includes("saludo")) {
         responseText =
           "¡Hola Mateo! Espero que estés muy bien. ¿Tienes alguna duda sobre tus cursos actuales?";
       } else if (
-        typed.toLowerCase().includes("dificultad") ||
-        typed.toLowerCase().includes("complicado") ||
-        typed.toLowerCase().includes("rendimiento")
+        lower.includes("dificultad") ||
+        lower.includes("complicado") ||
+        lower.includes("rendimiento")
       ) {
         responseText =
           "Entiendo, Mateo. No te preocupes. Recuerda que contamos con clases de apoyo los jueves del Departamento de Ciencias Básicas para Física II y Análisis Matemático II.";
       } else if (
-        typed.toLowerCase().includes("entrevista") ||
-        typed.toLowerCase().includes("reunion") ||
-        typed.toLowerCase().includes("hablar")
+        lower.includes("entrevista") ||
+        lower.includes("reunion") ||
+        lower.includes("hablar")
       ) {
         responseText =
           "Excelente. Te propongo agendar una entrevista de manera presencial. ¿Te queda cómodo el jueves a las 11:00 hs?";
       }
 
+      const tutorMessageId = nextMessageId.current++;
       setChatMessages((prev) => [
         ...prev,
-        { sender: "tutor" as const, text: responseText, time: "Ahora" },
+        {
+          id: tutorMessageId,
+          sender: "tutor",
+          text: responseText,
+          time: "Ahora",
+        },
       ]);
     }, 1000);
   };
@@ -261,6 +337,37 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
   return (
     <div className="min-h-screen flex text-slate-800 bg-slate-50 font-sans">
+      {/* Toast de notificaciones (reemplaza a los alert() bloqueantes) */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed top-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-xs font-bold shadow-lg flex items-start gap-2 animate-fade-in ${
+            toast.variant === "success"
+              ? "bg-emerald-600 text-white"
+              : toast.variant === "error"
+                ? "bg-red-600 text-white"
+                : "bg-slate-800 text-white"
+          }`}
+        >
+          <span className="material-symbols-outlined text-base">
+            {toast.variant === "success"
+              ? "check_circle"
+              : toast.variant === "error"
+                ? "error"
+                : "info"}
+          </span>
+          <span className="leading-relaxed">{toast.text}</span>
+          <button
+            onClick={() => setToast(null)}
+            aria-label="Cerrar notificación"
+            className="ml-auto -mr-1 -mt-0.5 opacity-80 hover:opacity-100 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      )}
+
       {/* Sidebar Navigation */}
       <aside className="w-64 bg-white border-r border-[#e2e8f0] flex flex-col fixed left-0 top-0 h-screen z-20">
         <div className="px-6 py-8 border-b border-[#e2e8f0] bg-slate-50">
@@ -284,6 +391,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
         <nav className="flex-1 py-6 px-4 space-y-1">
           <button
             onClick={() => setActiveMenu("trayectoria")}
+            aria-pressed={activeMenu === "trayectoria"}
             className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all rounded-xl cursor-pointer ${
               activeMenu === "trayectoria"
                 ? "text-brand-primary bg-[#eef2ff]"
@@ -296,6 +404,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
           <button
             onClick={() => setActiveMenu("encuestas")}
+            aria-pressed={activeMenu === "encuestas"}
             className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all rounded-xl cursor-pointer ${
               activeMenu === "encuestas"
                 ? "text-brand-primary bg-[#eef2ff]"
@@ -315,6 +424,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
           <button
             onClick={() => setActiveMenu("soporte")}
+            aria-pressed={activeMenu === "soporte"}
             className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all rounded-xl cursor-pointer ${
               activeMenu === "soporte"
                 ? "text-brand-primary bg-[#eef2ff]"
@@ -351,6 +461,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             <button
               onClick={onLogout}
               title="Cerrar sesión"
+              aria-label="Cerrar sesión"
               className="p-1 hover:text-red-500 text-slate-400 rounded-lg transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">logout</span>
@@ -369,44 +480,25 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                 ? "Mi Trayectoria Académica"
                 : activeMenu === "encuestas"
                   ? "Encuestas y Relevamientos"
-                  : "Asistencia y Soporte"}
+                  : "Soporte y Tutoría"}
             </h2>
           </div>
 
           <div className="flex items-center gap-6">
             <nav className="flex gap-4 text-xs font-semibold text-slate-500">
               <a
-                href="#help"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert(
-                    "Ayuda del Sistema Travesía: contacte a su tutor o use la pestaña de soporte.",
-                  );
-                }}
-                className="hover:text-brand-primary transition-colors"
-              >
-                Ayuda
-              </a>
-              <a
                 href="#docs"
                 onClick={(e) => {
                   e.preventDefault();
-                  alert("Conexión con SIU Guaraní activa.");
+                  showToast("Conexión con SIU Guaraní activa.", "info");
                 }}
                 className="hover:text-brand-primary transition-colors"
               >
-                Documentación SIU
+                Documentación
               </a>
             </nav>
 
             <div className="w-[1px] h-6 bg-slate-200"></div>
-
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <span className="text-xs font-bold text-slate-600 tracking-tight">
-                Estudiante Regular
-              </span>
-            </div>
           </div>
         </header>
 
@@ -430,27 +522,11 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                     correspondientes para recibir atención y agendar tutorías.
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    alert(
-                      "Generando archivo oficial analítico de Kardex / SIU Guaraní...",
-                    )
-                  }
-                  className="bg-brand-primary text-white hover:opacity-90 font-bold text-xs px-6 py-3 rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap self-stretch md:self-auto text-center"
-                >
-                  Ver Kardex Completo
-                </button>
               </div>
 
               {/* Three Metric Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 relative shadow-xs">
-                  <div className="absolute top-6 right-6 text-emerald-600 text-xs font-extrabold flex items-center">
-                    <span className="material-symbols-outlined text-[14px]">
-                      trending_up
-                    </span>
-                    +2.4% este mes
-                  </div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     AVANCE EN LA CARRERA
                   </span>
@@ -466,9 +542,6 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                 </div>
 
                 <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 relative shadow-xs">
-                  <div className="absolute top-6 right-6 text-brand-primary text-xs font-extrabold flex items-center bg-[#eef2ff] px-2.5 py-1 rounded-lg">
-                    Top 15% Max
-                  </div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     PROMEDIO GENERAL
                   </span>
@@ -489,195 +562,62 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                       18 / 32
                     </span>
                   </div>
-                  <div className="flex gap-1.5 mt-4">
-                    <span
-                      className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]"
-                      title="Análisis Matemático I"
-                    >
-                      AMI
-                    </span>
-                    <span
-                      className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center font-bold text-[10px]"
-                      title="Física I"
-                    >
-                      FI
-                    </span>
-                    <span
-                      className="w-6 h-6 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-[10px]"
-                      title="Química General"
-                    >
-                      QG
-                    </span>
-                    <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">
-                      +15
-                    </span>
-                  </div>
                 </div>
               </div>
 
               {/* Grid: Subjects and Widgets */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                <div className="lg:col-span-2 bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-xs">
-                  <div className="px-6 py-5 border-b border-[#e2e8f0] flex justify-between items-center bg-slate-50">
-                    <h4 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-lg text-brand-primary">
-                        menu_book
-                      </span>
-                      Mis Materias Actuales
-                    </h4>
-                    <span className="text-xs text-brand-primary font-bold">
-                      Plan de Estudios 2020
+              <div className="lg:col-span-2 bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-xs">
+                <div className="px-6 py-5 border-b border-[#e2e8f0] flex justify-between items-center bg-slate-50">
+                  <h4 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-lg text-brand-primary">
+                      menu_book
                     </span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
-                          <th className="p-4 pl-6">Materia</th>
-                          <th className="p-4 text-center">Estado</th>
-                          <th className="p-4 text-center">
-                            Calificación Parcial
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#e2e8f0]">
-                        {SUBJECTS_MATEO.map((sm, index) => (
-                          <tr
-                            key={index}
-                            className="hover:bg-slate-50 transition-colors"
-                          >
-                            <td className="p-4 pl-6">
-                              <div className="font-bold text-slate-800">
-                                {sm.name}
-                              </div>
-                              <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                                {sm.teacher}
-                              </div>
-                            </td>
-                            <td className="p-4 text-center animate-fade-in">
-                              <span className="bg-[#e0f1fe] text-[#0369a1] px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                                {sm.status}
-                              </span>
-                            </td>
-                            <td className="p-4 text-center font-bold text-slate-800 text-sm">
-                              {sm.finalGrade !== "-"
-                                ? sm.finalGrade
-                                : "Pendiente de Examen"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                    Mis Materias Actuales
+                  </h4>
+                  <span className="text-xs text-brand-primary font-bold">
+                    Plan de Estudios 2020
+                  </span>
                 </div>
 
-                {/* Right widgets */}
-                <div className="space-y-6">
-                  {/* Highlight Survey card */}
-                  {pendingSurveys.length > 0 ? (
-                    <div className="bg-gradient-to-tr from-brand-primary to-brand-secondary text-white rounded-2xl p-6 relative overflow-hidden shadow-xs space-y-4">
-                      <div className="flex items-start gap-3">
-                        <span className="material-symbols-outlined text-white text-3xl font-light">
-                          campaign
-                        </span>
-                        <div>
-                          <h4 className="font-bold text-[10px] uppercase tracking-wider opacity-80 animate-pulse">
-                            Relevamiento Activo
-                          </h4>
-                          <h5 className="font-black text-sm tracking-tight mt-0.5">
-                            {pendingSurveys[0].title}
-                          </h5>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                        Tu opinión es vital para modelar el soporte académico y
-                        compatibilidad laboral en nuestra cohorte.
-                      </p>
-
-                      <button
-                        onClick={() => {
-                          setSelectedSurveyToFill(pendingSurveys[0]);
-                        }}
-                        className="w-full bg-white text-brand-primary hover:bg-slate-50 py-3 px-4 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-                      >
-                        Completar Encuesta Ahora
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-900 text-white rounded-2xl p-6 relative overflow-hidden shadow-xs space-y-4">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-emerald-400">
-                          check_circle
-                        </span>
-                        <h4 className="font-bold text-xs uppercase tracking-wider text-emerald-400">
-                          Al día con SBIRE
-                        </h4>
-                      </div>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        ¡Felicitaciones! Has completado todas tus encuestas
-                        cargadas por tutoría para este ciclo escolar.
-                      </p>
-                      <button
-                        onClick={() => setActiveMenu("encuestas")}
-                        className="w-full bg-slate-800 text-slate-200 hover:text-white py-2.5 px-4 rounded-xl text-xs font-semibold hover:bg-slate-700 transition-all cursor-pointer"
-                      >
-                        Consultar Mi Historial
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Tutor Help Widget */}
-                  <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs space-y-4">
-                    <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-                      ¿Necesitas asistencia?
-                    </h4>
-                    <p className="text-xs text-slate-500 leading-normal font-medium">
-                      Si posees inconvenientes de salud, laborales, o académicos
-                      para cursar con regularidad, comunícate con el cuerpo
-                      docente de tutorías del Sistema Travesía.
-                    </p>
-
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => {
-                          setShowTutorChat(true);
-                          setActiveMenu("soporte");
-                        }}
-                        className="w-full flex items-center justify-between border border-slate-200 hover:bg-slate-50 p-3.5 rounded-xl text-xs font-bold text-brand-primary transition-all cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-brand-secondary text-lg">
-                            chat_bubble
-                          </span>
-                          Iniciar consulta virtual
-                        </span>
-                        <span className="material-symbols-outlined text-sm">
-                          arrow_forward
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          alert(
-                            "Solicitud enviada exitosamente. Recibirás un mail institucional en tu correo oficial con opciones horarios sugeridos.",
-                          );
-                        }}
-                        className="w-full flex items-center justify-between border border-slate-200 hover:bg-slate-50 p-3.5 rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer"
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-rose-500 text-lg">
-                            calendar_month
-                          </span>
-                          Agendar entrevista de apoyo
-                        </span>
-                        <span className="material-symbols-outlined text-sm">
-                          arrow_forward
-                        </span>
-                      </button>
-                    </div>
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
+                        <th className="p-4 pl-6">Materia</th>
+                        <th className="p-4 text-center">Estado</th>
+                        <th className="p-4 text-center">
+                          Calificación Parcial
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#e2e8f0]">
+                      {SUBJECTS_MATEO.map((sm, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="p-4 pl-6">
+                            <div className="font-bold text-slate-800">
+                              {sm.name}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                              {sm.teacher}
+                            </div>
+                          </td>
+                          <td className="p-4 text-center animate-fade-in">
+                            <span className="bg-[#e0f1fe] text-[#0369a1] px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                              {sm.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center font-bold text-slate-800 text-sm">
+                            {sm.finalGrade !== "-"
+                              ? sm.finalGrade
+                              : "Pendiente de Examen"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </>
@@ -754,8 +694,10 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               </div>
 
               {/* Tabs selector */}
-              <div className="flex border-b border-slate-200">
+              <div className="flex border-b border-slate-200" role="tablist">
                 <button
+                  role="tab"
+                  aria-selected={activeSurveyTab === "pendientes"}
                   onClick={() => setActiveSurveyTab("pendientes")}
                   className={`py-3.5 px-6 text-sm font-bold tracking-tight border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
                     activeSurveyTab === "pendientes"
@@ -774,6 +716,8 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                   )}
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeSurveyTab === "completadas"}
                   onClick={() => setActiveSurveyTab("completadas")}
                   className={`py-3.5 px-6 text-sm font-bold tracking-tight border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
                     activeSurveyTab === "completadas"
@@ -805,12 +749,6 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-extrabold uppercase bg-indigo-50 text-brand-primary px-3 py-1 rounded-lg">
                                 {ps.category}
-                              </span>
-                              <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">
-                                  calendar_today
-                                </span>
-                                Vence: {ps.dueDate}
                               </span>
                             </div>
                             <h4 className="font-bold text-slate-800 text-base leading-snug">
@@ -919,83 +857,6 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                   )}
                 </div>
               )}
-
-              {/* Informative Dashboard Segment - Institutional Impact */}
-              <div className="bg-slate-900 text-white rounded-2xl p-8 relative overflow-hidden shadow-xs space-y-6">
-                <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-brand-primary opacity-20 rounded-full blur-3xl"></div>
-                <div className="absolute -left-16 -top-16 w-64 h-64 bg-brand-secondary opacity-15 rounded-full blur-3xl"></div>
-
-                <div className="space-y-2 relative z-10">
-                  <h4 className="text-emerald-400 font-bold uppercase text-[11px] tracking-wider flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">
-                      gavel
-                    </span>
-                    Voz Estudiantil e Incidencia Real en Ingeniería
-                  </h4>
-                  <h3 className="text-xl font-bold tracking-tight text-white">
-                    ¿Cómo impactan tus respuestas en la facultad?
-                  </h3>
-                  <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-                    Las encuestas del Sistema Travesía no son solo estadísticas:
-                    activan de forma confidencial alarmas tempranas para el
-                    cuerpo de tutores y modifican políticas institucionales.
-                    Aquí algunos de tus logros colectivos recientes:
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 pt-2 border-t border-slate-800">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <span className="material-symbols-outlined text-lg">
-                        wifi_tethering
-                      </span>
-                      <h5 className="font-bold text-xs uppercase tracking-wider">
-                        Fibra Óptica en Aula Lab C
-                      </h5>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-normal">
-                      Tras las quejas recibidas en la encuesta de
-                      infraestructura anterior, se duplicó la potencia y bocas
-                      de red en laboratorios de informática del Departamento de
-                      Computación.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <span className="material-symbols-outlined text-lg">
-                        clinical_notes
-                      </span>
-                      <h5 className="font-bold text-xs uppercase tracking-wider">
-                        Tutoría AMII los Jueves
-                      </h5>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-normal">
-                      El 82% de los alumnos manifestó dificultad en el tramo de
-                      correlatividades de Análisis Matemático II. Asignamos
-                      clases de consulta adicionales dedicadas exclusivas los
-                      jueves tarde.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                      <span className="material-symbols-outlined text-lg">
-                        hourglass_bottom
-                      </span>
-                      <h5 className="font-bold text-xs uppercase tracking-wider">
-                        Flexibilidad Laboral
-                      </h5>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-normal">
-                      Se habilitó el canal de mensajería para alumnos integrados
-                      al régimen laboral, permitiendo justificar inasistencias a
-                      laboratorios obligatorios con comprobantes de trabajo
-                      oficiales.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -1012,165 +873,43 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                 <p className="text-slate-500 font-medium text-sm mt-1 leading-normal">
                   Aquí puedes acceder a las herramientas de apoyo académico del
                   Sistema Travesía. Revisa horarios de consulta, solicita
-                  asistencia especial, o abre el canal de chat con tu tutor.
+                  apoyo personalizado, o abre el canal de chat con tu tutor.
                 </p>
               </div>
 
               {/* Two Column details: Contacts and Online chat activation */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Tutor information card */}
-                  <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs space-y-6">
-                    <h4 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-brand-primary">
-                        person_search
-                      </span>
-                      Tu Tutor Académico Oficial
-                    </h4>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <img
-                        alt="Tutor de Mateo"
-                        referrerPolicy="no-referrer"
-                        className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
-                      />
-                      <div className="space-y-1">
-                        <h5 className="font-bold text-base text-slate-800">
-                          Dr. Juan Pérez
-                        </h5>
-                        <p className="text-xs text-slate-500 font-medium font-semibold">
-                          Tutor Senior - Departamento de Orientación al Alumno
-                        </p>
-                        <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 pt-1">
-                          <span className="material-symbols-outlined text-sm">
-                            mail
-                          </span>
-                          jperez@fi.mdp.edu.ar
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 text-xs">
-                      <div className="p-4 bg-slate-50 rounded-xl space-y-1">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">
-                          CONSULTAS PRESENCIALES
-                        </span>
-                        <p className="font-bold text-slate-700">
-                          Lunes y Jueves, 14:00s a 17:00 hs
-                        </p>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          Oficina de Coordinación de Alumnos (Planta Alta)
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-slate-50 rounded-xl space-y-1">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">
-                          CONSULTAS VIRTUALES
-                        </span>
-                        <p className="font-bold text-slate-700">
-                          Martes y Jueves, 10:00 a 12:00 hs
-                        </p>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          Vía Zoom / Sala de Tutorías asignada en SIU
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Program of tutoring schedule */}
-                  <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs space-y-4">
-                    <h4 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-brand-primary">
-                        group_work
-                      </span>
-                      Talleres de Nivelación e Intensivos Activos
-                    </h4>
-                    <p className="text-xs text-slate-500 font-semibold">
-                      Participa libremente de las clases de apoyo de Ciencias
-                      Básicas para resolver dudas prácticas:
-                    </p>
-
-                    <div className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                      <div className="py-3 flex justify-between items-center">
-                        <div>
-                          <p className="font-bold text-slate-800">
-                            Física II - Apoyo Práctico
-                          </p>
-                          <p className="text-[10px] text-slate-400">
-                            Docente responsable: Ing. Carlos Rossi
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-slate-600">
-                            Miércoles, 16:30 hs
-                          </p>
-                          <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md font-bold uppercase">
-                            AULA 12 - PRESENCIAL
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="py-3 flex justify-between items-center">
-                        <div>
-                          <p className="font-bold text-slate-800">
-                            Análisis Matemático II - Apoyo Teórico/Práctico
-                          </p>
-                          <p className="text-[10px] text-slate-400">
-                            Docente responsable: Dra. Laura Martínez
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-slate-600">
-                            Jueves, 14:00 hs
-                          </p>
-                          <span className="text-[10px] text-brand-primary bg-[#eef2ff] px-2 py-0.5 rounded-md font-bold uppercase">
-                            SALA ZOOM - VIRTUAL
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Live simulation section */}
-                <div className="space-y-6">
-                  <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs space-y-4 text-center">
-                    <span className="material-symbols-outlined text-4xl text-brand-secondary bg-sky-50 p-4 rounded-full">
-                      forum
+              <div className="lg:col-span-2 space-y-6">
+                {/* Tutor information card */}
+                <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs space-y-6">
+                  <h4 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-brand-primary">
+                      person_search
                     </span>
-                    <h5 className="font-bold text-base text-slate-800">
-                      Chat con tu Tutor en Vivo
-                    </h5>
-                    <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                      Comunícate directamente con el Dr. Juan Pérez por
-                      consultas académicas rápidas, sugerencias, o coordinación
-                      de entrevistas personales.
-                    </p>
-                    <button
-                      onClick={() => setShowTutorChat(true)}
-                      className="w-full bg-brand-primary text-white hover:opacity-90 py-3.5 px-4 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-base">
-                        chat_bubble
-                      </span>
-                      Abrir Canal de Mensajería
-                    </button>
-                  </div>
+                    Tu Tutor Académico Oficial
+                  </h4>
 
-                  <div className="p-6 border border-amber-200 bg-amber-50/50 rounded-2xl space-y-3">
-                    <h5 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-amber-600 text-lg">
-                        info
-                      </span>
-                      Atención Diferenciada por Trabajo
-                    </h5>
-                    <p className="text-xs text-slate-600 leading-normal font-semibold">
-                      Recuerda que si cargas cambios en tu situación laboral
-                      contractual en la pestaña <strong>"Mis Encuestas"</strong>
-                      , se reevaluará de forma automática tu trayecto para
-                      evitar inasistencias injustificadas.
-                    </p>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <img
+                      alt="Tutor de Mateo"
+                      referrerPolicy="no-referrer"
+                      className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+                    />
+                    <div className="space-y-1">
+                      <h5 className="font-bold text-base text-slate-800">
+                        Dr. Juan Pérez
+                      </h5>
+                      <p className="text-xs text-slate-500 font-semibold">
+                        Tutor Senior - Departamento de Orientación al Alumno
+                      </p>
+                      <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 pt-1">
+                        <span className="material-symbols-outlined text-sm">
+                          mail
+                        </span>
+                        jperez@fi.mdp.edu.ar
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1181,14 +920,22 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
       {/* MODAL: Active survey completion form (Dynamically rendered for each question) */}
       {selectedSurveyToFill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="survey-fill-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+        >
           <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-lg w-full p-8 space-y-6">
             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
               <div>
                 <span className="text-[10px] font-extrabold text-brand-primary uppercase bg-[#eef2ff] px-2.5 py-1 rounded-lg">
                   {selectedSurveyToFill.category}
                 </span>
-                <h2 className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight">
+                <h2
+                  id="survey-fill-title"
+                  className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight"
+                >
                   <span className="material-symbols-outlined text-2xl text-brand-secondary">
                     ballot
                   </span>
@@ -1197,6 +944,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               </div>
               <button
                 onClick={() => setSelectedSurveyToFill(null)}
+                aria-label="Cerrar formulario"
                 className="text-slate-400 hover:text-red-500 cursor-pointer"
               >
                 <span className="material-symbols-outlined">close</span>
@@ -1210,16 +958,41 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               <div className="max-h-[380px] overflow-y-auto pr-2 space-y-5">
                 {selectedSurveyToFill.questions.map((q, index) => (
                   <div key={q.id} className="space-y-2.5 pt-1">
-                    <p className="text-slate-800 font-bold block leading-relaxed">
-                      {index + 1}. {q.question}
-                    </p>
+                    {q.type === "text" ? (
+                      <label
+                        htmlFor={q.id}
+                        className="text-slate-800 font-bold block leading-relaxed"
+                      >
+                        {index + 1}. {q.question}
+                      </label>
+                    ) : (
+                      <p
+                        id={`${q.id}-label`}
+                        className="text-slate-800 font-bold block leading-relaxed"
+                      >
+                        {index + 1}. {q.question}
+                        {!q.value && (
+                          <span
+                            className="text-red-500 ml-1"
+                            aria-label="obligatorio"
+                          >
+                            *
+                          </span>
+                        )}
+                      </p>
+                    )}
 
                     {q.type === "select" && q.options && (
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                      <div
+                        role="group"
+                        aria-labelledby={`${q.id}-label`}
+                        className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1"
+                      >
                         {q.options.map((opt) => (
                           <button
                             type="button"
                             key={opt}
+                            aria-pressed={q.value === opt}
                             onClick={() => handleSurveyOptionChange(q.id, opt)}
                             className={`p-2.5 border rounded-xl font-bold capitalize transition-all text-center ${
                               q.value === opt
@@ -1235,6 +1008,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
                     {q.type === "text" && (
                       <textarea
+                        id={q.id}
                         value={q.value}
                         onChange={(e) =>
                           handleSurveyOptionChange(q.id, e.target.value)
@@ -1270,7 +1044,12 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
       {/* MODAL: Inspect Answers (Read-Only) */}
       {selectedSurveyToInspect && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="survey-inspect-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+        >
           <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-lg w-full p-8 space-y-6">
             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
               <div>
@@ -1281,7 +1060,10 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
                   Respuestas Archivadas • Enviada el{" "}
                   {selectedSurveyToInspect.completedAt}
                 </span>
-                <h2 className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight">
+                <h2
+                  id="survey-inspect-title"
+                  className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight"
+                >
                   <span className="material-symbols-outlined text-2xl text-emerald-600">
                     assignment_turned_in
                   </span>
@@ -1290,6 +1072,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               </div>
               <button
                 onClick={() => setSelectedSurveyToInspect(null)}
+                aria-label="Cerrar detalle de respuestas"
                 className="text-slate-400 hover:text-red-500 cursor-pointer"
               >
                 <span className="material-symbols-outlined">close</span>
@@ -1357,7 +1140,11 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
       {/* Tutor Online Chat Drawer/Widget Simulation */}
       {showTutorChat && (
-        <div className="fixed bottom-6 right-6 z-50 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-2xl flex flex-col h-[400px] animate-fade-in overflow-hidden">
+        <div
+          role="dialog"
+          aria-label="Chat con tu tutor"
+          className="fixed bottom-6 right-6 z-50 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-2xl flex flex-col h-[400px] animate-fade-in overflow-hidden"
+        >
           {/* Chat Header */}
           <div className="bg-brand-primary text-white p-4 flex justify-between items-center shadow-xs">
             <div className="flex items-center gap-2">
@@ -1380,9 +1167,8 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               </div>
             </div>
             <button
-              onClick={() => {
-                setShowTutorChat(false);
-              }}
+              onClick={() => setShowTutorChat(false)}
+              aria-label="Cerrar chat"
               className="text-white hover:text-red-200 cursor-pointer"
             >
               <span className="material-symbols-outlined text-lg">close</span>
@@ -1391,9 +1177,9 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
 
           {/* Chat Messages */}
           <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-[11px] font-semibold leading-relaxed">
-            {chatMessages.map((msg, index) => (
+            {chatMessages.map((msg) => (
               <div
-                key={index}
+                key={msg.id}
                 className={`max-w-[85%] p-3 rounded-2xl ${
                   msg.sender === "user"
                     ? "ml-auto bg-brand-primary text-white rounded-br-none text-right"
@@ -1418,11 +1204,14 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
               value={userMsg}
               onChange={(e) => setUserMsg(e.target.value)}
               placeholder="Escribe tu mensaje académico..."
+              aria-label="Escribe tu mensaje académico"
               className="flex-1 border border-[#e2e8f0] rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary focus:outline-none text-slate-800 placeholder-slate-400 font-semibold"
             />
             <button
               type="submit"
-              className="bg-brand-primary text-white rounded-xl p-2.5 hover:opacity-90 flex items-center justify-center cursor-pointer active:scale-95 transition-all text-xs"
+              aria-label="Enviar mensaje"
+              disabled={!userMsg.trim()}
+              className="bg-brand-primary text-white rounded-xl p-2.5 hover:opacity-90 flex items-center justify-center cursor-pointer active:scale-95 transition-all text-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-base">send</span>
             </button>
