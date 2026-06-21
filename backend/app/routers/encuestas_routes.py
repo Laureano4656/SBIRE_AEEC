@@ -2,7 +2,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, status
 
 from app.api.deps import get_conn
-from app.schemas.encuesta import EncuestaCreate, EncuestaResponse, EncuestaUpdate
+from app.schemas.encuesta import EncuestaCreate, EncuestaListResponse, EncuestaResponse, EncuestaUpdate
 from app.services.encuesta_service import EncuestaService
 
 router = APIRouter(prefix="/encuestas", tags=["encuestas"])
@@ -27,6 +27,15 @@ async def obtener_encuesta(
     item = await service.obtener_por_id(encuesta_id)
     return EncuestaResponse.model_validate(item)
 
+@router.get("/{encuesta_id}/completa", response_model=EncuestaListResponse)
+async def obtener_encuesta_completa(
+    encuesta_id: int,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> EncuestaListResponse:
+    service = EncuestaService(conn)
+    # llamamos al método exclusivo que le agregaste al servicio
+    item = await service.obtener_encuesta_completa(encuesta_id)
+    return EncuestaListResponse.model_validate(item)
 
 @router.post("/", response_model=EncuestaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_encuesta(

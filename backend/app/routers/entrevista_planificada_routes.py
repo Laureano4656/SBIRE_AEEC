@@ -1,0 +1,47 @@
+from datetime import datetime
+
+import asyncpg
+from fastapi import APIRouter, Depends, status
+
+from app.api.deps import get_conn
+from app.schemas.entrevista_planificada import EntrevistaCreate, EntrevistaPlanificadaResponse
+from app.services.entrevista_planificada_service import EntrevistaPlanificadaService
+
+router = APIRouter(prefix="/entrevistas", tags=["entrevistas planificadas"])
+
+@router.post("/", response_model=EntrevistaPlanificadaResponse, status_code=status.HTTP_201_CREATED)
+async def crear_entrevista(
+    body: EntrevistaCreate,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> EntrevistaPlanificadaResponse:
+    service = EntrevistaPlanificadaService(conn)
+    item = await service.crear_entrevista(body)
+    return EntrevistaPlanificadaResponse.model_validate(item)
+
+@router.patch("/{entrevista_id}/reprogramar", response_model=EntrevistaPlanificadaResponse)
+async def reprogramar_entrevista(
+    entrevista_id: int,
+    nueva_fecha: datetime,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> EntrevistaPlanificadaResponse:
+    service = EntrevistaPlanificadaService(conn)
+    item = await service.reprogramar_entrevista(entrevista_id, nueva_fecha)
+    return EntrevistaPlanificadaResponse.model_validate(item)
+
+@router.patch("/{entrevista_id}/cancelar", response_model=EntrevistaPlanificadaResponse)
+async def cancelar_entrevista(
+    entrevista_id: int,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> EntrevistaPlanificadaResponse:
+    service = EntrevistaPlanificadaService(conn)
+    item = await service.cancelar_entrevista(entrevista_id)
+    return EntrevistaPlanificadaResponse.model_validate(item)
+
+@router.patch("/{entrevista_id}/completar", response_model=EntrevistaPlanificadaResponse)
+async def completar_entrevista(
+    entrevista_id: int,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> EntrevistaPlanificadaResponse:
+    service = EntrevistaPlanificadaService(conn)
+    item = await service.completar_entrevista(entrevista_id)
+    return EntrevistaPlanificadaResponse.model_validate(item)
