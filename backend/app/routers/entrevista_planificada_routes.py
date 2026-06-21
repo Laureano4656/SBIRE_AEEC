@@ -2,7 +2,7 @@ from datetime import datetime
 
 import asyncpg
 from fastapi import APIRouter, Depends, status
-
+from pydantic import BaseModel
 from app.api.deps import get_conn
 from app.schemas.entrevista_planificada import EntrevistaCreate, EntrevistaPlanificadaResponse
 from app.services.entrevista_planificada_service import EntrevistaPlanificadaService
@@ -18,14 +18,19 @@ async def crear_entrevista(
     item = await service.crear_entrevista(body)
     return EntrevistaPlanificadaResponse.model_validate(item)
 
+# schema auxiliar para recibir la fecha en el body
+class ReprogramarUpdate(BaseModel):
+    nueva_fecha: datetime
+
+
 @router.patch("/{entrevista_id}/reprogramar", response_model=EntrevistaPlanificadaResponse)
 async def reprogramar_entrevista(
     entrevista_id: int,
-    nueva_fecha: datetime,
+    body: ReprogramarUpdate,  
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> EntrevistaPlanificadaResponse:
     service = EntrevistaPlanificadaService(conn)
-    item = await service.reprogramar_entrevista(entrevista_id, nueva_fecha)
+    item = await service.reprogramar_entrevista(entrevista_id, body.nueva_fecha)
     return EntrevistaPlanificadaResponse.model_validate(item)
 
 @router.patch("/{entrevista_id}/cancelar", response_model=EntrevistaPlanificadaResponse)
