@@ -14,7 +14,8 @@ class dashboardAdminRepository:
             SELECT COUNT(*) AS count
             FROM estudiantes
             WHERE ($1::int IS NULL OR anio_ingreso = $1)
-            AND ($2::int IS NULL OR carrera_id = $2)
+            AND ($2::int IS NULL OR carrera_id = $2) 
+            AND activo = TRUE
             """,
             anio, carrera_id
         )
@@ -24,7 +25,8 @@ class dashboardAdminRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM score_total WHERE valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1)
+            FROM score_total 
+            WHERE valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) 
             """
         )
 
@@ -34,7 +36,7 @@ class dashboardAdminRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM alertas WHERE (estado = 'nueva' OR estado = 'en_revision')  
+            FROM alertas WHERE (estado = 'nueva' OR estado = 'en_revision')
             """
         )
 
@@ -67,7 +69,7 @@ class dashboardAdminRepository:
             FROM score_total s
             INNER JOIN estudiantes e ON s.estudiante_id = e.id
             INNER JOIN carreras c ON e.carrera_id = c.id
-            WHERE e.carrera_id = $1 AND e.anio_ingreso = $2
+            WHERE e.carrera_id = $1 AND e.anio_ingreso = $2 AND e.activo = TRUE
             GROUP BY tipo_riesgo, c.nombre, e.anio_ingreso
             """,
             carrera_id, anio
@@ -83,7 +85,7 @@ class dashboardAdminRepository:
                 AVG(valor) AS average_score
             FROM score_total s
             INNER JOIN estudiantes e ON s.estudiante_id = e.id
-            WHERE e.anio_ingreso = $1 
+            WHERE e.anio_ingreso = $1 AND e.activo = TRUE
             GROUP BY month
             ORDER BY month
             """,
@@ -118,7 +120,7 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE dni = $1
+            WHERE dni = $1 AND e.activo = TRUE
             """,
             dni
         )
@@ -149,7 +151,7 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE c.nombre = $1
+            WHERE c.nombre = $1 AND e.activo = TRUE
             """,
             carrera
         )
@@ -180,7 +182,7 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE e.anio_ingreso = $1
+            WHERE e.anio_ingreso = $1 AND e.activo = TRUE
             """,
             anio
         )
@@ -216,7 +218,7 @@ class dashboardAdminRepository:
                     WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) THEN 'rojo'
                     WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1)  THEN 'amarillo'
                     ELSE 'verde'
-                END = $1
+                END = $1 AND e.activo = TRUE
             """,
             risk_level
         )
@@ -279,7 +281,7 @@ class dashboardAdminRepository:
                 i.creado_en AS fecha
             FROM intervenciones i
             INNER JOIN alertas a ON i.alerta_id = a.id
-            WHERE a.estudiante_id = $1
+            WHERE a.estudiante_id = $1 
             
             ORDER BY fecha DESC
             """,
@@ -287,95 +289,6 @@ class dashboardAdminRepository:
         )
         return [EventoCronologicoResponse(**dict(row)) for row in rows]
     
-    # async def get_answers(self, estudiante_id: int) -> list[PreguntasRespuestasResponse]:
-    #     rows = await self.conn.fetch(
-    #         """
-    #         SELECT 
-    #             p.texto AS pregunta,
-    #             r.texto_libre AS respuesta
-    #         FROM respuesta r
-    #         INNER JOIN preguntas p ON r.pregunta_id = p.id
-    #         INNER JOIN asignacion_encuestas ae ON r.asignacion_id = ae.id
-    #         WHERE ae.estudiante_id = $1
-    #         """,
-    #         estudiante_id
-    #     )
-    #     return [PreguntasRespuestasResponse(**dict(row)) for row in rows]
-
-    # async def create_full_survey(self, data: EncuestaCreateFull) -> dict:
-    #     async with self.conn.transaction():
-    #         # Crear la encuesta
-    #         encuesta = await self.conn.fetchrow(
-    #             """
-    #             INSERT INTO encuestas (titulo, estado, modalidad, fecha_desde, fecha_hasta, periodica, frecuencia_dias)
-    #             VALUES ($1, 'borrador', $2, $3, $4, $5, $6)
-    #             RETURNING *
-    #             """,
-    #             data.titulo, data.modalidad, data.fecha_desde,
-    #             data.fecha_hasta, data.periodica, data.frecuencia_dias
-    #         )
-
-    #         preguntas_creadas = []
-
-    #         for pregunta in data.preguntas:
-    #             # Crear cada pregunta
-    #             p = await self.conn.fetchrow(
-    #                 """
-    #                 INSERT INTO preguntas (encuesta_id, texto, tipo, orden, obligatoria, condicion_pregunta_id)
-    #                 VALUES ($1, $2, $3, $4, $5, $6)
-    #                 RETURNING *
-    #                 """,
-    #                 encuesta["id"], pregunta.texto, pregunta.tipo,
-    #                 pregunta.orden, pregunta.obligatoria, pregunta.condicion_pregunta_id
-    #             )
-
-    #             opciones_creadas = []
-
-    #             for opcion in pregunta.opciones:
-    #                 # Crear opciones si la pregunta las tiene
-    #                 o = await self.conn.fetchrow(
-    #                     """
-    #                     INSERT INTO opcion_respuesta (pregunta_id, texto, orden)
-    #                     VALUES ($1, $2, $3)
-    #                     RETURNING *
-    #                     """,
-    #                     p["id"], opcion.texto, opcion.orden
-    #                 )
-    #                 opciones_creadas.append(dict(o))
-
-    #             preguntas_creadas.append({**dict(p), "opciones": opciones_creadas})
-
-    #         return {**dict(encuesta), "preguntas": preguntas_creadas}
-        
-    # async def change_status_survey(self, encuesta_id: int, new_status: str) -> dict:
-    #     row = await self.conn.fetchrow(
-    #         """
-    #         UPDATE encuestas
-    #         SET estado = $1
-    #         WHERE id = $2
-    #         RETURNING *
-    #         """,
-    #         new_status, encuesta_id
-    #     )
-    #     return dict(row)
-        
-    # async def assign_survey(self, data: AsignacionEncuestaCreate) -> AsignacionEncuestaResponse:
-    #     row = await self.conn.fetchrow(
-    #         """
-    #         INSERT INTO asignacion_encuestas (encuesta_id, estudiante_id, fecha_asignacion, completada)
-    #         VALUES ($1, $2, NOW(), false)
-    #         RETURNING 
-    #             id AS asignacion_id,
-    #             encuesta_id,
-    #             (SELECT titulo FROM encuestas WHERE id = $1) AS titulo,
-    #             (SELECT modalidad FROM encuestas WHERE id = $1) AS modalidad,
-    #             fecha_asignacion,
-    #             completada,
-    #             fecha_completada
-    #         """,
-    #         data.encuesta_id, data.estudiante_id
-    #     )
-    #     return AsignacionEncuestaResponse(**dict(row))
     
     async def change_roles(self, user_id: int, new_role: str) -> dict:
         row = await self.conn.fetchrow(
@@ -389,4 +302,5 @@ class dashboardAdminRepository:
         )
         return dict(row)
     
-    
+    #indicadores agrupados por dimension
+    #

@@ -2,7 +2,9 @@ import asyncpg
 
 from app.schemas.asignacion_encuesta import AsignacionEncuestaResponse
 from app.schemas.encuesta import EncuestaResponse
-from app.schemas.respuesta import RespuestaItem
+from app.schemas.pregunta import PreguntaResponse
+from app.schemas.respuesta import RespuestaItem, RespuestaResponse
+from app.schemas.usuario import UsuarioResponse
 
 
 class dashboardEstudiantesRepository:
@@ -93,3 +95,44 @@ class dashboardEstudiantesRepository:
             estudiante_id,
         )
         return [AsignacionEncuestaResponse(**dict(row)) for row in rows]
+    
+    async def total_materias_aprobadas(self, estudiante_id: int) -> int:
+        row = await self.conn.fetchrow(
+           
+        )
+        return row["total"] if row else 0
+    
+    async def get_datos_tutor(self, estudiante_id: int) -> UsuarioResponse | None:
+        row = await self.conn.fetchrow(
+            """
+            SELECT DISTINCT ON (u.id)
+                u.id,
+                u.nombre,
+                u.apellido,
+                u.email,
+                u.rol
+            FROM alertas a
+            INNER JOIN intervenciones i ON i.alerta_id = a.id
+            INNER JOIN usuarios u ON u.id = i.tutor_id
+            WHERE a.estudiante_id = $1
+            AND a.estado IN ('en_revision', 'intervenida')
+            """
+        )
+        return UsuarioResponse(**row) if row else None
+    
+    async def get_preguntas_respuestas(self, estudiante_id: int) -> list[PreguntaResponse,RespuestaResponse]:
+        pass
+        
+        
+
+    async def encuestas_sin_responder(self, estudiante_id: int) -> int:
+        row = await self.conn.fetchrow(
+            """
+            SELECT COUNT(*) AS total
+            FROM asignacion_encuestas a
+            WHERE a.estudiante_id = $1
+            AND a.completada = FALSE
+            """,
+            estudiante_id,
+        )
+        return row["total"] if row else 0
