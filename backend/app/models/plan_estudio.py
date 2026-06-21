@@ -6,7 +6,7 @@ class PlanEstudio(BaseModel):
     """Representa una fila completa de la tabla `plan_estudios`."""
 
     id: int
-    carrera_id: int
+    carrera_id: int | None
     nombre: str
     anio_vigencia: int
     activo: bool

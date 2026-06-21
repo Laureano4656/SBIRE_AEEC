@@ -5,6 +5,12 @@ from pydantic import BaseModel, Field, field_validator
 class PlanEstudioCreate(BaseModel):
     """Body esperado en POST /plan-estudios."""
 
+    carrera_id: int | None = Field(
+        None,
+        ge=1,
+        description="Carrera asociada al plan",
+        examples=[1],
+    )
     nombre: str = Field(
         ...,
         min_length=1,
@@ -46,7 +52,7 @@ class PlanEstudioResponse(BaseModel):
     """Respuesta estándar de Plan de Estudio."""
 
     id: int
-    carrera_id: int
+    carrera_id: int | None
     nombre: str
     anio_vigencia: int
     activo: bool
