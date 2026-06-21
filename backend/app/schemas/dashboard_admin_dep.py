@@ -7,6 +7,7 @@ class EstudianteDashboardAdminResponse(BaseModel):
     apellido: str
     dni: str
     carrera: str
+    etapa: str
     porcentaje_carrera: float
     indice_riesgo: float
     estado_alerta: str | None
