@@ -16,6 +16,7 @@ from app.services.usuarios_service import UsuarioService
 from app.schemas.usuario import(
     AuthResponse,
 )
+from app.models.usuario import Usuario
 from app.core.config import settings
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
@@ -163,21 +164,21 @@ async def lti_login(request: Request, response: Response):
 #     )
 
 
-# @router.get("/me")
-# async def get_current_user_info(
-#     current_user: Usuario = Depends(get_current_user),
-# ) -> dict:
-#     """
-#     Retorna la información del usuario autenticado actual.
-#     """
-#     return {
-#         "id": current_user.id,
-#         "nombre": current_user.nombre,
-#         "apellido": current_user.apellido,
-#         "email": current_user.email,
-#         "rol": current_user.rol.value,
-#         "carrera_id": current_user.carrera_id,
-#         "activo": current_user.activo,
-#         "creado_en": current_user.creado_en,
-#         "actualizado_en": current_user.actualizado_en,
-#     }
+@router.get("/me")
+async def get_current_user_info(
+    current_user: Usuario = Depends(get_current_user),
+) -> dict:
+    """
+    Retorna la información del usuario autenticado actual.
+    """
+    return {
+        "id": current_user.id,
+        "nombre": current_user.nombre,
+        "apellido": current_user.apellido,
+        "email": current_user.email,
+        "rol": current_user.rol.value,
+        "carrera_id": current_user.carrera_id,
+        "activo": current_user.activo,
+        "creado_en": current_user.creado_en,
+        "actualizado_en": current_user.actualizado_en,
+    }

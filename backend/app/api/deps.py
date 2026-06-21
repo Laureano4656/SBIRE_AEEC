@@ -11,12 +11,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.database import get_pool
 from app.core.token_manager import TokenManager
-from app.models.usuario import Usuario
+from app.models.usuario import RolUsuario, Usuario
 from app.repositories.usuario_repository import UsuarioRepository
 
 logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 
 async def get_conn() -> asyncpg.Connection:  # type: ignore[no-untyped-def]
@@ -92,3 +93,57 @@ async def get_current_user(
         )
 
     return usuario
+
+
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_optional),
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> Usuario | None:
+    """
+    Like get_current_user, pero retorna None si no hay token
+    o el token es inválido/expirado. Útil para endpoints que
+    se comportan distinto para usuarios autenticados vs anónimos.
+    """
+    if credentials is None:
+        return None
+
+    token = credentials.credentials
+
+    try:
+        payload = TokenManager.validate_session_token(token)
+    except Exception:
+        return None
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+
+    try:
+        usuario_id = int(user_id)
+    except ValueError:
+        return None
+
+    repo = UsuarioRepository(conn)
+    usuario = await repo.get_by_id(usuario_id)
+
+    if not usuario or not usuario.activo:
+        return None
+
+    return usuario
+
+
+def require_roles(*roles: RolUsuario):
+    """
+    Factory que retorna un Depends para verificar roles.
+    Uso: Depends(require_roles(RolUsuario.administrador, RolUsuario.docente))
+    """
+    async def _role_checker(
+        current_user: Usuario = Depends(get_current_user),
+    ) -> Usuario:
+        if current_user.rol not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos para acceder a este recurso.",
+            )
+        return current_user
+    return _role_checker

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/carreras", tags=["carreras"])
 @router.get("/")
 async def get_carreras(conn: asyncpg.Connection = Depends(get_conn), solo_activas: bool = True) -> list[CarreraResponse]:
    service = CarreraService(conn)
-   carreras = await service.listar(solo_activas=solo_activas)
+   carreras = await service.listar(solo_activos=solo_activas)
    # FastAPI convierte automáticamente list[Carrera] → list[CarreraResponse]
    return [CarreraResponse.model_validate(c) for c in carreras]
 
