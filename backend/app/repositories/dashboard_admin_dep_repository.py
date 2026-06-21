@@ -257,12 +257,20 @@ class dashboardAdminRepository:
             LEFT JOIN (
                 SELECT
                     pe.carrera_id,
+                    pe.anio_vigencia,
                     COUNT(DISTINCT m.id) AS materias_totales
                 FROM plan_estudios pe
                 INNER JOIN materias m ON m.plan_id = pe.id
                 WHERE pe.activo = TRUE
-                GROUP BY pe.carrera_id
-            ) totales ON totales.carrera_id = e.carrera_id
+                GROUP BY pe.carrera_id, pe.anio_vigencia
+                ) totales ON totales.carrera_id = e.carrera_id
+                    AND totales.anio_vigencia = (
+                        SELECT MAX(anio_vigencia)
+                        FROM plan_estudios
+                        WHERE carrera_id = e.carrera_id
+                        AND anio_vigencia <= e.anio_ingreso
+                        AND activo = TRUE
+                    )
             WHERE e.legajo = $1
         """, legajo)
         return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
