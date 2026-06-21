@@ -38,7 +38,7 @@ async def crear_opcion_respuesta(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> OpcionRespuestaResponse:
     service = OpcionRespuestaService(conn)
-    item = await service.crear(**body.model_dump())
+    item = await service.crear_opcion_respuesta(body)
     return OpcionRespuestaResponse.model_validate(item)
 
 
@@ -49,7 +49,7 @@ async def actualizar_opcion_respuesta(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> OpcionRespuestaResponse:
     service = OpcionRespuestaService(conn)
-    item = await service.actualizar(opcion_respuesta_id, **body.model_dump(exclude_unset=True))
+    item = await service.actualizar_opcion_respuesta(opcion_respuesta_id, body)
     return OpcionRespuestaResponse.model_validate(item)
 
 
