@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 
 interface LoginScreenProps {
-  onLogin: (role: "admin" | "student" | "teacher") => void;
+  onLogin: (role: "admin" | "student" | "teacher" | "tutor") => void;
 }
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
@@ -28,7 +28,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  const loginAs = (role: "admin" | "student" | "teacher") => {
+  const loginAs = (role: "admin" | "student" | "teacher" | "tutor") => {
     if (role === "admin") {
       setEmail("administrador@fi.mdp.edu.ar");
       setPassword("••••••••••••");
@@ -37,10 +37,14 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       setEmail("profesor@fi.mdp.edu.ar");
       setPassword("••••••••••••");
       onLogin("teacher");
-    } else {
+    } else if (role === "student") {
       setEmail("m.garcia@fi.mdp.edu.ar");
       setPassword("••••••••••••");
       onLogin("student");
+    } else {
+      setEmail("tutor@fi.mdp.edu.ar");
+      setPassword("••••••••••••");
+      onLogin("tutor");
     }
   };
 
@@ -148,6 +152,15 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                   person
                 </span>
                 <span>Profesor</span>
+              </button>
+              <button
+                onClick={() => loginAs("tutor")}
+                className="py-3 px-3 border border-brand-quaternary text-brand-quaternary hover:bg-brand-quaternary/5 rounded-xl text-xs font-bold flex flex-col justify-center items-center gap-1 transition-all"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  support_agent
+                </span>
+                <span>Personal de Apoyo</span>
               </button>
             </div>
           </div>

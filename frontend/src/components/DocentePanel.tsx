@@ -186,9 +186,9 @@ export default function DocentePanel({ onLogout }: DocentePanelProps) {
               Formato esperado del CSV
             </h4>
             <pre className="bg-[#f8f9fa] border border-brand-outline-variant rounded p-3 text-[11px] font-mono text-[#43474f] overflow-x-auto">
-              {`legajo,apellido,nombre,materia,nota,fecha
-12345,García,Mateo,Análisis Matemático II,8,15/06/2026
-12346,López,Sofía,Física II,5,15/06/2026`}
+              {`legajo,apellido,nombre,cod_carrera,materia,nota,fecha
+12345,García,Mateo,12,Análisis Matemático II,8,15/06/2026
+12346,López,Sofía,13,Física II,5,15/06/2026`}
             </pre>
           </div>
 

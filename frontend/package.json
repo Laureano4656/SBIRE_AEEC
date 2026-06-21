@@ -10,8 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "motion": "^12.40.0",
+    "motion-react": "0.15.0-alpha.1",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.18.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

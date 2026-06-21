@@ -25,7 +25,6 @@ export interface Student {
   subjectsApproved: number;
   subjectsTotal: number;
   engagement: "Alto" | "Medio" | "Bajo";
-  assistancePercentage: number;
   phone: string;
 }
 
@@ -61,6 +60,32 @@ export interface Interview {
   status: "PENDIENTE" | "COMPLETADA" | "REPROGRAMADA" | "CANCELADA";
 }
 
+export type TipoPreguntaEncuesta =
+  | "texto_libre"
+  | "opcion_multiple"
+  | "escala"
+  | "si_no";
+
+export interface SurveyQuestion {
+  id: string;
+  texto: string;
+  tipo: TipoPreguntaEncuesta;
+  opciones?: string[]; // solo aplica para "opcion_multiple"
+  obligatoria: boolean;
+}
+
+export interface SurveyAnswer {
+  questionId: string;
+  answer: string;
+}
+
+export interface SurveyResponse {
+  id: string;
+  studentName: string;
+  submittedAt: string;
+  answers: SurveyAnswer[];
+}
+
 export interface Survey {
   id: string;
   title: string;
@@ -71,4 +96,6 @@ export interface Survey {
   responsesCount: number;
   responseRate: number; // percentage
   urgentCasesCount: number;
+  questions?: SurveyQuestion[]; // opcional para no romper datos existentes sin preguntas
+  responses?: SurveyResponse[];
 }

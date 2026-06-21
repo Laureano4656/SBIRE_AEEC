@@ -9,6 +9,7 @@ import type {
   TimelineEvent,
   Interview,
   Survey,
+  SurveyResponse,
 } from "./types.ts";
 
 export const INITIAL_STUDENTS: Student[] = [
@@ -33,7 +34,6 @@ export const INITIAL_STUDENTS: Student[] = [
     subjectsApproved: 14,
     subjectsTotal: 36,
     engagement: "Bajo",
-    assistancePercentage: 55,
     phone: "+54 223 599-4422",
   },
   {
@@ -57,7 +57,6 @@ export const INITIAL_STUDENTS: Student[] = [
     subjectsApproved: 11,
     subjectsTotal: 34,
     engagement: "Medio",
-    assistancePercentage: 78,
     phone: "+54 223 488-9122",
   },
   {
@@ -81,7 +80,6 @@ export const INITIAL_STUDENTS: Student[] = [
     subjectsApproved: 4,
     subjectsTotal: 34,
     engagement: "Alto",
-    assistancePercentage: 95,
     phone: "+54 223 502-1134",
   },
   {
@@ -105,7 +103,6 @@ export const INITIAL_STUDENTS: Student[] = [
     subjectsApproved: 18,
     subjectsTotal: 32,
     engagement: "Alto",
-    assistancePercentage: 88,
     phone: "+54 223 609-8877",
   },
   {
@@ -129,7 +126,6 @@ export const INITIAL_STUDENTS: Student[] = [
     subjectsApproved: 10,
     subjectsTotal: 34,
     engagement: "Bajo",
-    assistancePercentage: 50,
     phone: "+54 223 411-9900",
   },
 ];
@@ -157,6 +153,69 @@ export const INITIAL_INTERVIEWS: Interview[] = [
   },
 ];
 
+export const MOCK_SURVEY_RESPONSES: SurveyResponse[] = [
+  {
+    id: "resp_1",
+    studentName: "MARTÍNEZ, Sofía Valentina",
+    submittedAt: "20/03/2024 10:15",
+    answers: [
+      { questionId: "q_1", answer: "Ingeniería en Informática" },
+      { questionId: "q_2", answer: "Mejorar la empleabilidad" },
+      { questionId: "q_3", answer: "Presencial" },
+      { questionId: "q_4", answer: "4" },
+      { questionId: "q_5", answer: "Sí" },
+    ],
+  },
+  {
+    id: "resp_2",
+    studentName: "GARCÍA, Lucas Manuel",
+    submittedAt: "20/03/2024 11:30",
+    answers: [
+      { questionId: "q_1", answer: "Ingeniería Industrial" },
+      { questionId: "q_2", answer: "Interés en la industria" },
+      { questionId: "q_3", answer: "Híbrida" },
+      { questionId: "q_4", answer: "3" },
+      { questionId: "q_5", answer: "Sí" },
+    ],
+  },
+  {
+    id: "resp_3",
+    studentName: "RODRÍGUEZ, Ana Lucía",
+    submittedAt: "21/03/2024 09:45",
+    answers: [
+      { questionId: "q_1", answer: "Ingeniería Industrial" },
+      { questionId: "q_2", answer: "Vinculación con el sector productivo" },
+      { questionId: "q_3", answer: "Presencial" },
+      { questionId: "q_4", answer: "5" },
+      { questionId: "q_5", answer: "Sí" },
+    ],
+  },
+  {
+    id: "resp_4",
+    studentName: "GARCÍA, Mateo",
+    submittedAt: "21/03/2024 14:20",
+    answers: [
+      { questionId: "q_1", answer: "Ingeniería Industrial" },
+      { questionId: "q_2", answer: "Salida laboral" },
+      { questionId: "q_3", answer: "Presencial" },
+      { questionId: "q_4", answer: "4" },
+      { questionId: "q_5", answer: "No" },
+    ],
+  },
+  {
+    id: "resp_5",
+    studentName: "ALVARADO, Mateo",
+    submittedAt: "22/03/2024 08:10",
+    answers: [
+      { questionId: "q_1", answer: "Ingeniería Industrial" },
+      { questionId: "q_2", answer: "Tradición familiar" },
+      { questionId: "q_3", answer: "Virtual" },
+      { questionId: "q_4", answer: "2" },
+      { questionId: "q_5", answer: "No" },
+    ],
+  },
+];
+
 export const INITIAL_SURVEYS: Survey[] = [
   {
     id: "sur_1",
@@ -168,6 +227,40 @@ export const INITIAL_SURVEYS: Survey[] = [
     responsesCount: 412,
     responseRate: 68.4,
     urgentCasesCount: 14,
+    questions: [
+      {
+        id: "q_1",
+        texto: "¿Qué carrera elegiste?",
+        tipo: "texto_libre",
+        obligatoria: true,
+      },
+      {
+        id: "q_2",
+        texto: "¿Cuál fue tu principal motivación para elegir esta carrera?",
+        tipo: "texto_libre",
+        obligatoria: true,
+      },
+      {
+        id: "q_3",
+        texto: "¿Qué modalidad de cursada preferís?",
+        tipo: "opcion_multiple",
+        opciones: ["Presencial", "Virtual", "Híbrida"],
+        obligatoria: true,
+      },
+      {
+        id: "q_4",
+        texto: "Del 1 al 5, ¿cómo calificás tu experiencia en el ingreso?",
+        tipo: "escala",
+        obligatoria: true,
+      },
+      {
+        id: "q_5",
+        texto: "¿Contás con computadora personal para estudiar?",
+        tipo: "si_no",
+        obligatoria: true,
+      },
+    ],
+    responses: MOCK_SURVEY_RESPONSES,
   },
   {
     id: "sur_2",

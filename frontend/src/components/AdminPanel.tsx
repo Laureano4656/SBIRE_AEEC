@@ -3,10 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import type { Student, TimelineEvent, Interview, Survey } from "../types.ts";
-import StudentProfileView from "./StudentProfileView.tsx";
+import AdminStudentView from "./AdminStudentView.tsx";
 import AHPConfigPanel from "./AHPConfigPanel.tsx";
+import ReportesPanel from "./ReportesPanel.tsx";
+import SurveyEditor from "./SurveyEditor.tsx";
+import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
 
 interface AdminPanelProps {
   students: Student[];
@@ -44,11 +47,9 @@ export default function AdminPanel({
   // Surveys state
   const [localSurveys, setLocalSurveys] = useState<Survey[]>(surveys);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [newSurveyTitle, setNewSurveyTitle] = useState("");
-  const [newSurveyType, setNewSurveyType] = useState<"Única" | "Periódica">(
-    "Única",
-  );
-  const [newSurveyDesc, setNewSurveyDesc] = useState("");
+  const [editingSurvey, setEditingSurvey] = useState<Survey | null>(null);
+  const [viewingResponsesSurvey, setViewingResponsesSurvey] =
+    useState<Survey | null>(null);
 
   // Notifications bell simulator
   const [notifications, setNotifications] = useState([
@@ -84,27 +85,21 @@ export default function AdminPanel({
     return matchesSearch && matchesYear && matchesCareer && matchesRisk;
   });
 
-  // Survey creators
-  const handleCreateSurvey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSurveyTitle) return;
-
-    const newSurvey: Survey = {
-      id: "sur_" + Date.now(),
-      title: newSurveyTitle,
-      description: newSurveyDesc || "Formulario de relevamiento institucional.",
-      type: newSurveyType,
-      status: "Borrador",
-      creationDate: new Date().toLocaleDateString("es-AR"),
-      responsesCount: 0,
-      responseRate: 0,
-      urgentCasesCount: 0,
-    };
-
-    setLocalSurveys([newSurvey, ...localSurveys]);
+  // Survey creation/edición handler (delegado a SurveyEditor)
+  const handleSaveSurvey = (survey: Survey) => {
+    setLocalSurveys((prev) => {
+      const yaExiste = prev.some((s) => s.id === survey.id);
+      return yaExiste
+        ? prev.map((s) => (s.id === survey.id ? survey : s))
+        : [survey, ...prev];
+    });
     setShowSurveyModal(false);
-    setNewSurveyTitle("");
-    setNewSurveyDesc("");
+    setEditingSurvey(null);
+  };
+
+  const handleCancelSurveyEditor = () => {
+    setShowSurveyModal(false);
+    setEditingSurvey(null);
   };
 
   // Status Badge Helper
@@ -364,13 +359,11 @@ export default function AdminPanel({
         {/* Content canvas with generous negative space & standard padding */}
         <main className="p-8 flex-1 overflow-x-hidden">
           {selectedStudentId && selectedStudent ? (
-            /* Selected Student Detailed view */
-            <StudentProfileView
+            /* Selected Student Read-only view */
+            <AdminStudentView
               student={selectedStudent}
               timelineEvents={timelineEventsMap[selectedStudent.id] || []}
               onBack={() => setSelectedStudentId(null)}
-              onUpdateStudent={onUpdateStudent}
-              onAddTimelineEvent={onAddTimelineEvent}
             />
           ) : activeMenu === "panel" ? (
             /* Institutional dashboard panel */
@@ -1017,20 +1010,6 @@ export default function AdminPanel({
                 <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
                   <div>
                     <span className="text-[10px] font-extrabold text-brand-outline block uppercase tracking-wider">
-                      Encuestas Activas
-                    </span>
-                    <span className="text-3xl font-black text-brand-primary mt-1 block">
-                      {localSurveys.filter((s) => s.status === "Activa").length}
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-brand-secondary bg-brand-secondary/5 p-3 rounded-full text-2xl">
-                    mark_email_unread
-                  </span>
-                </div>
-
-                <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
-                  <div>
-                    <span className="text-[10px] font-extrabold text-brand-outline block uppercase tracking-wider">
                       Tasa de Respuesta Prom.
                     </span>
                     <span className="text-3xl font-black text-brand-primary mt-1 block">
@@ -1039,20 +1018,6 @@ export default function AdminPanel({
                   </div>
                   <span className="material-symbols-outlined text-brand-primary bg-brand-primary-container/10 p-3 rounded-full text-2xl">
                     percent
-                  </span>
-                </div>
-
-                <div className="bg-white border border-brand-outline-variant rounded p-5 flex items-center justify-between shadow-xs">
-                  <div>
-                    <span className="text-[10px] font-extrabold text-[#ba1a1a] block uppercase tracking-wider">
-                      Pendientes de Análisis
-                    </span>
-                    <span className="text-3xl font-black text-brand-error mt-1 block">
-                      03
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-brand-error bg-red-50 p-3 rounded-full text-2xl">
-                    pending_actions
                   </span>
                 </div>
               </div>
@@ -1096,11 +1061,17 @@ export default function AdminPanel({
                           className="hover:bg-[#f8f9fa] transition-colors"
                         >
                           <td className="p-4 pl-5">
-                            <div className="font-extrabold text-brand-primary text-sm">
+                            <div
+                              className="font-extrabold text-brand-primary text-sm hover:underline cursor-pointer"
+                              onClick={() => setEditingSurvey(sur)}
+                            >
                               {sur.title}
                             </div>
                             <div className="text-[11px] text-[#43474f] font-medium mt-0.5">
                               {sur.description}
+                            </div>
+                            <div className="text-[10px] text-brand-outline font-bold mt-1">
+                              {sur.questions?.length ?? 0} pregunta(s)
                             </div>
                           </td>
                           <td className="p-4 text-center">
@@ -1127,16 +1098,32 @@ export default function AdminPanel({
                           <td className="p-4 text-center">
                             <div className="flex justify-center items-center gap-2">
                               {sur.status === "Activa" && (
-                                <button
-                                  onClick={() =>
-                                    alert(
-                                      `Analizando ${sur.responsesCount} respuestas...`,
-                                    )
-                                  }
-                                  className="text-brand-secondary hover:underline font-bold"
-                                >
-                                  Ver Respuestas ({sur.responsesCount})
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      setViewingResponsesSurvey(sur)
+                                    }
+                                    className="text-brand-secondary hover:underline font-bold"
+                                  >
+                                    Ver Respuestas ({sur.responsesCount})
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const updated = localSurveys.map((s) =>
+                                        s.id === sur.id
+                                          ? {
+                                              ...s,
+                                              status: "Finalizada" as const,
+                                            }
+                                          : s,
+                                      );
+                                      setLocalSurveys(updated);
+                                    }}
+                                    className="text-brand-error hover:underline font-bold"
+                                  >
+                                    Finalizar
+                                  </button>
+                                </>
                               )}
                               {sur.status === "Borrador" && (
                                 <button
@@ -1167,261 +1154,25 @@ export default function AdminPanel({
                 </div>
               </div>
 
-              {/* Retention Recommendations and Programmed alerts boxes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
-                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-lg text-brand-secondary">
-                      lightbulb
-                    </span>
-                    Recomendación de Retención Activa
-                  </h4>
-                  <p className="text-xs text-[#43474f] leading-relaxed mt-2">
-                    Según los últimos datos cruzados de la{" "}
-                    <strong>Encuesta de Ingreso</strong>, el factor
-                    "Complicación de Horarios Laborales" ha aumentado un 15%
-                    como causa primaria de riesgo crítico durante este
-                    cuatrimestre. Recomendamos flexibilizar horarios en turnos
-                    nocturnos o tutorías asincrónicas virtuales.
-                  </p>
-                  <button
-                    onClick={() =>
-                      alert("Abriendo diagnóstico integral de deserción...")
-                    }
-                    className="text-brand-primary hover:underline font-bold text-xs mt-3 block"
-                  >
-                    Ver reporte detallado →
-                  </button>
-                </div>
+              {/* Survey creation/edición editor (2 pasos: datos + preguntas) */}
+              {(showSurveyModal || editingSurvey) && (
+                <SurveyEditor
+                  key={editingSurvey?.id ?? "new"}
+                  initialSurvey={editingSurvey ?? undefined}
+                  onSave={handleSaveSurvey}
+                  onCancel={handleCancelSurveyEditor}
+                />
+              )}
 
-                <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex justify-between items-center">
-                  <div className="space-y-1">
-                    <h4 className="font-semibold text-brand-primary text-sm flex items-center gap-1">
-                      <span className="material-symbols-outlined text-lg">
-                        alarm
-                      </span>
-                      Programar Envío de Seguimiento
-                    </h4>
-                    <p className="text-xs text-[#3a5f94] max-w-[300px] leading-relaxed">
-                      Automatiza correos recordatorios para aquellos alumnos que
-                      cuenten con riesgo medio y no hayan respondido encuestas
-                      en más de 10 días académicos.
-                    </p>
-                    <div className="flex gap-2 pt-2">
-                      <span className="bg-[#f3f4f5] border border-brand-outline-variant text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
-                        Próximo: Lunes 9:00 AM
-                      </span>
-                      <span className="bg-[#e2f3f5] text-[#006e6e] px-2 py-0.5 rounded text-[10px] font-bold">
-                        240 Estudiantes
-                      </span>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-brand-primary text-4xl bg-brand-primary-container/10 p-3 rounded-full">
-                    schedule
-                  </span>
-                </div>
-              </div>
-
-              {/* Create survey modal inline simulator */}
-              {showSurveyModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#191c1d]/60 backdrop-blur-xs animate-fade-in">
-                  <div className="bg-white border border-brand-outline-variant rounded shadow-2xl max-w-md w-full p-6 space-y-4">
-                    <h2 className="text-lg font-bold text-brand-primary flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-xl">
-                        add_box
-                      </span>
-                      Nueva Encuesta de Relevamiento
-                    </h2>
-                    <form onSubmit={handleCreateSurvey} className="space-y-4">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
-                          Título de la Encuesta
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newSurveyTitle}
-                          onChange={(e) => setNewSurveyTitle(e.target.value)}
-                          placeholder="ej: Satisfacción Cursadas Q2"
-                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
-                          Tipo de Relevamiento
-                        </label>
-                        <select
-                          value={newSurveyType}
-                          onChange={(e) =>
-                            setNewSurveyType(
-                              e.target.value as "Única" | "Periódica",
-                            )
-                          }
-                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
-                        >
-                          <option value="Única">
-                            Única (Un solo envío al ingresar)
-                          </option>
-                          <option value="Periódica">
-                            Periódica (Envío por cuatrimestre)
-                          </option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
-                          Descripción o Alcance
-                        </label>
-                        <textarea
-                          value={newSurveyDesc}
-                          onChange={(e) => setNewSurveyDesc(e.target.value)}
-                          rows={3}
-                          placeholder="Propósito, marco institucional y a quién va dirigida..."
-                          className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary"
-                        ></textarea>
-                      </div>
-
-                      <div className="flex justify-end gap-2 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowSurveyModal(false)}
-                          className="px-3 py-2 border border-brand-outline-variant text-[#43474f] rounded text-xs font-semibold hover:bg-[#e7e8e9] transition-all"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-brand-primary text-white rounded text-xs font-bold hover:bg-[#002f5e] transition-all"
-                        >
-                          Crear y Guardar Borrador
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
+              {viewingResponsesSurvey && (
+                <SurveyResponsesModal
+                  survey={viewingResponsesSurvey}
+                  onClose={() => setViewingResponsesSurvey(null)}
+                />
               )}
             </div>
           ) : activeMenu === "reportes" ? (
-            /* Report generator and static diagnostic tools */
-            <div className="space-y-6 animate-fade-in">
-              <div>
-                <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
-                  Reportes e Históricos
-                </h3>
-                <p className="text-xs text-[#43474f] mt-1">
-                  Módulo de Inteligencia de Datos para la toma de decisiones
-                  institucionales y auditorías académicas.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="border border-brand-outline-variant rounded p-6 bg-white space-y-4 shadow-sm">
-                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-lg">
-                      summarize
-                    </span>
-                    Reporte de Eficiencia de Acompañamiento
-                  </h4>
-                  <p className="text-xs text-[#43474f] leading-normal font-medium">
-                    Analiza la tasa de éxito (salida de riesgo crítico a
-                    regularidad estable) de los estudiantes que recibieron
-                    llamadas directas de la secretaría académica y completaron
-                    entrevistas.
-                  </p>
-
-                  <div className="p-3.5 bg-[#f8f9fa] border-l-4 border-[#006a6a] text-xs space-y-1">
-                    <p className="font-bold text-brand-secondary">
-                      Métrica Clave: 78.4% de éxito
-                    </p>
-                    <p className="text-brand-outline">
-                      Se constató que 4 de cada 5 tutorías directas resolvieron
-                      alertas antes de exámenes parciales.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        alert(
-                          "Generando archivo PDF con visualizaciones académicas...",
-                        )
-                      }
-                      className="px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded flex items-center gap-1 hover:bg-[#002f5e]"
-                    >
-                      <span className="material-symbols-outlined text-sm">
-                        picture_as_pdf
-                      </span>{" "}
-                      Descargar PDF
-                    </button>
-                    <button
-                      onClick={() => alert("Exportando base tabular CSV...")}
-                      className="px-4 py-2 border border-brand-outline-variant text-[#43474f] text-xs font-semibold rounded flex items-center gap-1 hover:bg-[#f3f4f5]"
-                    >
-                      <span className="material-symbols-outlined text-sm">
-                        table_chart
-                      </span>{" "}
-                      Exportar CSV
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border border-brand-outline-variant rounded p-6 bg-white space-y-4 shadow-sm">
-                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-lg">
-                      bar_chart
-                    </span>
-                    Filtro Avanzado de Factores de Riesgo
-                  </h4>
-                  <p className="text-xs text-[#43474f] leading-normal font-medium">
-                    Distribución absoluta de causantes del desapego o deserción
-                    detectada con mayor frecuencia este año en Ingeniería de la
-                    UNMdP:
-                  </p>
-
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <div className="flex justify-between font-bold text-brand-primary mb-1">
-                        <span>Rendimiento Académico / Aplazos Continuos</span>
-                        <span>42%</span>
-                      </div>
-                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
-                        <div
-                          className="bg-[#ba1a1a] h-full"
-                          style={{ width: "42%" }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between font-bold text-brand-primary mb-1">
-                        <span>Conflictos de Horarios Laborales</span>
-                        <span>35%</span>
-                      </div>
-                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
-                        <div
-                          className="bg-[#006a6a] h-full"
-                          style={{ width: "35%" }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between font-bold text-brand-primary mb-1">
-                        <span>Problemas Familiares / De Salud</span>
-                        <span>23%</span>
-                      </div>
-                      <div className="w-full bg-[#edeeef] h-2 rounded overflow-hidden">
-                        <div
-                          className="bg-amber-500 h-full"
-                          style={{ width: "23%" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ReportesPanel students={students} />
           ) : (
             <AHPConfigPanel />
           )}
