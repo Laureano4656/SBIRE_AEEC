@@ -1,7 +1,7 @@
 \restrict dbmate
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
--- Dumped by pg_dump version 18.3 (Ubuntu 18.3-1)
+-- Dumped by pg_dump version 18.4 (Ubuntu 18.4-0ubuntu0.26.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -523,6 +523,60 @@ ALTER TABLE public.estudiantes ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
 
 
 --
+-- Name: importacion_archivo; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.importacion_archivo (
+    id integer NOT NULL,
+    usuario_id integer NOT NULL,
+    nombre_archivo character varying(255) NOT NULL,
+    fecha_importacion timestamp without time zone DEFAULT now() NOT NULL,
+    filas_importadas integer NOT NULL,
+    filas_errores integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: importacion_archivo_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.importacion_archivo ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.importacion_archivo_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: indicador; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.indicador (
+    id integer NOT NULL,
+    nombre character varying(150) NOT NULL,
+    dimension integer,
+    activo boolean DEFAULT true
+);
+
+
+--
+-- Name: indicador_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.indicador ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.indicador_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: inscripciones_cuatrimestres; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -691,6 +745,32 @@ ALTER TABLE public.parciales ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
+-- Name: peso_indicadores; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.peso_indicadores (
+    id integer NOT NULL,
+    id_configuracion integer NOT NULL,
+    id_indicador integer NOT NULL,
+    peso_global double precision DEFAULT 0.0 NOT NULL
+);
+
+
+--
+-- Name: peso_indicadores_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.peso_indicadores ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.peso_indicadores_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: plan_estudios; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -728,7 +808,11 @@ CREATE TABLE public.preguntas (
     tipo public.enum_tipo_pregunta DEFAULT 'texto_libre'::public.enum_tipo_pregunta,
     orden integer,
     obligatoria boolean DEFAULT true,
-    condicion_pregunta_id integer
+    condicion_pregunta_id integer,
+    min double precision,
+    max double precision,
+    cant_opciones integer,
+    id_indicador integer
 );
 
 
@@ -755,9 +839,11 @@ CREATE TABLE public.respuesta (
     asignacion_id integer,
     pregunta_id integer,
     opcion_id integer,
-    texto_libre text,
     valencia integer,
-    fecha_respuesta timestamp with time zone
+    fecha_respuesta timestamp with time zone,
+    valor character varying(255),
+    confianza double precision,
+    motivo character varying(100)
 );
 
 
@@ -791,13 +877,13 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.score_riesgo (
     id integer NOT NULL,
     estudiante_id integer NOT NULL,
-    configuracion_id integer NOT NULL,
     score double precision NOT NULL,
     nivel public.nivel_riesgo_enum NOT NULL,
     calculado_en timestamp with time zone DEFAULT now() NOT NULL,
     score_total_id integer,
     factor_aplicado double precision DEFAULT 1.0 NOT NULL,
     score_ponderado double precision DEFAULT 0.0 NOT NULL,
+    id_indicador integer,
     CONSTRAINT ck_factor_aplicado_positivo CHECK ((factor_aplicado > (0.0)::double precision)),
     CONSTRAINT ck_score_ponderado_rango CHECK (((score_ponderado >= (0.0)::double precision) AND (score_ponderado <= (1.0)::double precision))),
     CONSTRAINT ck_score_riesgo_rango CHECK (((score >= (0.0)::double precision) AND (score <= (1.0)::double precision)))
@@ -855,7 +941,7 @@ CREATE TABLE public.usuarios (
     nombre character varying(200) NOT NULL,
     apellido character varying(200) NOT NULL,
     email character varying(320) NOT NULL,
-    moodle_id character varying(100) NOT NULL,
+    moodle_id character varying(100),
     rol public.rol_usuario_enum NOT NULL,
     max_casos_activos smallint,
     activo boolean DEFAULT true NOT NULL,
@@ -969,6 +1055,22 @@ ALTER TABLE ONLY public.estudiantes
 
 
 --
+-- Name: importacion_archivo importacion_archivo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT importacion_archivo_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: indicador indicador_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.indicador
+    ADD CONSTRAINT indicador_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: inscripciones_cuatrimestres inscripciones_cuatrimestres_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1014,6 +1116,14 @@ ALTER TABLE ONLY public.opcion_respuesta
 
 ALTER TABLE ONLY public.parciales
     ADD CONSTRAINT parciales_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: peso_indicadores peso_indicadores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.peso_indicadores
+    ADD CONSTRAINT peso_indicadores_pkey PRIMARY KEY (id);
 
 
 --
@@ -1298,6 +1408,14 @@ ALTER TABLE ONLY public.alertas
 
 
 --
+-- Name: peso_indicadores fk_configuracion; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.peso_indicadores
+    ADD CONSTRAINT fk_configuracion FOREIGN KEY (id_configuracion) REFERENCES public.configuracion_indicador(id);
+
+
+--
 -- Name: configuracion_indicador fk_configuracion_actualizado_por; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1311,6 +1429,14 @@ ALTER TABLE ONLY public.configuracion_indicador
 
 ALTER TABLE ONLY public.configuracion_indicador
     ADD CONSTRAINT fk_configuracion_carrera FOREIGN KEY (carrera_id) REFERENCES public.carreras(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: indicador fk_dimension; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.indicador
+    ADD CONSTRAINT fk_dimension FOREIGN KEY (dimension) REFERENCES public.indicador(id);
 
 
 --
@@ -1346,6 +1472,22 @@ ALTER TABLE ONLY public.entrevista_planificada
 
 
 --
+-- Name: preguntas fk_indicador; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.preguntas
+    ADD CONSTRAINT fk_indicador FOREIGN KEY (id_indicador) REFERENCES public.indicador(id);
+
+
+--
+-- Name: score_riesgo fk_indicador; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.score_riesgo
+    ADD CONSTRAINT fk_indicador FOREIGN KEY (id_indicador) REFERENCES public.indicador(id);
+
+
+--
 -- Name: intervenciones fk_intervencion_alerta; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1359,14 +1501,6 @@ ALTER TABLE ONLY public.intervenciones
 
 ALTER TABLE ONLY public.intervenciones
     ADD CONSTRAINT fk_intervencion_tutor FOREIGN KEY (tutor_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
-
-
---
--- Name: score_riesgo fk_score_riesgo_configuracion; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.score_riesgo
-    ADD CONSTRAINT fk_score_riesgo_configuracion FOREIGN KEY (configuracion_id) REFERENCES public.configuracion_indicador(id) ON DELETE RESTRICT;
 
 
 --
@@ -1394,11 +1528,27 @@ ALTER TABLE ONLY public.score_total
 
 
 --
+-- Name: importacion_archivo fk_usuario; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT fk_usuario FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
 -- Name: usuarios fk_usuario_carrera; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.usuarios
     ADD CONSTRAINT fk_usuario_carrera FOREIGN KEY (carrera_id) REFERENCES public.carreras(id) ON DELETE SET NULL;
+
+
+--
+-- Name: peso_indicadores id_indicador; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.peso_indicadores
+    ADD CONSTRAINT id_indicador FOREIGN KEY (id_indicador) REFERENCES public.indicador(id);
 
 
 --
@@ -1508,4 +1658,11 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260520010848'),
     ('20260520011725'),
     ('20260520013912'),
-    ('20260520222501');
+    ('20260520222501'),
+    ('20260613231008'),
+    ('20260614074112'),
+    ('20260614083525'),
+    ('20260615205151'),
+    ('20260615205417'),
+    ('20260615205758'),
+    ('20260620161556');

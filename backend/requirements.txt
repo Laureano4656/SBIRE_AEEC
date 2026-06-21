@@ -22,3 +22,12 @@ PyLTI1p3==2.0.0           # validación de JWT LTI firmados por Moodle
 pytest==8.3.4
 pytest-asyncio==0.24.0    # soporte async para tests
 httpx==0.28.1             # cliente HTTP para tests de endpoints FastAPI
+
+# ── Inteligencia Artificial ───────────────────────────────
+google-genai==0.5.0
+
+# ── Maths ───────────────────────────────────────────────
+numpy==2.4.6          # para resolver calculos matematicos
+
+# ── Procesamiento de archivos ───────────────────────────
+openpyxl==3.1.5       # lectura de archivos XLSX

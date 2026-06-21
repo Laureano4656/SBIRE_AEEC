@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 from contextlib import asynccontextmanager
 
+from app.api.deps import get_current_user
 from app.routers.asignaciones_encuestas_routes import router as asignaciones_encuestas_router
 from app.routers.asistencias_routes import router as asistencias_router
 from app.routers.carreras_routes import router as carreras_router
@@ -14,22 +15,15 @@ from app.routers.opciones_respuesta_routes import router as opciones_respuesta_r
 from app.routers.parciales_routes import router as parciales_router
 from app.routers.preguntas_routes import router as preguntas_router
 from app.routers.respuestas_routes import router as respuestas_router
+from app.routers.criterios_routes import router as criterios_router
 from app.routers.estudiantes_routes import router as estudiantes_router
+from app.routers.importacion_archivo_routes import router as importacion_archivo_router
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
 from app.core.config import settings
-from app.core.database import init_pool, close_pool #, get_pool
+from app.core.database import init_pool, close_pool
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-app.include_router(carreras_router)
-app.include_router(plan_estudios_router)
-app.include_router(estudiantes_router)
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -82,7 +76,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://campus.fi.mdp.edu.ar",  # producción
-        "http://localhost:3000",           # desarrollo frontend
+        "http://localhost:3000",
+        "http://127.0.0.1:5501",           # desarrollo frontend
         "http://localhost:8080",           # desarrollo Moodle local
     ],
     allow_credentials=True,
@@ -91,36 +86,43 @@ app.add_middleware(
 )
 
 
+# ── Root redirect ──────────────────────────────────────────────────────────
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
 # ── Registro de routers ───────────────────────────────────────────────────────
 # Todos los routers viven bajo /api/v1/ para versionado.
-# Si en el futuro se necesita una v2 con breaking changes,
-# se agrega un nuevo prefijo sin afectar a los clientes de v1.
+# auth_router se incluye directamente (público).
+# El resto se agrupa bajo protected_router con autenticación global.
 
 API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
-app.include_router(carreras_router, prefix=API_PREFIX)
-app.include_router(materias_router, prefix=API_PREFIX)
-app.include_router(correlativas_router, prefix=API_PREFIX)
-app.include_router(inscripciones_cuatrimestres_router, prefix=API_PREFIX)
-app.include_router(cursadas_router, prefix=API_PREFIX)
-app.include_router(parciales_router, prefix=API_PREFIX)
-app.include_router(intentos_finales_router, prefix=API_PREFIX)
-app.include_router(asistencias_router, prefix=API_PREFIX)
-app.include_router(encuestas_router, prefix=API_PREFIX)
-app.include_router(preguntas_router, prefix=API_PREFIX)
-app.include_router(opciones_respuesta_router, prefix=API_PREFIX)
-app.include_router(asignaciones_encuestas_router, prefix=API_PREFIX)
-app.include_router(respuestas_router, prefix=API_PREFIX)
-app.include_router(plan_estudios_router, prefix=API_PREFIX)
-app.include_router(estudiantes_router, prefix=API_PREFIX)
 
-# Al agregar nuevas entidades:
-# app.include_router(estudiantes_router, prefix=API_PREFIX)
-# app.include_router(alertas_router, prefix=API_PREFIX)
-# app.include_router(encuestas_router, prefix=API_PREFIX)
-# app.include_router(scores_router, prefix=API_PREFIX)
-# app.include_router(intervenciones_router, prefix=API_PREFIX)
+protected_router = APIRouter(dependencies=[Depends(get_current_user)])
+
+protected_router.include_router(carreras_router)
+protected_router.include_router(materias_router)
+protected_router.include_router(correlativas_router)
+protected_router.include_router(inscripciones_cuatrimestres_router)
+protected_router.include_router(cursadas_router)
+protected_router.include_router(parciales_router)
+protected_router.include_router(intentos_finales_router)
+protected_router.include_router(asistencias_router)
+protected_router.include_router(encuestas_router)
+protected_router.include_router(preguntas_router)
+protected_router.include_router(opciones_respuesta_router)
+protected_router.include_router(asignaciones_encuestas_router)
+protected_router.include_router(respuestas_router)
+protected_router.include_router(plan_estudios_router)
+protected_router.include_router(estudiantes_router)
+protected_router.include_router(importacion_archivo_router)
+protected_router.include_router(criterios_router)
+
+app.include_router(protected_router, prefix=API_PREFIX)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────
