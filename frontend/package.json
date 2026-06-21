@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.0",
+    "axios": "^1.18.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "motion": "^12.40.0",

@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import type { Student, TimelineEvent, Interview, Survey } from "../types.ts";
+import type { Student, TimelineEvent, Interview, Survey } from "../types/types.ts";
 import AdminStudentView from "./AdminStudentView.tsx";
 import AHPConfigPanel from "./AHPConfigPanel.tsx";
 import ReportesPanel from "./ReportesPanel.tsx";
@@ -151,11 +151,10 @@ export default function AdminPanel({
               setActiveMenu("panel");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "panel" && !selectedStudentId
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "panel" && !selectedStudentId
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               dashboard
@@ -168,11 +167,10 @@ export default function AdminPanel({
               setActiveMenu("estudiantes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "estudiantes" || selectedStudentId
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes" || selectedStudentId
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               groups
@@ -185,11 +183,10 @@ export default function AdminPanel({
               setActiveMenu("encuestas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "encuestas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "encuestas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               edit_note
@@ -202,11 +199,10 @@ export default function AdminPanel({
               setActiveMenu("reportes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "reportes"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "reportes"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               query_stats
@@ -219,11 +215,10 @@ export default function AdminPanel({
               setActiveMenu("configuracion");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "configuracion"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "configuracion"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               settings
@@ -800,41 +795,37 @@ export default function AdminPanel({
                     <div className="flex border border-brand-outline-variant rounded overflow-hidden">
                       <button
                         onClick={() => setFilterRisk("TODOS")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold ${
-                          filterRisk === "TODOS"
+                        className={`px-3 py-1.5 cursor-pointer font-bold ${filterRisk === "TODOS"
                             ? "bg-brand-primary text-white"
                             : "bg-white text-brand-primary"
-                        }`}
+                          }`}
                       >
                         TODOS
                       </button>
                       <button
                         onClick={() => setFilterRisk("CRÍTICO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "CRÍTICO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "CRÍTICO"
                             ? "bg-[#ffdad6] text-[#ba1a1a]"
                             : "bg-white text-brand-primary"
-                        }`}
+                          }`}
                       >
                         CRÍTICO
                       </button>
                       <button
                         onClick={() => setFilterRisk("MEDIO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "MEDIO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "MEDIO"
                             ? "bg-amber-100 text-amber-800"
                             : "bg-white text-brand-primary"
-                        }`}
+                          }`}
                       >
                         MEDIO
                       </button>
                       <button
                         onClick={() => setFilterRisk("BAJO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "BAJO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "BAJO"
                             ? "bg-[#e2f3f5] text-[#006e6e]"
                             : "bg-white text-brand-primary"
-                        }`}
+                          }`}
                       >
                         BAJO
                       </button>
@@ -905,13 +896,12 @@ export default function AdminPanel({
                           </td>
                           <td className="p-3 text-center">
                             <span
-                              className={`font-black text-xs ${
-                                s.riskValue >= 7.5
+                              className={`font-black text-xs ${s.riskValue >= 7.5
                                   ? "text-[#ba1a1a]"
                                   : s.riskValue >= 4.0
                                     ? "text-amber-600"
                                     : "text-[#006e6e]"
-                              }`}
+                                }`}
                             >
                               {s.riskValue.toFixed(2)}
                             </span>
@@ -1081,13 +1071,12 @@ export default function AdminPanel({
                           </td>
                           <td className="p-4 text-center">
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${
-                                sur.status === "Activa"
+                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
                                   ? "bg-[#e2f3f5] text-[#006e6e]"
                                   : sur.status === "Borrador"
                                     ? "bg-amber-100 text-amber-800"
                                     : "bg-red-150 text-brand-error"
-                              }`}
+                                }`}
                             >
                               {sur.status}
                             </span>
@@ -1112,9 +1101,9 @@ export default function AdminPanel({
                                       const updated = localSurveys.map((s) =>
                                         s.id === sur.id
                                           ? {
-                                              ...s,
-                                              status: "Finalizada" as const,
-                                            }
+                                            ...s,
+                                            status: "Finalizada" as const,
+                                          }
                                           : s,
                                       );
                                       setLocalSurveys(updated);

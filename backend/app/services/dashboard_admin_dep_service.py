@@ -9,7 +9,7 @@ from app.schemas.dashboard_admin_dep import (
     EventoCronologicoResponse
 )
 
-class DashboardAdminService:
+class DashboardAdminDepService:
     """
     servicio para los datos analiticos y el dashboard del administrador.
     """

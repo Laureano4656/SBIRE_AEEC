@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import type { Student, TimelineEvent, Interview, Survey } from "./types.ts";
+import type { Student, TimelineEvent, Interview, Survey } from "./types/types.ts";
 import {
   INITIAL_STUDENTS,
   INITIAL_INTERVIEWS,

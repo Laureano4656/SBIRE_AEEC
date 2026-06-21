@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { RiskLevel, Student } from "../types"; // ajustá la ruta si tu carpeta es distinta
+import type { RiskLevel, Student } from "../types/types"; // ajustá la ruta si tu carpeta es distinta
 
 // ---------- Props ----------
 type ReportesPanelProps = {
@@ -92,11 +92,9 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
     });
   }, [students, filtroCarrera, filtroAnio, filtroRiesgo, busqueda]);
 
-  const resumenFiltros = `Carrera: ${filtroCarrera === "TODAS" ? "Todas" : filtroCarrera} · Cursada: ${
-    filtroAnio === "TODAS" ? "Todas" : formatCursada(Number(filtroAnio))
-  } · Riesgo: ${filtroRiesgo === "TODOS" ? "Todos" : filtroRiesgo} · Resultados: ${
-    estudiantesFiltrados.length
-  }`;
+  const resumenFiltros = `Carrera: ${filtroCarrera === "TODAS" ? "Todas" : filtroCarrera} · Cursada: ${filtroAnio === "TODAS" ? "Todas" : formatCursada(Number(filtroAnio))
+    } · Riesgo: ${filtroRiesgo === "TODOS" ? "Todos" : filtroRiesgo} · Resultados: ${estudiantesFiltrados.length
+    }`;
 
   const exportarCSV = () => {
     const filas = estudiantesFiltrados.map(studentToRow);

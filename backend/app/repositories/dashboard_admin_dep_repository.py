@@ -77,7 +77,7 @@ class dashboardAdminRepository:
         return {row["tipo_riesgo"]: row["count"] for row in rows}
     
     
-    async def monthly_evolution_score(self, anio): 
+    async def monthly_evolution_score(self, anio: int) -> dict[int, float]:
         rows = await self.conn.fetch(
             """
             SELECT

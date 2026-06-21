@@ -4,7 +4,7 @@
  */
 
 import { useState, type FormEvent } from "react";
-import type { Student, SubjectProgress, TimelineEvent } from "../types.ts";
+import type { Student, SubjectProgress, TimelineEvent } from "../types/types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface StudentProfileViewProps {
@@ -260,21 +260,19 @@ export default function StudentProfileView({
             <div className="flex border-b border-brand-outline-variant bg-[#f3f4f5]">
               <button
                 onClick={() => setActiveTab("trayectoria")}
-                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                  activeTab === "trayectoria"
+                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === "trayectoria"
                     ? "border-brand-primary text-brand-primary bg-white"
                     : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
-                }`}
+                  }`}
               >
                 Trayectoria Académica
               </button>
               <button
                 onClick={() => setActiveTab("encuestas")}
-                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                  activeTab === "encuestas"
+                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === "encuestas"
                     ? "border-brand-primary text-brand-primary bg-white"
                     : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
-                }`}
+                  }`}
               >
                 Encuestas & Sentimiento
               </button>
@@ -322,15 +320,14 @@ export default function StudentProfileView({
                           </td>
                           <td className="p-3 text-center">
                             <span
-                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                sub.status === "EN RIESGO"
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${sub.status === "EN RIESGO"
                                   ? "bg-[#ffdad6] text-[#ba1a1a]"
                                   : sub.status === "APROBADA"
                                     ? "bg-[#e2f3f5] text-[#006e6e]"
                                     : sub.status === "PROMOCIONADA"
                                       ? "bg-[#90efef] text-[#004f4f]"
                                       : "bg-[#edeeef] text-[#43474f]"
-                              }`}
+                                }`}
                             >
                               {sub.status}
                             </span>
@@ -438,13 +435,12 @@ export default function StudentProfileView({
                 ENGAGEMENT CAMPUS
               </span>
               <p
-                className={`text-2xl font-black mt-1 ${
-                  student.engagement === "Bajo"
+                className={`text-2xl font-black mt-1 ${student.engagement === "Bajo"
                     ? "text-brand-error"
                     : student.engagement === "Medio"
                       ? "text-amber-500"
                       : "text-[#006a6a]"
-                }`}
+                  }`}
               >
                 {student.engagement}
               </p>
@@ -562,22 +558,20 @@ export default function StudentProfileView({
                   <button
                     type="button"
                     onClick={() => setInterviewModality("Presencial")}
-                    className={`p-2 border rounded text-xs font-bold transition-all ${
-                      interviewModality === "Presencial"
+                    className={`p-2 border rounded text-xs font-bold transition-all ${interviewModality === "Presencial"
                         ? "bg-brand-primary text-white border-brand-primary"
                         : "bg-white text-brand-primary border-brand-outline-variant"
-                    }`}
+                      }`}
                   >
                     Presencial
                   </button>
                   <button
                     type="button"
                     onClick={() => setInterviewModality("Virtual")}
-                    className={`p-2 border rounded text-xs font-bold transition-all ${
-                      interviewModality === "Virtual"
+                    className={`p-2 border rounded text-xs font-bold transition-all ${interviewModality === "Virtual"
                         ? "bg-brand-primary text-white border-brand-primary"
                         : "bg-white text-brand-primary border-brand-outline-variant"
-                    }`}
+                      }`}
                   >
                     Virtual
                   </button>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Survey } from "../types.ts";
+import type { Survey } from "../types/types.ts";
 
 interface SurveyResponsesModalProps {
   survey: Survey;

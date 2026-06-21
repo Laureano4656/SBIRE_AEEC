@@ -31,10 +31,11 @@ async def conteo_estudiantes(
 async def conteo_por_riesgo(
     body: FiltroRiesgo,
     conn: asyncpg.Connection = Depends(get_conn),
-) -> dict:
+) -> dict[str, int]:
     service = DashboardAdminDepService(conn)
     return await service.obtener_conteo_por_riesgo(body.carrera_id, body.anio)
 
+# TODO filtro para carrera 
 @router.get("/estadisticas/totales/criticos", response_model=int)
 async def total_criticos(
     conn: asyncpg.Connection = Depends(get_conn),
@@ -42,6 +43,7 @@ async def total_criticos(
     service = DashboardAdminDepService(conn)
     return await service.obtener_total_criticos()
 
+# TODO filtro para carrera 
 @router.get("/estadisticas/totales/alertas-nuevas", response_model=int)
 async def total_alertas_nuevas(
     conn: asyncpg.Connection = Depends(get_conn),
@@ -49,6 +51,7 @@ async def total_alertas_nuevas(
     service = DashboardAdminDepService(conn)
     return await service.obtener_total_alertas_nuevas()
 
+# TODO filtro para carrera 
 @router.get("/estadisticas/totales/intervenciones-mes", response_model=int)
 async def intervenciones_del_mes(
     conn: asyncpg.Connection = Depends(get_conn),
@@ -56,11 +59,12 @@ async def intervenciones_del_mes(
     service = DashboardAdminDepService(conn)
     return await service.obtener_intervenciones_del_mes()
 
+# TODO filtro para carrera y año
 @router.get("/estadisticas/evolucion-score/{anio}", response_model=dict)
 async def evolucion_mensual_score(
     anio: int,
     conn: asyncpg.Connection = Depends(get_conn),
-) -> dict:
+) -> dict[str, float]:
     service = DashboardAdminDepService(conn)
     return await service.obtener_evolucion_mensual_score(anio)
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Student, SubjectProgress, TimelineEvent } from "../types.ts";
+import type { Student, SubjectProgress, TimelineEvent } from "../types/types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface AdminStudentViewProps {
@@ -139,13 +139,12 @@ export default function AdminStudentView({
               src={student.avatarUrl}
             />
             <span
-              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                student.riskLevel === "CRÍTICO"
+              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${student.riskLevel === "CRÍTICO"
                   ? "bg-[#ba1a1a]"
                   : student.riskLevel === "MEDIO"
                     ? "bg-amber-500"
                     : "bg-[#006a6a]"
-              }`}
+                }`}
             />
           </div>
           <div>
@@ -214,13 +213,12 @@ export default function AdminStudentView({
             ENGAGEMENT CAMPUS
           </span>
           <span
-            className={`text-2xl font-black mt-1 block ${
-              student.engagement === "Bajo"
+            className={`text-2xl font-black mt-1 block ${student.engagement === "Bajo"
                 ? "text-brand-error"
                 : student.engagement === "Medio"
                   ? "text-amber-600"
                   : "text-[#006a6a]"
-            }`}
+              }`}
           >
             {student.engagement}
           </span>
@@ -236,21 +234,19 @@ export default function AdminStudentView({
       <div className="mt-6 bg-[#f3f4f5] border border-brand-outline-variant rounded p-1 flex gap-1 w-fit">
         <button
           onClick={() => setActiveTab("trayectoria")}
-          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${
-            activeTab === "trayectoria"
+          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${activeTab === "trayectoria"
               ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
               : "text-[#43474f] hover:text-brand-primary"
-          }`}
+            }`}
         >
           Trayectoria Académica
         </button>
         <button
           onClick={() => setActiveTab("timeline")}
-          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${
-            activeTab === "timeline"
+          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${activeTab === "timeline"
               ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
               : "text-[#43474f] hover:text-brand-primary"
-          }`}
+            }`}
         >
           Línea de Tiempo
         </button>
