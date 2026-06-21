@@ -23,4 +23,6 @@ class IntervencionResponse(BaseModel):
     class Config:
         from_attributes = True
     
-    
+class IntervencionUpdate(BaseModel):
+    resultado: str
+    descripcion: str | None = None

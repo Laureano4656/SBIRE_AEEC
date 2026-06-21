@@ -1,7 +1,6 @@
 from http.client import HTTPException
 
 import asyncpg
-# asumo que el modelo de sqlalchemy/pydantic base se llama Intervencion
 from app.models.intervencion import Intervencion 
 from app.services.crud_service import CrudService
 from app.repositories.intervenciones_repository import IntervencionRepository
