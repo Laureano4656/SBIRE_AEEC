@@ -1,5 +1,5 @@
 from app.models.estudiante_dashboard import EstudianteDashboardResponse
-from app.schemas.intervenciones import EntrevistaCreate, IntervencionCreate
+from app.schemas.dashboard_admin_dep import GeneralEstudianteDashboardAdminResponse
 import asyncpg
 import datetime
 
@@ -38,5 +38,41 @@ class dashboardTutorRepository:
         )
         return [EstudianteDashboardResponse(**dict(row)) for row in rows]
 
-
+    async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardAdminResponse | None:
+        row = await self.conn.fetchrow("""
+            SELECT
+                e.nombre,
+                e.apellido,
+                e.anio_ingreso AS anio,
+                c.nombre AS carrera,
+                COALESCE(aprobadas.materias_aprobadas, 0) AS materias_aprobadas,
+                COALESCE(totales.materias_totales, 0) AS materias_totales,
+                s.valor AS score_riesgo
+            FROM estudiantes e
+            INNER JOIN carreras c ON e.carrera_id = c.id
+            INNER JOIN (
+                SELECT DISTINCT ON (estudiante_id) *
+                FROM score_total
+                ORDER BY estudiante_id, creado_en DESC
+            ) s ON e.id = s.estudiante_id
+            LEFT JOIN (
+                SELECT
+                    estudiante_id,
+                    COUNT(DISTINCT materia_id) AS materias_aprobadas
+                FROM cursadas
+                WHERE estado = 'aprobada'
+                GROUP BY estudiante_id
+            ) aprobadas ON aprobadas.estudiante_id = e.id
+            LEFT JOIN (
+                SELECT
+                    pe.carrera_id,
+                    COUNT(DISTINCT m.id) AS materias_totales
+                FROM plan_estudios pe
+                INNER JOIN materias m ON m.plan_id = pe.id
+                WHERE pe.activo = TRUE
+                GROUP BY pe.carrera_id
+            ) totales ON totales.carrera_id = e.carrera_id
+            WHERE e.legajo = $1
+        """, legajo)
+        return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     
