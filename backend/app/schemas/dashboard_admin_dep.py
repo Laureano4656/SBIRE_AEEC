@@ -44,3 +44,8 @@ class FiltroRiesgo(BaseModel):
 class FiltroEstudiantes(BaseModel):
     anio: int | None = None
     carrera_id: int | None = None
+    
+class indicadoresAgrupadosPorDimensionResponse(BaseModel):
+    nombre_indicador: str
+    dimension: int
+    
