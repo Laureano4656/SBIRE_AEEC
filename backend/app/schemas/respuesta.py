@@ -1,37 +1,35 @@
-from datetime import datetime
 from pydantic import BaseModel, Field
 
-class RespuestaCreate(BaseModel):
-    asignacion_id: int = Field(ge=1)
-    pregunta_id: int = Field(ge=1)
-    opcion_id: int | None = Field(None, ge=1)
-    texto_libre: str | None = None
-    valencia: int | None = None
+class RespuestaItem(BaseModel):
+    """Una respuesta individual dentro del formulario masivo."""
+    pregunta_id: int = Field(..., ge=1)
+    materia_id: int | None = Field(None, ge=1)
+    opcion_seleccionada_id: int | None = Field(None, ge=1)
+    valor_numerico: float | None = None
+    valor_texto: str | None = None
 
-class RespuestaUpdate(BaseModel):
-    asignacion_id: int | None = Field(None, ge=1)
-    pregunta_id: int | None = Field(None, ge=1)
-    opcion_id: int | None = Field(None, ge=1)
-    texto_libre: str | None = None 
-    # --- Campos exclusivos de la IA ---
-    nivel_riesgo: float | None = None
-    motivo_riesgo: str | None = None
-    confianza: int | None = None
-    # ----------------------------------
-    fecha_respuesta: datetime | None = None
+class EncuestaSubmit(BaseModel):
+    """Payload completo que envía el frontend."""
+    respuestas: list[RespuestaItem]
+    es_envio_final: bool = Field(
+        default=False, 
+        description="True: cierra la encuesta. False: guarda como borrador."
+    )
+    es_actualizacion: bool = Field(
+        default=False, 
+        description="True: el alumno está corrigiendo una encuesta ya enviada."
+    )
 
 class RespuestaResponse(BaseModel):
+    """Respuesta estándar para devoluciones de la API."""
     id: int
-    asignacion_id: int | None
-    pregunta_id: int | None
-    opcion_id: int | None
-    texto_libre: str | None
-    # --- Campos exclusivos de la IA ---
-    nivel_riesgo: float | None
-    motivo_riesgo: str | None
-    confianza: int | None
-    # ---------------------------------- 
-    fecha_respuesta: datetime | None
+    asignacion_id: int
+    pregunta_id: int
+    materia_id: int | None
+    opcion_seleccionada_id: int | None
+    valor_numerico: float | None
+    valor_texto: str | None
+    riesgo_calculado: float | None
 
     class Config:
         from_attributes = True
