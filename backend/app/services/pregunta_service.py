@@ -4,6 +4,7 @@ from http.client import HTTPException
 from typing import Any
 
 from app.models.pregunta import Pregunta
+from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 from app.services.crud_service import CrudService
 
 class PreguntaService(CrudService[Pregunta]):

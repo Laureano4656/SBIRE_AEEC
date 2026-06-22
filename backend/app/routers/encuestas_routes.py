@@ -2,7 +2,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, status
 
 from app.api.deps import get_conn
-from app.schemas.encuesta_schemas import FormularioEncuestaResponse, EncuestaSubmit
+from app.schemas.encuesta import FormularioEncuestaResponse, EncuestaSubmit
 from app.services.encuesta_service import EncuestaService
 
 router = APIRouter(prefix="/encuestas", tags=["encuestas"])
