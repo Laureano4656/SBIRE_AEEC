@@ -4,23 +4,19 @@
  */
 
 import { useState, type FormEvent } from "react";
-import type { Student, SubjectProgress, TimelineEvent } from "../types.ts";
+import type { Student, SubjectProgress } from "../types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface StudentProfileViewProps {
   student: Student;
   onBack: () => void;
   onUpdateStudent: (updated: Student) => void;
-  onAddTimelineEvent: (studentId: string, event: TimelineEvent) => void;
-  timelineEvents: TimelineEvent[];
 }
 
 export default function StudentProfileView({
   student,
   onBack,
   onUpdateStudent,
-  onAddTimelineEvent,
-  timelineEvents,
 }: StudentProfileViewProps) {
   const [activeTab, setActiveTab] = useState<"trayectoria" | "encuestas">(
     "trayectoria",
@@ -54,26 +50,7 @@ export default function StudentProfileView({
 
   const handlePlanInterview = (e: FormEvent) => {
     e.preventDefault();
-    const newEvent: TimelineEvent = {
-      id: "timeline_" + Date.now(),
-      date: new Date(interviewDate)
-        .toLocaleDateString("es-AR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-        .toUpperCase(),
-      type: "ENTREVISTA",
-      title: "Entrevista Programada",
-      description: `Entrevista ${interviewModality} agendada para el día ${interviewDate} a las ${interviewTime} hs. Ubicación: ${interviewLoc}.`,
-      tutor: "Tutor: Dr. Juan Pérez",
-      icon: "calendar_month",
-      color: "bg-brand-primary",
-    };
 
-    onAddTimelineEvent(student.id, newEvent);
-
-    // Update student alert state to 'En Revisión' if it was new
     if (student.statusAlerta === "NUEVA") {
       onUpdateStudent({
         ...student,
@@ -88,25 +65,6 @@ export default function StudentProfileView({
     e.preventDefault();
     if (!interventionDesc.trim()) return;
 
-    const newEvent: TimelineEvent = {
-      id: "timeline_" + Date.now(),
-      date: new Date()
-        .toLocaleDateString("es-AR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-        .toUpperCase(),
-      type: "MANUAL",
-      title: interventionTitle,
-      description: interventionDesc,
-      tutor: "Tutor: Dr. Juan Pérez",
-      icon: "build_circle",
-      color: "bg-brand-secondary",
-    };
-
-    onAddTimelineEvent(student.id, newEvent);
-
     onUpdateStudent({
       ...student,
       statusAlerta: "INTERVENIDA",
@@ -118,26 +76,7 @@ export default function StudentProfileView({
 
   const handleCloseAlert = (e: FormEvent) => {
     e.preventDefault();
-    const newEvent: TimelineEvent = {
-      id: "timeline_" + Date.now(),
-      date: new Date()
-        .toLocaleDateString("es-AR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-        .toUpperCase(),
-      type: "CIERRE",
-      title: "Cierre de Alerta Temprana",
-      description: `Alerta finalizada manualmente. Motivo: ${closeReason}`,
-      tutor: "Tutor: Dr. Juan Pérez",
-      icon: "check_circle",
-      color: "bg-[#006a6a]",
-    };
 
-    onAddTimelineEvent(student.id, newEvent);
-
-    // Update risk level to SEGURO and alert status to SIN ALERTA
     onUpdateStudent({
       ...student,
       riskLevel: "SEGURO",
@@ -252,9 +191,7 @@ export default function StudentProfileView({
       </div>
 
       {/* Content Layout: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Side: Trays & Stats (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="space-y-6">
           {/* Custom Tabs */}
           <div className="bg-white border border-brand-outline-variant rounded">
             <div className="flex border-b border-brand-outline-variant bg-[#f3f4f5]">
@@ -457,62 +394,6 @@ export default function StudentProfileView({
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Right Side: Timeline (1/3 width) */}
-        <div className="bg-white border border-brand-outline-variant rounded p-5 flex flex-col shadow-sm">
-          <div className="flex justify-between items-center mb-4 pb-2 border-b border-brand-outline-variant">
-            <h3 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-lg">history</span>
-              Línea de Tiempo
-            </h3>
-            <span className="text-[10px] bg-brand-primary-container text-white px-2 py-0.5 rounded font-bold">
-              {timelineEvents.length} Eventos
-            </span>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-5 pr-1 max-h-[450px]">
-            {timelineEvents.map((event, idx) => (
-              <div
-                key={event.id || idx}
-                className="relative pl-6 border-l-2 border-brand-outline-variant last:border-transparent pb-1"
-              >
-                {/* Visual Dot */}
-                <div
-                  className={`absolute -left-[9px] top-0.5 w-4.5 h-4.5 ${event.color} text-white rounded-full flex items-center justify-center`}
-                >
-                  <span className="material-symbols-outlined text-[10px]">
-                    {event.icon}
-                  </span>
-                </div>
-
-                <div className="text-[10px] font-bold text-brand-outline">
-                  {event.date}
-                </div>
-                <h4 className="font-bold text-brand-primary text-xs mt-0.5">
-                  {event.title}
-                </h4>
-                <p className="text-[11px] text-[#43474f] mt-1 leading-relaxed">
-                  {event.description}
-                </p>
-                {event.tutor && (
-                  <p className="text-[10px] text-[#006a6a] italic font-semibold mt-1">
-                    {event.tutor}
-                  </p>
-                )}
-              </div>
-            ))}
-
-            {timelineEvents.length === 0 && (
-              <div className="text-center py-8 text-brand-outline text-xs">
-                <span className="material-symbols-outlined text-2xl mb-1 text-brand-outline-variant">
-                  info
-                </span>
-                <p>No se registran eventos de seguimiento todavía.</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 

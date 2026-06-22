@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { Student, TimelineEvent } from "../types.ts";
+import type { Student } from "../types.ts";
 import StudentProfileView from "./StudentProfileView.tsx";
 
 interface Entrevista {
@@ -10,6 +10,15 @@ interface Entrevista {
   tipo: "Presencial" | "Virtual";
   estado: "Pendiente" | "Realizada" | "Cancelada";
   notas: string;
+}
+
+interface Intervencion {
+  id: string;
+  entrevistaId: string;
+  tipo: "tutoria_academica" | "derivacion" | "seguimiento_virtual" | "asesoria_par" | "otro";
+  descripcion: string;
+  resultado: "positivo" | "neutro" | "negativo" | "sin_contacto";
+  fecha: string;
 }
 
 interface Alerta {
@@ -79,7 +88,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
       riskValue: 4.8,
       tramo: "INICIAL",
       lastRecalculation: "16/06/2026",
-      statusAlerta: "RESUELTA",
+      statusAlerta: "SIN ALERTA",
       gpa: 6.8,
       subjectsApproved: 6,
       subjectsTotal: 8,
@@ -111,6 +120,9 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
       notas: "Alumna retomó regularidad. Acordamos seguimiento en 2 semanas.",
     },
   ]);
+
+  // Intervenciones
+  const [intervenciones, setIntervenciones] = useState<Intervencion[]>([]);
 
   // Alertas
   const [alertas, setAlertas] = useState<Alerta[]>([
@@ -154,11 +166,6 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
     null,
   );
 
-  // Timeline events map (local state for StudentProfileView)
-  const [timelineEventsMap, setTimelineEventsMap] = useState<{
-    [studentId: string]: TimelineEvent[];
-  }>({});
-
   // Form nueva entrevista
   const [form, setForm] = useState({
     studentId: "",
@@ -167,20 +174,18 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
     notas: "",
   });
 
+  const [showIntervencionModal, setShowIntervencionModal] = useState(false);
+  const [intervencionForm, setIntervencionForm] = useState({
+    entrevistaId: "",
+    tipo: "tutoria_academica" as Intervencion["tipo"],
+    descripcion: "",
+    resultado: "positivo" as Intervencion["resultado"],
+  });
+
   const handleUpdateStudent = (updated: Student) => {
     setStudents((prev) =>
       prev.map((s) => (s.id === updated.id ? updated : s)),
     );
-  };
-
-  const handleAddTimelineEvent = (studentId: string, event: TimelineEvent) => {
-    setTimelineEventsMap((prev) => {
-      const currentList = prev[studentId] || [];
-      return {
-        ...prev,
-        [studentId]: [event, ...currentList],
-      };
-    });
   };
 
   const filteredStudents = students.filter((s) => {
@@ -330,6 +335,31 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
 
     setShowModal(false);
     setForm({ studentId: "", fecha: "", tipo: "Presencial", notas: "" });
+  };
+
+  const handleCrearIntervencion = (e: FormEvent) => {
+    e.preventDefault();
+    const nueva: Intervencion = {
+      id: "i_" + Date.now(),
+      entrevistaId: intervencionForm.entrevistaId,
+      tipo: intervencionForm.tipo,
+      descripcion: intervencionForm.descripcion,
+      resultado: intervencionForm.resultado,
+      fecha: new Date().toLocaleDateString("es-AR"),
+    };
+    setIntervenciones([nueva, ...intervenciones]);
+    setShowIntervencionModal(false);
+    setIntervencionForm({
+      entrevistaId: "",
+      tipo: "tutoria_academica",
+      descripcion: "",
+      resultado: "positivo",
+    });
+  };
+
+  const abrirIntervencionModal = (entrevistaId: string) => {
+    setIntervencionForm((f) => ({ ...f, entrevistaId }));
+    setShowIntervencionModal(true);
   };
 
   const markAsRealizada = (id: string) => {
@@ -505,10 +535,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
             selectedStudent ? (
               <StudentProfileView
                 student={selectedStudent}
-                timelineEvents={timelineEventsMap[selectedStudent.id] || []}
                 onBack={() => setSelectedStudentId(null)}
                 onUpdateStudent={handleUpdateStudent}
-                onAddTimelineEvent={handleAddTimelineEvent}
               />
             ) : (
               <div className="space-y-6 animate-fade-in">
@@ -792,6 +820,46 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                             "{e.notas}"
                           </p>
                         )}
+                        {(() => {
+                          const interv = intervenciones.find(
+                            (i) => i.entrevistaId === e.id,
+                          );
+                          if (!interv) return null;
+                          return (
+                            <div className="mt-2 p-2.5 bg-[#eef2ff] border border-brand-primary/20 rounded">
+                              <p className="text-[10px] font-bold text-brand-primary uppercase tracking-wider mb-1">
+                                Intervención registrada
+                              </p>
+                              <p className="text-[10px] text-[#43474f] font-semibold">
+                                Tipo:{" "}
+                                {interv.tipo === "tutoria_academica"
+                                  ? "Tutoría Académica"
+                                  : interv.tipo === "derivacion"
+                                    ? "Derivación"
+                                    : interv.tipo === "seguimiento_virtual"
+                                      ? "Seguimiento Virtual"
+                                      : interv.tipo === "asesoria_par"
+                                        ? "Asesoría Par"
+                                        : "Otro"}
+                              </p>
+                              {interv.descripcion && (
+                                <p className="text-[10px] text-[#43474f] mt-0.5">
+                                  "{interv.descripcion}"
+                                </p>
+                              )}
+                              <p className="text-[10px] text-[#43474f] font-semibold mt-0.5">
+                                Resultado:{" "}
+                                {interv.resultado === "positivo"
+                                  ? "Positivo"
+                                  : interv.resultado === "neutro"
+                                    ? "Neutro"
+                                    : interv.resultado === "negativo"
+                                      ? "Negativo"
+                                      : "Sin Contacto"}
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </div>
                       {e.estado === "Pendiente" && (
                         <div className="flex gap-2 self-start">
@@ -809,6 +877,17 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                           </button>
                         </div>
                       )}
+                      {e.estado === "Realizada" &&
+                        !intervenciones.find((i) => i.entrevistaId === e.id) && (
+                          <div className="flex gap-2 self-start">
+                            <button
+                              onClick={() => abrirIntervencionModal(e.id)}
+                              className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-3 py-1.5 rounded transition-all whitespace-nowrap"
+                            >
+                              Vincular a intervención
+                            </button>
+                          </div>
+                        )}
                     </div>
                   ))}
 
@@ -1099,6 +1178,124 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                   className="px-5 py-2 bg-brand-primary text-white rounded text-xs font-bold hover:opacity-90 transition-all"
                 >
                   Agendar Entrevista
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal registrar intervención */}
+      {showIntervencionModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="registrar-intervencion-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#191c1d]/60 backdrop-blur-xs animate-fade-in"
+        >
+          <div className="bg-white border border-brand-outline-variant rounded shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex justify-between items-center border-b border-brand-outline-variant pb-3">
+              <h2
+                id="registrar-intervencion-title"
+                className="text-base font-bold text-brand-primary flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  assignment
+                </span>
+                Registrar Intervención
+              </h2>
+              <button
+                onClick={() => setShowIntervencionModal(false)}
+                aria-label="Cerrar"
+                className="text-brand-outline hover:text-brand-error cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleCrearIntervencion}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                  Tipo de intervención
+                </label>
+                <select
+                  required
+                  value={intervencionForm.tipo}
+                  onChange={(e) =>
+                    setIntervencionForm((f) => ({
+                      ...f,
+                      tipo: e.target.value as Intervencion["tipo"],
+                    }))
+                  }
+                  className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
+                >
+                  <option value="tutoria_academica">Tutoría Académica</option>
+                  <option value="derivacion">Derivación</option>
+                  <option value="seguimiento_virtual">
+                    Seguimiento Virtual
+                  </option>
+                  <option value="asesoria_par">Asesoría Par</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                  Descripción
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={intervencionForm.descripcion}
+                  onChange={(e) =>
+                    setIntervencionForm((f) => ({
+                      ...f,
+                      descripcion: e.target.value,
+                    }))
+                  }
+                  placeholder="Describí lo ocurrido durante la intervención..."
+                  className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider mb-1">
+                  Resultado observado
+                </label>
+                <select
+                  required
+                  value={intervencionForm.resultado}
+                  onChange={(e) =>
+                    setIntervencionForm((f) => ({
+                      ...f,
+                      resultado: e.target.value as Intervencion["resultado"],
+                    }))
+                  }
+                  className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
+                >
+                  <option value="positivo">Positivo</option>
+                  <option value="neutro">Neutro</option>
+                  <option value="negativo">Negativo</option>
+                  <option value="sin_contacto">Sin Contacto</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowIntervencionModal(false)}
+                  className="px-4 py-2 border border-brand-outline-variant text-[#43474f] rounded text-xs font-semibold hover:bg-[#edeeef] transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-brand-primary text-white rounded text-xs font-bold hover:opacity-90 transition-all"
+                >
+                  Registrar Intervención
                 </button>
               </div>
             </form>

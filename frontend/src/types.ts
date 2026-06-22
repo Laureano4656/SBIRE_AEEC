@@ -38,17 +38,6 @@ export interface SubjectProgress {
   status: "EN RIESGO" | "APROBADA" | "CURSANDO" | "PROMOCIONADA" | "REPROBADA";
 }
 
-export interface TimelineEvent {
-  id: string;
-  date: string;
-  type: "ENTREVISTA" | "ALERTA" | "CORREO" | "CIERRE" | "MANUAL";
-  title: string;
-  description: string;
-  tutor?: string;
-  icon: string;
-  color: string;
-}
-
 export interface Interview {
   id: string;
   studentId: string;

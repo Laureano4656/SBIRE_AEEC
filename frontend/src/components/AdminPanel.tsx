@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import type { Student, TimelineEvent, Interview, Survey } from "../types.ts";
+import type { Student, Interview, Survey } from "../types.ts";
 import AdminStudentView from "./AdminStudentView.tsx";
 import AHPConfigPanel from "./AHPConfigPanel.tsx";
 import ReportesPanel from "./ReportesPanel.tsx";
@@ -13,20 +13,15 @@ import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
 
 interface AdminPanelProps {
   students: Student[];
-  interviews: Interview[];
   surveys: Survey[];
-  timelineEventsMap: { [studentId: string]: TimelineEvent[] };
   onUpdateStudent: (updated: Student) => void;
-  onAddTimelineEvent: (studentId: string, event: TimelineEvent) => void;
   onLogout: () => void;
 }
 
 export default function AdminPanel({
   students,
   surveys,
-  timelineEventsMap,
   onUpdateStudent,
-  onAddTimelineEvent,
   onLogout,
 }: AdminPanelProps) {
   const [activeMenu, setActiveMenu] = useState<
@@ -362,7 +357,6 @@ export default function AdminPanel({
             /* Selected Student Read-only view */
             <AdminStudentView
               student={selectedStudent}
-              timelineEvents={timelineEventsMap[selectedStudent.id] || []}
               onBack={() => setSelectedStudentId(null)}
             />
           ) : activeMenu === "panel" ? (
@@ -746,17 +740,6 @@ export default function AdminPanel({
                     Sistema Travesía.
                   </p>
                 </div>
-
-                {/* Export button block */}
-                <button
-                  onClick={() => alert("Exportando reporte en formato CSV...")}
-                  className="flex items-center gap-1 bg-white border border-brand-outline-variant hover:bg-[#edeeef] text-brand-primary text-xs font-bold py-2 px-4 rounded transition-all cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-base">
-                    download
-                  </span>
-                  Exportar Reporte
-                </button>
               </div>
 
               {/* Filtering bar representing second screenshot */}
@@ -876,9 +859,6 @@ export default function AdminPanel({
                         <th className="p-3 border-b border-brand-outline-variant text-center">
                           ESTADO ALERTA
                         </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
-                          ACCIONES
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-outline-variant">
@@ -918,27 +898,6 @@ export default function AdminPanel({
                           </td>
                           <td className="p-3 text-center">
                             {getAlertPill(s.statusAlerta)}
-                          </td>
-                          <td className="p-3 text-center flex items-center justify-center gap-2">
-                            {/* Eyeball profile click */}
-                            <button
-                              onClick={() => setSelectedStudentId(s.id)}
-                              title="Ver Ficha Académica"
-                              className="p-1 text-brand-primary hover:bg-brand-primary-container/10 rounded transition-all cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-base">
-                                visibility
-                              </span>
-                            </button>
-                            <button
-                              onClick={() => setSelectedStudentId(s.id)}
-                              title="Planificar Intervención"
-                              className="p-1 text-[#006a6a] hover:bg-brand-secondary/10 rounded transition-all cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-base">
-                                playlist_add_check
-                              </span>
-                            </button>
                           </td>
                         </tr>
                       ))}

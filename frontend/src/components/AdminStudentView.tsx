@@ -1,10 +1,8 @@
-import { useState } from "react";
-import type { Student, SubjectProgress, TimelineEvent } from "../types.ts";
+import type { Student, SubjectProgress } from "../types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface AdminStudentViewProps {
   student: Student;
-  timelineEvents: TimelineEvent[];
   onBack: () => void;
 }
 
@@ -103,13 +101,8 @@ const statusSubjectBadge = (status: SubjectProgress["status"]) => {
 
 export default function AdminStudentView({
   student,
-  timelineEvents,
   onBack,
 }: AdminStudentViewProps) {
-  const [activeTab, setActiveTab] = useState<"trayectoria" | "timeline">(
-    "trayectoria",
-  );
-
   const subjects: SubjectProgress[] =
     student.id === "sofia_martinez"
       ? SUBJECTS_SOFIA
@@ -119,7 +112,6 @@ export default function AdminStudentView({
 
   return (
     <div className="animate-fade-in">
-      {/* Back button */}
       <button
         onClick={onBack}
         className="flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:underline mb-4 cursor-pointer"
@@ -128,7 +120,6 @@ export default function AdminStudentView({
         Volver al listado de estudiantes
       </button>
 
-      {/* Main Student Header Card */}
       <div className="bg-white border border-brand-outline-variant rounded p-6 shadow-xs flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
@@ -168,7 +159,6 @@ export default function AdminStudentView({
             </p>
           </div>
         </div>
-
         <div className="flex flex-col gap-2 items-start md:items-end shrink-0">
           <div className="flex flex-wrap gap-2">
             {riskBadge(student.riskLevel)}
@@ -180,7 +170,6 @@ export default function AdminStudentView({
         </div>
       </div>
 
-      {/* Quick Metrics Bento Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
         <div className="bg-white border border-brand-outline-variant rounded p-4 shadow-xs">
           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
@@ -232,141 +221,66 @@ export default function AdminStudentView({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mt-6 bg-[#f3f4f5] border border-brand-outline-variant rounded p-1 flex gap-1 w-fit">
-        <button
-          onClick={() => setActiveTab("trayectoria")}
-          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${
-            activeTab === "trayectoria"
-              ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
-              : "text-[#43474f] hover:text-brand-primary"
-          }`}
-        >
-          Trayectoria Académica
-        </button>
-        <button
-          onClick={() => setActiveTab("timeline")}
-          className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${
-            activeTab === "timeline"
-              ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
-              : "text-[#43474f] hover:text-brand-primary"
-          }`}
-        >
-          Línea de Tiempo
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="mt-4">
-        {activeTab === "trayectoria" ? (
-          <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                    <th className="p-3 pl-5 border-b border-brand-outline-variant">
-                      Asignatura
-                    </th>
-                    <th className="p-3 border-b border-brand-outline-variant text-center">
-                      Parciales
-                    </th>
-                    <th className="p-3 border-b border-brand-outline-variant text-center">
-                      Final
-                    </th>
-                    <th className="p-3 border-b border-brand-outline-variant text-center">
-                      Estado
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-outline-variant">
-                  {subjects.map((subj) => (
-                    <tr
-                      key={subj.code}
-                      className="hover:bg-[#f8f9fa] transition-colors"
-                    >
-                      <td className="p-3 pl-5">
-                        <span className="font-bold text-brand-primary">
-                          {subj.name}
-                        </span>
-                        <span className="text-[10px] text-brand-outline block font-medium">
-                          {subj.teacher}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center font-medium">
-                        {subj.midtermGrades}
-                      </td>
-                      <td className="p-3 text-center font-bold">
-                        {subj.finalGrade}
-                      </td>
-                      <td className="p-3 text-center">
-                        {statusSubjectBadge(subj.status)}
-                      </td>
-                    </tr>
-                  ))}
-                  {subjects.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="p-8 text-center text-brand-outline font-medium"
-                      >
-                        No hay datos de trayectoria académica disponibles para
-                        este estudiante.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
-            <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-              <span className="material-symbols-outlined text-lg">
-                timeline
-              </span>
-              Línea de Tiempo
-              <span className="bg-[#edeeef] text-[#43474f] text-[10px] font-bold px-2 py-0.5 rounded ml-1">
-                {timelineEvents.length} eventos
-              </span>
-            </h4>
-
-            <div className="space-y-0 max-h-[450px] overflow-y-auto">
-              {timelineEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="relative pl-8 pb-5 border-l border-[#c3c6d1] last:border-l-0 last:pb-0"
-                >
-                  <span
-                    className={`absolute -left-3 w-6 h-6 ${event.color} text-white rounded-full flex items-center justify-center shadow-xs`}
+      <div className="mt-6">
+        <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                  <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                    Asignatura
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    Parciales
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    Final
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    Estado
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-brand-outline-variant">
+                {subjects.map((subj) => (
+                  <tr
+                    key={subj.code}
+                    className="hover:bg-[#f8f9fa] transition-colors"
                   >
-                    <span className="material-symbols-outlined text-sm">
-                      {event.icon}
-                    </span>
-                  </span>
-                  <span className="text-[10px] text-brand-outline font-bold">
-                    {event.date}
-                  </span>
-                  <p className="font-bold text-xs text-brand-primary">
-                    {event.title}
-                  </p>
-                  <p className="text-[11px] text-[#43474f] leading-relaxed mt-0.5">
-                    {event.description}
-                  </p>
-                  {event.tutor && (
-                    <p className="text-[10px] text-brand-outline italic mt-0.5">
-                      {event.tutor}
-                    </p>
-                  )}
-                </div>
-              ))}
-              {timelineEvents.length === 0 && (
-                <p className="text-center py-8 text-brand-outline font-medium text-xs">
-                  No se registran eventos de seguimiento todavía.
-                </p>
-              )}
-            </div>
+                    <td className="p-3 pl-5">
+                      <span className="font-bold text-brand-primary">
+                        {subj.name}
+                      </span>
+                      <span className="text-[10px] text-brand-outline block font-medium">
+                        {subj.teacher}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center font-medium">
+                      {subj.midtermGrades}
+                    </td>
+                    <td className="p-3 text-center font-bold">
+                      {subj.finalGrade}
+                    </td>
+                    <td className="p-3 text-center">
+                      {statusSubjectBadge(subj.status)}
+                    </td>
+                  </tr>
+                ))}
+                {subjects.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="p-8 text-center text-brand-outline font-medium"
+                    >
+                      No hay datos de trayectoria académica disponibles para
+                      este estudiante.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -6,7 +6,6 @@
 import type {
   Student,
   SubjectProgress,
-  TimelineEvent,
   Interview,
   Survey,
   SurveyResponse,
@@ -283,50 +282,6 @@ export const INITIAL_SURVEYS: Survey[] = [
     responsesCount: 189,
     responseRate: 92.0,
     urgentCasesCount: 3,
-  },
-];
-
-export const INITIAL_TIMELINE_SOFIA: TimelineEvent[] = [
-  {
-    id: "ev_1",
-    date: "12 OCT 2023",
-    type: "ENTREVISTA",
-    title: "Entrevista Individual",
-    description:
-      "La estudiante manifiesta problemas personales que afectan su rendimiento en Análisis II. Se derivó a gabinete psicopedagógico.",
-    tutor: "Tutor: Ing. Garcia",
-    icon: "chat_bubble",
-    color: "bg-brand-primary",
-  },
-  {
-    id: "ev_2",
-    date: "05 OCT 2023",
-    type: "ALERTA",
-    title: "Alerta Automática",
-    description:
-      "Faltas consecutivas detectadas (Análisis II) y aplazo en 1er Parcial.",
-    icon: "notifications_active",
-    color: "bg-[#ba1a1a]",
-  },
-  {
-    id: "ev_3",
-    date: "20 SEP 2023",
-    type: "CORREO",
-    title: "Envío de Correo Informativo",
-    description:
-      "Invitación a taller de técnicas de estudio y apoyo académico.",
-    icon: "mail",
-    color: "bg-orange-500",
-  },
-  {
-    id: "ev_4",
-    date: "15 AGO 2023",
-    type: "CIERRE",
-    title: "Cierre de Alerta Q1",
-    description:
-      "La estudiante regularizó su situación tras aprobar recuperatorios de 2do año.",
-    icon: "check_circle",
-    color: "bg-[#006a6a]",
   },
 ];
 
