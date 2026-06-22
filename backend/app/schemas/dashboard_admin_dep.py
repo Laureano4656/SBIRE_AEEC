@@ -45,7 +45,9 @@ class FiltroEstudiantes(BaseModel):
     anio: int | None = None
     carrera_id: int | None = None
     
-class indicadoresAgrupadosPorDimensionResponse(BaseModel):
-    nombre_indicador: str
-    dimension: int
-    
+class IndicadorResponse(BaseModel):
+    nombre: str
+
+class DimensionAgrupadaResponse(BaseModel):
+    nombre_dimension: str
+    indicadores: list[IndicadorResponse]

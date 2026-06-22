@@ -2,7 +2,7 @@ import datetime
 
 import asyncpg
 
-from app.schemas.dashboard_admin_dep import EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, PreguntasRespuestasResponse, indicadoresAgrupadosPorDimensionResponse
+from app.schemas.dashboard_admin_dep import DimensionAgrupadaResponse, EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, IndicadorResponse, PreguntasRespuestasResponse, indicadoresAgrupadosPorDimensionResponse
 
 class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -314,13 +314,20 @@ class dashboardAdminRepository:
         )
         return dict(row)
     
-    async def indicadores_agrupados_por_dimension(self) -> list[indicadoresAgrupadosPorDimensionResponse]:
-        rows = await self.conn.fetch(
-            """
-            SELECT 
-                i.nombre AS nombre_indicador,
-                i.dimension AS dimension
-            FROM indicadores i
-            """
+    async def indicadores_agrupados_por_dimension(self) -> list[DimensionAgrupadaResponse]:
+        dimensiones = await self.conn.fetch(
+            "SELECT id, nombre FROM indicadores WHERE dimension IS NULL"
         )
-        return [indicadoresAgrupadosPorDimensionResponse(**dict(row)) for row in rows]
+        indicadores = await self.conn.fetch(
+            "SELECT nombre, dimension AS dimension_id FROM indicadores WHERE dimension IS NOT NULL"
+        )
+
+        dicc = {
+            d['id']: DimensionAgrupadaResponse(nombre_dimension=d['nombre'], indicadores=[])
+            for d in dimensiones
+        }
+
+        for ind in indicadores:
+            dicc[ind['dimension_id']].indicadores.append(IndicadorResponse(nombre=ind['nombre']))
+
+        return list(dicc.values())
