@@ -104,7 +104,7 @@ class EncuestasRepository:
             evento_disparador as evento_disparador,
             periodo_lectivo as periodo_lectivo,
             completado as completado
-            FROM asignacion_encuesta WHERE id = $1 AND completado=false""",
+            FROM asignacion_encuesta WHERE id = $1 AND completado=false AND borrador = false""",
             asignacion_id
         )
         return AsignacionEncuestaResponse(**row) if row else None
@@ -149,3 +149,15 @@ class EncuestasRepository:
 
     async def get_materias_disponibles(self, estudiante_id: int) -> list[dict]:
         return await self._obtener_materias_disponibles(estudiante_id)
+
+    async def publicar_asignacion(self, asignacion_id: int) -> bool:
+        """Cambia el campo borrador a false para que sea visible por los estudiantes."""
+        
+        query = """
+            UPDATE asignacion_encuesta 
+            SET borrador = false 
+            WHERE id = $1
+            RETURNING id;
+        """
+        result = await self.conn.fetchval(query, asignacion_id)
+        return result is not None

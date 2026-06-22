@@ -40,3 +40,15 @@ async def enviar_respuestas(
     # Aquí se podría emitir un evento en background para que el motor AHP recalcule el riesgo
     
     return {"mensaje": "Encuesta guardada con éxito y asignación completada."}
+
+@router.patch("/asignacion/{asignacion_id}/publicar", status_code=status.HTTP_200_OK)
+async def publicar_encuesta(
+    asignacion_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+) -> dict[str, str]:
+    """
+    Endpoint para que el administrador departamental confirme la encuesta.
+    Pasa el campo 'borrador' de true a false.
+    """
+    service = EncuestaService(conn)
+    return await service.publicar_encuesta(asignacion_id)

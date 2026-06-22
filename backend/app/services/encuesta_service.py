@@ -116,3 +116,18 @@ class EncuestaService:
             )
             for mat in materias
         ]
+    
+    async def publicar_encuesta(self, asignacion_id: int) -> dict[str, str]:
+        """
+        Lógica de negocio para confirmar la encuesta y sacarla del modo borrador.
+        """
+
+        exito = await self.repo.publicar_asignacion(asignacion_id)
+        
+        if not exito:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No se encontró la asignación de encuesta con ID {asignacion_id}."
+            )
+            
+        return {"mensaje": "La encuesta ha sido confirmada."}
