@@ -1,9 +1,6 @@
 from dataclasses import fields
 
-from app.models import RespuestaItem
-from app.models import SubmitEncuestaRequest
-from app.models import AsignacionEncuestaResponse
-from app.models import AsignacionEncuestaCreate
+from app.schemas.encuesta import AsignacionEncuestaResponse
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 import asyncpg
 

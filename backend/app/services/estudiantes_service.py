@@ -1,5 +1,5 @@
 import asyncpg
-from app.models.estudiante import Estudiante, EstudianteCreate
+from app.models.estudiante import Estudiante
 from app.repositories.estudiante_repository import EstudianteRepository
 from app.services.crud_service import CrudService
 from app.schemas.estudiante import EstudianteCreate
