@@ -9,7 +9,7 @@ from app.schemas.dashboard_admin_dep import (
     EventoCronologicoResponse
 )
 
-class DashboardAdminService:
+class DashboardAdminDepService:
     """
     servicio para los datos analiticos y el dashboard del administrador.
     """
@@ -28,10 +28,10 @@ class DashboardAdminService:
     async def obtener_intervenciones_del_mes(self) -> int:
         return await self.repo.total_interventions_month()
 
-    async def obtener_conteo_por_riesgo(self, carrera_id: int, anio: int) -> dict:
+    async def obtener_conteo_por_riesgo(self, carrera_id: int, anio: int) -> dict[str,int]:
         return await self.repo.count_by_risk(carrera_id, anio)
 
-    async def obtener_evolucion_mensual_score(self, anio: int) -> dict:
+    async def obtener_evolucion_mensual_score(self, anio: int) -> dict[int, float]:
         return await self.repo.monthly_evolution_score(anio)
 
     async def obtener_estudiante_por_dni(self, dni: str) -> EstudianteDashboardAdminResponse:

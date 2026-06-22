@@ -1,5 +1,9 @@
 import { useState, type FormEvent } from "react";
+<<<<<<< HEAD
 import type { Student } from "../types.ts";
+=======
+import type { Student, TimelineEvent } from "../types/types.ts";
+>>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
 import StudentProfileView from "./StudentProfileView.tsx";
 
 interface Entrevista {
@@ -424,11 +428,10 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("estudiantes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "estudiantes"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-lg">groups</span>
             Mis Estudiantes
@@ -439,11 +442,10 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("entrevistas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "entrevistas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "entrevistas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-lg">
               event_note
@@ -464,11 +466,10 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("alertas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "alertas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "alertas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined text-lg">
               notifications_active
@@ -595,8 +596,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                       <button
                         key={r}
                         onClick={() => setFilterRisk(r)}
-                        className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
-                          filterRisk === r
+                        className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${filterRisk === r
                             ? r === "CRÍTICO"
                               ? "bg-[#ffdad6] text-[#ba1a1a]"
                               : r === "MEDIO"
@@ -605,7 +605,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                                   ? "bg-[#e2f3f5] text-[#006e6e]"
                                   : "bg-brand-primary text-white"
                             : "bg-white text-brand-primary"
-                        }`}
+                          }`}
                       >
                         {r}
                       </button>
@@ -951,8 +951,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                     <button
                       key={sev}
                       onClick={() => setFilterSeveridad(sev)}
-                      className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
-                        filterSeveridad === sev
+                      className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${filterSeveridad === sev
                           ? sev === "ALTA"
                             ? "bg-[#ffdad6] text-[#ba1a1a]"
                             : sev === "MEDIA"
@@ -961,7 +960,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                                 ? "bg-[#e2f3f5] text-[#006e6e]"
                                 : "bg-brand-primary text-white"
                           : "bg-white text-brand-primary"
-                      }`}
+                        }`}
                     >
                       {sev}
                     </button>

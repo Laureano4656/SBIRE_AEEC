@@ -5,8 +5,18 @@
 
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import type { Student, Interview, Survey } from "./types.ts";
 import { INITIAL_STUDENTS, INITIAL_INTERVIEWS, INITIAL_SURVEYS } from "./data.ts";
+=======
+import type { Student, TimelineEvent, Interview, Survey } from "./types/types.ts";
+import {
+  INITIAL_STUDENTS,
+  INITIAL_INTERVIEWS,
+  INITIAL_SURVEYS,
+  INITIAL_TIMELINE_SOFIA,
+} from "./data.ts";
+>>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
 import ValidationScreen from "./components/ValidationScreen.tsx";
 import AdminPanel from "./components/AdminPanel.tsx";
 import PrincipalAdminPanel from "./components/PrincipalAdminPanel.tsx";

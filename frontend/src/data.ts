@@ -9,7 +9,7 @@ import type {
   Interview,
   Survey,
   SurveyResponse,
-} from "./types.ts";
+} from "./types/types.ts";
 
 export const INITIAL_STUDENTS: Student[] = [
   {
