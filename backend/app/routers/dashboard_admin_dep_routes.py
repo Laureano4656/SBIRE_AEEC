@@ -70,7 +70,7 @@ async def evolucion_mensual_score(
 
 
 # --- ENDPOINTS DE ESTUDIANTES ---
-
+# TODO legajo junto con carrera son unicos
 @router.get("/estudiantes/legajo/{legajo}", response_model=GeneralEstudianteDashboardAdminResponse)
 async def estudiante_por_legajo(
     legajo: str,

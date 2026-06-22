@@ -1,7 +1,7 @@
 \restrict dbmate
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
--- Dumped by pg_dump version 18.4 (Ubuntu 18.4-0ubuntu0.26.04.1)
+-- Dumped by pg_dump version 18.4 (Ubuntu 18.4-1.pgdg24.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -22,9 +22,8 @@ SET row_security = off;
 CREATE TYPE public.enum_estado_cursada AS ENUM (
     'cursando',
     'aprobada',
-    'desaprobada',
-    'libre',
-    'abandono'
+    'aprobada_falta_final',
+    'desaprobada'
 );
 
 
@@ -52,13 +51,16 @@ CREATE TYPE public.enum_etapa_estudiante AS ENUM (
 
 
 --
--- Name: enum_modalidad_encuesta; Type: TYPE; Schema: public; Owner: -
+-- Name: enum_periodicidad; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE public.enum_modalidad_encuesta AS ENUM (
-    'unica_ingreso',
-    'periodica',
-    'aleatoria'
+CREATE TYPE public.enum_periodicidad AS ENUM (
+    'unica_vez',
+    'cuatrimestral',
+    'anual',
+    'inicio_cuatrimestre_acad',
+    'fin_cuatrimestre_acad',
+    'llamado_final_acad'
 );
 
 
@@ -256,25 +258,25 @@ ALTER TABLE public.alertas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: asignacion_encuestas; Type: TABLE; Schema: public; Owner: -
+-- Name: asignacion_encuesta; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.asignacion_encuestas (
+CREATE TABLE public.asignacion_encuesta (
     id integer NOT NULL,
-    encuesta_id integer,
-    estudiante_id integer,
-    fecha_asignacion timestamp with time zone NOT NULL,
-    completada boolean DEFAULT false,
-    fecha_completada timestamp with time zone
+    estudiante_id integer NOT NULL,
+    evento_disparador public.enum_periodicidad NOT NULL,
+    periodo_lectivo character varying(50) NOT NULL,
+    completado boolean DEFAULT false,
+    fecha_asignacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
 --
--- Name: asignacion_encuestas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: asignacion_encuesta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-ALTER TABLE public.asignacion_encuestas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.asignacion_encuestas_id_seq
+ALTER TABLE public.asignacion_encuesta ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.asignacion_encuesta_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -404,10 +406,9 @@ CREATE TABLE public.cursadas (
     id integer NOT NULL,
     estudiante_id integer,
     materia_id integer,
-    inscripcion_id integer,
     anio integer NOT NULL,
     cuatrimestre integer NOT NULL,
-    estado public.enum_estado_cursada DEFAULT 'cursando'::public.enum_estado_cursada
+    estado public.enum_estado_cursada
 );
 
 
@@ -417,36 +418,6 @@ CREATE TABLE public.cursadas (
 
 ALTER TABLE public.cursadas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME public.cursadas_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- Name: encuestas; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.encuestas (
-    id integer NOT NULL,
-    titulo character varying(100) NOT NULL,
-    estado public.enum_estado_encuesta DEFAULT 'borrador'::public.enum_estado_encuesta,
-    modalidad public.enum_modalidad_encuesta DEFAULT 'aleatoria'::public.enum_modalidad_encuesta,
-    fecha_desde date NOT NULL,
-    fecha_hasta date NOT NULL,
-    periodica boolean DEFAULT false NOT NULL,
-    frecuencia_dias integer
-);
-
-
---
--- Name: encuestas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-ALTER TABLE public.encuestas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.encuestas_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -577,34 +548,6 @@ ALTER TABLE public.indicador ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: inscripciones_cuatrimestres; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.inscripciones_cuatrimestres (
-    id integer NOT NULL,
-    estudiante_id integer,
-    anio integer NOT NULL,
-    cuatrimestre integer NOT NULL,
-    materilas_anotadas integer NOT NULL,
-    activo boolean DEFAULT true
-);
-
-
---
--- Name: inscripciones_cuatrimestres_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-ALTER TABLE public.inscripciones_cuatrimestres ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.inscripciones_cuatrimestres_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
 -- Name: intentos_finales; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -692,23 +635,25 @@ ALTER TABLE public.materias ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: opcion_respuesta; Type: TABLE; Schema: public; Owner: -
+-- Name: opcion_pregunta; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.opcion_respuesta (
+CREATE TABLE public.opcion_pregunta (
     id integer NOT NULL,
     pregunta_id integer,
-    texto text,
-    orden integer
+    texto_opcion character varying(255) NOT NULL,
+    valor_riesgo_manual numeric(3,2),
+    orden_visual integer DEFAULT 0,
+    CONSTRAINT opcion_pregunta_valor_riesgo_manual_check CHECK (((valor_riesgo_manual >= (0)::numeric) AND (valor_riesgo_manual <= (1)::numeric)))
 );
 
 
 --
--- Name: opcion_respuesta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: opcion_pregunta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-ALTER TABLE public.opcion_respuesta ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.opcion_respuesta_id_seq
+ALTER TABLE public.opcion_pregunta ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.opcion_pregunta_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -798,30 +743,27 @@ ALTER TABLE public.plan_estudios ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTIT
 
 
 --
--- Name: preguntas; Type: TABLE; Schema: public; Owner: -
+-- Name: pregunta; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.preguntas (
+CREATE TABLE public.pregunta (
     id integer NOT NULL,
-    encuesta_id integer,
-    texto text,
-    tipo public.enum_tipo_pregunta DEFAULT 'texto_libre'::public.enum_tipo_pregunta,
-    orden integer,
-    obligatoria boolean DEFAULT true,
-    condicion_pregunta_id integer,
-    min double precision,
-    max double precision,
-    cant_opciones integer,
-    id_indicador integer
+    indicador_id integer,
+    carrera_id integer,
+    texto_pregunta text NOT NULL,
+    evento_disparador public.enum_periodicidad NOT NULL,
+    tipo_pregunta public.enum_tipo_pregunta NOT NULL,
+    configuracion_riesgo jsonb,
+    activa boolean DEFAULT true
 );
 
 
 --
--- Name: preguntas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: pregunta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-ALTER TABLE public.preguntas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.preguntas_id_seq
+ALTER TABLE public.pregunta ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.pregunta_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -831,28 +773,28 @@ ALTER TABLE public.preguntas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- Name: respuesta; Type: TABLE; Schema: public; Owner: -
+-- Name: respuesta_estudiante; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.respuesta (
+CREATE TABLE public.respuesta_estudiante (
     id integer NOT NULL,
     asignacion_id integer,
     pregunta_id integer,
-    opcion_id integer,
-    valencia integer,
-    fecha_respuesta timestamp with time zone,
-    valor character varying(255),
-    confianza double precision,
-    motivo character varying(100)
+    materia_id integer,
+    opcion_seleccionada_id integer,
+    valor_numerico numeric(10,2),
+    valor_texto text,
+    riesgo_calculado numeric(3,2),
+    CONSTRAINT respuesta_estudiante_riesgo_calculado_check CHECK (((riesgo_calculado >= (0)::numeric) AND (riesgo_calculado <= (1)::numeric)))
 );
 
 
 --
--- Name: respuesta_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: respuesta_estudiante_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-ALTER TABLE public.respuesta ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.respuesta_id_seq
+ALTER TABLE public.respuesta_estudiante ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.respuesta_estudiante_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -975,11 +917,11 @@ ALTER TABLE ONLY public.alertas
 
 
 --
--- Name: asignacion_encuestas asignacion_encuestas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: asignacion_encuesta asignacion_encuesta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.asignacion_encuestas
-    ADD CONSTRAINT asignacion_encuestas_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.asignacion_encuesta
+    ADD CONSTRAINT asignacion_encuesta_pkey PRIMARY KEY (id);
 
 
 --
@@ -1031,14 +973,6 @@ ALTER TABLE ONLY public.cursadas
 
 
 --
--- Name: encuestas encuestas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.encuestas
-    ADD CONSTRAINT encuestas_pkey PRIMARY KEY (id);
-
-
---
 -- Name: entrevista_planificada entrevista_planificada_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1071,14 +1005,6 @@ ALTER TABLE ONLY public.indicador
 
 
 --
--- Name: inscripciones_cuatrimestres inscripciones_cuatrimestres_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.inscripciones_cuatrimestres
-    ADD CONSTRAINT inscripciones_cuatrimestres_pkey PRIMARY KEY (id);
-
-
---
 -- Name: intentos_finales intentos_finales_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1103,11 +1029,11 @@ ALTER TABLE ONLY public.materias
 
 
 --
--- Name: opcion_respuesta opcion_respuesta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: opcion_pregunta opcion_pregunta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.opcion_respuesta
-    ADD CONSTRAINT opcion_respuesta_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.opcion_pregunta
+    ADD CONSTRAINT opcion_pregunta_pkey PRIMARY KEY (id);
 
 
 --
@@ -1135,19 +1061,19 @@ ALTER TABLE ONLY public.plan_estudios
 
 
 --
--- Name: preguntas preguntas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: pregunta pregunta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.preguntas
-    ADD CONSTRAINT preguntas_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.pregunta
+    ADD CONSTRAINT pregunta_pkey PRIMARY KEY (id);
 
 
 --
--- Name: respuesta respuesta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: respuesta_estudiante respuesta_estudiante_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.respuesta
-    ADD CONSTRAINT respuesta_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.respuesta_estudiante
+    ADD CONSTRAINT respuesta_estudiante_pkey PRIMARY KEY (id);
 
 
 --
@@ -1312,19 +1238,11 @@ CREATE TRIGGER trg_usuario_actualizado_en BEFORE UPDATE ON public.usuarios FOR E
 
 
 --
--- Name: asignacion_encuestas asignacion_encuestas_encuesta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: asignacion_encuesta asignacion_encuesta_estudiante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.asignacion_encuestas
-    ADD CONSTRAINT asignacion_encuestas_encuesta_id_fkey FOREIGN KEY (encuesta_id) REFERENCES public.encuestas(id);
-
-
---
--- Name: asignacion_encuestas asignacion_encuestas_estudiante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.asignacion_encuestas
-    ADD CONSTRAINT asignacion_encuestas_estudiante_id_fkey FOREIGN KEY (estudiante_id) REFERENCES public.estudiantes(id);
+ALTER TABLE ONLY public.asignacion_encuesta
+    ADD CONSTRAINT asignacion_encuesta_estudiante_id_fkey FOREIGN KEY (estudiante_id) REFERENCES public.estudiantes(id);
 
 
 --
@@ -1360,14 +1278,6 @@ ALTER TABLE ONLY public.cursadas
 
 
 --
--- Name: cursadas cursadas_inscripcion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.cursadas
-    ADD CONSTRAINT cursadas_inscripcion_id_fkey FOREIGN KEY (inscripcion_id) REFERENCES public.inscripciones_cuatrimestres(id);
-
-
---
 -- Name: cursadas cursadas_materia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1388,7 +1298,7 @@ ALTER TABLE ONLY public.estudiantes
 --
 
 ALTER TABLE ONLY public.alertas
-    ADD CONSTRAINT fk_alerta_asignacion FOREIGN KEY (asignacion_id) REFERENCES public.asignacion_encuestas(id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_alerta_asignacion FOREIGN KEY (asignacion_id) REFERENCES public.asignacion_encuesta(id);
 
 
 --
@@ -1472,14 +1382,6 @@ ALTER TABLE ONLY public.entrevista_planificada
 
 
 --
--- Name: preguntas fk_indicador; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.preguntas
-    ADD CONSTRAINT fk_indicador FOREIGN KEY (id_indicador) REFERENCES public.indicador(id);
-
-
---
 -- Name: score_riesgo fk_indicador; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1552,14 +1454,6 @@ ALTER TABLE ONLY public.peso_indicadores
 
 
 --
--- Name: inscripciones_cuatrimestres inscripciones_cuatrimestres_estudiante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.inscripciones_cuatrimestres
-    ADD CONSTRAINT inscripciones_cuatrimestres_estudiante_id_fkey FOREIGN KEY (estudiante_id) REFERENCES public.estudiantes(id);
-
-
---
 -- Name: intentos_finales intentos_finales_cursada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1576,11 +1470,11 @@ ALTER TABLE ONLY public.materias
 
 
 --
--- Name: opcion_respuesta opcion_respuesta_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: opcion_pregunta opcion_pregunta_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.opcion_respuesta
-    ADD CONSTRAINT opcion_respuesta_pregunta_id_fkey FOREIGN KEY (pregunta_id) REFERENCES public.preguntas(id);
+ALTER TABLE ONLY public.opcion_pregunta
+    ADD CONSTRAINT opcion_pregunta_pregunta_id_fkey FOREIGN KEY (pregunta_id) REFERENCES public.pregunta(id);
 
 
 --
@@ -1600,43 +1494,51 @@ ALTER TABLE ONLY public.plan_estudios
 
 
 --
--- Name: preguntas preguntas_condicion_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: pregunta pregunta_carrera_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.preguntas
-    ADD CONSTRAINT preguntas_condicion_pregunta_id_fkey FOREIGN KEY (condicion_pregunta_id) REFERENCES public.preguntas(id);
-
-
---
--- Name: preguntas preguntas_encuesta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.preguntas
-    ADD CONSTRAINT preguntas_encuesta_id_fkey FOREIGN KEY (encuesta_id) REFERENCES public.encuestas(id);
+ALTER TABLE ONLY public.pregunta
+    ADD CONSTRAINT pregunta_carrera_id_fkey FOREIGN KEY (carrera_id) REFERENCES public.carreras(id);
 
 
 --
--- Name: respuesta respuesta_asignacion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: pregunta pregunta_indicador_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.respuesta
-    ADD CONSTRAINT respuesta_asignacion_id_fkey FOREIGN KEY (asignacion_id) REFERENCES public.asignacion_encuestas(id);
-
-
---
--- Name: respuesta respuesta_opcion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.respuesta
-    ADD CONSTRAINT respuesta_opcion_id_fkey FOREIGN KEY (opcion_id) REFERENCES public.opcion_respuesta(id);
+ALTER TABLE ONLY public.pregunta
+    ADD CONSTRAINT pregunta_indicador_id_fkey FOREIGN KEY (indicador_id) REFERENCES public.indicador(id);
 
 
 --
--- Name: respuesta respuesta_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: respuesta_estudiante respuesta_estudiante_asignacion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.respuesta
-    ADD CONSTRAINT respuesta_pregunta_id_fkey FOREIGN KEY (pregunta_id) REFERENCES public.preguntas(id);
+ALTER TABLE ONLY public.respuesta_estudiante
+    ADD CONSTRAINT respuesta_estudiante_asignacion_id_fkey FOREIGN KEY (asignacion_id) REFERENCES public.asignacion_encuesta(id);
+
+
+--
+-- Name: respuesta_estudiante respuesta_estudiante_materia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.respuesta_estudiante
+    ADD CONSTRAINT respuesta_estudiante_materia_id_fkey FOREIGN KEY (materia_id) REFERENCES public.materias(id);
+
+
+--
+-- Name: respuesta_estudiante respuesta_estudiante_opcion_seleccionada_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.respuesta_estudiante
+    ADD CONSTRAINT respuesta_estudiante_opcion_seleccionada_id_fkey FOREIGN KEY (opcion_seleccionada_id) REFERENCES public.opcion_pregunta(id);
+
+
+--
+-- Name: respuesta_estudiante respuesta_estudiante_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.respuesta_estudiante
+    ADD CONSTRAINT respuesta_estudiante_pregunta_id_fkey FOREIGN KEY (pregunta_id) REFERENCES public.pregunta(id);
 
 
 --
@@ -1665,4 +1567,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260615205151'),
     ('20260615205417'),
     ('20260615205758'),
-    ('20260620161556');
+    ('20260620154126'),
+    ('20260620161556'),
+    ('20260620171940'),
+    ('20260620191526'),
+    ('20260621153402');

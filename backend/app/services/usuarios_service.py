@@ -5,7 +5,7 @@ from app.repositories.usuario_repository import UsuarioRepository
 from app.services.crud_service import CrudService
 from app.core.lti_handler import LTIHandler
 from app.core.token_manager import TokenManager
-from app.schemas.usuario import AuthResponse
+from app.schemas.usuario import AuthResponse, UsuarioResponse
 
 class UsuarioService(CrudService[Usuario]):
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -44,7 +44,7 @@ class UsuarioService(CrudService[Usuario]):
         carrera_id = user_claims.get("carrera_id")
         print (f"Mapped claims: rol={rol}, nombre={nombre}, apellido={apellido}, email={email}, carrera_id={carrera_id}")
 
-        usuario = await self.repo.upsert_from_lti(  # type: ignore
+        usuario: Usuario = await self.repo.create(  # type: ignore
             moodle_id=moodle_id,
             rol=rol,
             nombre=self._normalize_optional(nombre),
@@ -64,15 +64,5 @@ class UsuarioService(CrudService[Usuario]):
         return AuthResponse(
             access_token=session_token,
             token_type="bearer",
-            usuario={
-                "id": usuario.id,
-                "nombre": usuario.nombre,
-                "moodle_id": usuario.moodle_id,
-                "max_casos_activos": usuario.max_casos_activos,
-                "activo": usuario.activo,
-                "apellido": usuario.apellido,
-                "email": usuario.email,
-                "rol": usuario.rol,
-                "carrera_id": usuario.carrera_id,
-            },
+            usuario=UsuarioResponse.model_validate(usuario),
         )
