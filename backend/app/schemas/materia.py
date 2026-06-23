@@ -24,6 +24,9 @@ class MateriaResponse(BaseModel):
     codigo: str
     cuatrimestre_sugerido: int
     es_basica_critica: bool
+
+    class Config:
+        from_attributes = True
     
 class MateriaListResponse(BaseModel):
     id: int

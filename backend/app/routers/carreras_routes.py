@@ -20,22 +20,3 @@ async def get_carreras(conn: asyncpg.Connection = Depends(get_conn), solo_activa
 @router.post("/")
 async def create_carrera():
     return {"message": "Career created"}
-# @router.get("/", response_model=list[AlertaResponse])
-# async def listar_alertas(
-#   filtros: AlertaFiltros = Depends(),
-#   db: AsyncSession = Depends(get_db),
-#   usuario_actual = Depends(get_current_user),
-# ) -> list[AlertaResponse]:
-#   # El router solo valida, delega y devuelve
-#   service = AlertaService(db)
-#   return await service.listar_para_usuario(usuario_actual, filtros)
-
-# @router.patch("/{alerta_id}/cerrar")
-# async def cerrar_alerta(
-#   alerta_id: str,
-#   body: AlertaCierreRequest,
-#   db: AsyncSession = Depends(get_db),
-#   usuario_actual = Depends(get_current_user),
-# ) -> AlertaResponse:
-#   service = AlertaService(db)
-#   return await service.cerrar(alerta_id, body.estado, usuario_actual)
