@@ -27,7 +27,7 @@ class AlertasRepository(CrudRepository[AlertaResponse]):
             tipo_desercion=alerta.tipo_desercion,
             nivel_riesgo=alerta.nivel_riesgo,
             origen=alerta.origen,
-            estado="pendiente",
+            estado="nueva",
             anio_cursada=alerta.anio_cursada
         )
 
@@ -36,4 +36,25 @@ class AlertasRepository(CrudRepository[AlertaResponse]):
             return await self.update(alerta_id, estado=nuevo_estado, fecha_cierre=datetime.now())
         return await self.update(alerta_id, estado=nuevo_estado)
     
+    async def get_alertas_por_carrera(self, carrera_id: int) -> list[AlertaResponse]:
+        query = """
+            SELECT a.*
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.carrera_id = $1 
+            ORDER BY a.generada_en DESC
+        """
+        rows = await self.conn.fetch(query, carrera_id)
+        return [AlertaResponse(**row) for row in rows]
+    
+    async def get_alertas_sin_atender_por_carrera(self, carrera_id: int) -> list[AlertaResponse]:
+        query = """
+            SELECT a.*
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.carrera_id = $1 AND a.estado IN ('nueva', 'en_revision')
+            ORDER BY a.generada_en DESC
+        """
+        rows = await self.conn.fetch(query, carrera_id)
+        return [AlertaResponse(**row) for row in rows]
     

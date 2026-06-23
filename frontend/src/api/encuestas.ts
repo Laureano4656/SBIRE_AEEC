@@ -4,10 +4,17 @@ const PREFIX = '/encuestas';
 
 export const getEncuesta = async (asignacion_id: number) => {
     const response = await axiosInstance.get(
-        `${PREFIX}/pendientes/${asignacion_id}`
+        `${PREFIX}/pendientes/${asignacion_id}/formulario`
     );
     return response.data;
 };
+
+export const publicarEncuesta = async (asignacion_id: number) => {
+    const response = await axiosInstance.patch(
+        `${PREFIX}/asignacion/${asignacion_id}/publicar`
+    );
+    return response.data;
+}
 
 export const responderEncuesta = async ({
     asignacion_id,

@@ -38,7 +38,7 @@ class dashboardTutorRepository:
         )
         return [EstudianteDashboardResponse(**dict(row)) for row in rows]
 
-    async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardAdminResponse | None:
+    async def general_data_by_student(self, legajo: str, carrera_id: int) -> GeneralEstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow("""
             SELECT
                 e.nombre,
@@ -72,7 +72,7 @@ class dashboardTutorRepository:
                 WHERE pe.activo = TRUE
                 GROUP BY pe.carrera_id
             ) totales ON totales.carrera_id = e.carrera_id
-            WHERE e.legajo = $1
-        """, legajo)
+            WHERE e.legajo = $1 AND e.carrera_id = $2
+        """, legajo, carrera_id)
         return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     

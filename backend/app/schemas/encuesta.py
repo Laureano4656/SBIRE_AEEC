@@ -7,10 +7,13 @@ from app.schemas.pregunta import PreguntaResponse
 class OpcionEncuestaResponse(BaseModel):
     """La opción limpia, sin exponer los valores de riesgo al estudiante."""
     id: int
+    pregunta_id: int
     texto_opcion: str
 
 class RespuestaPrevia(BaseModel):
     """Estructura para pre-cargar lo que el alumno ya había contestado."""
+    pregunta_id: int
+    materia_id: int | None = None
     opcion_seleccionada_id: int | None = None
     valor_numerico: float | None = None
     valor_texto: str | None = None
@@ -19,7 +22,7 @@ class PreguntaParaEncuesta(PreguntaResponse):
     """Hereda todo de PreguntaResponse pero le incrusta las opciones y su estado actual."""
     opciones: list[OpcionEncuestaResponse] = Field(default_factory=list)
     respuesta_previa: RespuestaPrevia | None = None
-
+    
 
 # --- SCHEMAS DE SALIDA (Generación del Formulario) ---
 
@@ -34,6 +37,13 @@ class FormularioEncuestaResponse(BaseModel):
     periodo_lectivo: str
     preguntas_generales: list[PreguntaParaEncuesta] = Field(default_factory=list)
     bloques_academicos: list[BloqueAcademico] = Field(default_factory=list)
+    
+class AsignacionEncuestaResponse(BaseModel):
+    id: int
+    estudiante_id: int
+    evento_disparador: int
+    periodo_lectivo: str
+    completado: bool
 
 # --- SCHEMAS DE ENTRADA (Recepción de Respuestas) ---
 
@@ -48,3 +58,9 @@ class RespuestaItemSubmit(BaseModel):
 class EncuestaSubmit(BaseModel):
     """Payload que envía el frontend al hacer submit."""
     respuestas: list[RespuestaItemSubmit]
+
+class MateriaResponse(BaseModel):
+    """Representa una materia con su id y nombre."""
+    materia_id: int
+    materia_nombre: str
+    

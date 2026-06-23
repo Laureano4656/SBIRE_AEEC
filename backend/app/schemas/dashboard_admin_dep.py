@@ -44,3 +44,14 @@ class FiltroRiesgo(BaseModel):
 class FiltroEstudiantes(BaseModel):
     anio: int | None = None
     carrera_id: int | None = None
+    
+class IndicadorResponse(BaseModel):
+    nombre: str
+
+class DimensionAgrupadaResponse(BaseModel):
+    nombre_dimension: str
+    indicadores: list[IndicadorResponse]
+    
+class RolUpdate(BaseModel):
+    nombre: str 
+    

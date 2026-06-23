@@ -4,14 +4,14 @@ import asyncpg
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel
 from app.api.deps import get_conn
-from app.schemas.entrevista_planificada import EntrevistaCreate, EntrevistaPlanificadaResponse
+from app.schemas.entrevista_planificada import EntrevistaPlanificadaCreate, EntrevistaPlanificadaResponse
 from app.services.entrevista_planificada_service import EntrevistaPlanificadaService
 
 router = APIRouter(prefix="/entrevistas", tags=["entrevistas planificadas"])
 
 @router.post("/", response_model=EntrevistaPlanificadaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_entrevista(
-    body: EntrevistaCreate,
+    body: EntrevistaPlanificadaCreate,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> EntrevistaPlanificadaResponse:
     service = EntrevistaPlanificadaService(conn)

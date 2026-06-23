@@ -20,6 +20,11 @@ from app.routers.estudiantes_routes import router as estudiantes_router
 from app.routers.importacion_archivo_routes import router as importacion_archivo_router
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
+from app.routers.dashboard_admin_dep_routes import router as dashboard_admin_dep_router
+from app.routers.indicadores_routes import router as indicadores_router
+from app.routers.intervenciones_routes import router as intervenciones_router
+from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
+from app.routers.semaforo_routes import router as semaforo_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
 from fastapi.middleware.cors import CORSMiddleware
@@ -101,6 +106,11 @@ def read_root():
 API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
+app.include_router(dashboard_admin_dep_router, prefix=API_PREFIX)
+app.include_router(indicadores_router, prefix=API_PREFIX)
+app.include_router(intervenciones_router, prefix=API_PREFIX)
+app.include_router(entrevista_planificada_router, prefix=API_PREFIX)
+app.include_router(semaforo_router, prefix=API_PREFIX)
 
 protected_router = APIRouter(dependencies=[Depends(get_current_user)])
 

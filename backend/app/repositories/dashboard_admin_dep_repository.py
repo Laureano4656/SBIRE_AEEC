@@ -2,7 +2,7 @@ import datetime
 
 import asyncpg
 
-from app.schemas.dashboard_admin_dep import EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, PreguntasRespuestasResponse
+from app.schemas.dashboard_admin_dep import DimensionAgrupadaResponse, EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, IndicadorResponse, PreguntasRespuestasResponse, RolUpdate 
 
 class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -21,37 +21,44 @@ class dashboardAdminRepository:
         )
         return row["count"]
     
-    async def total_critics(self) -> int:
+    async def total_critics(self, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM score_total 
+            INNER JOIN estudiantes e ON score_total.estudiante_id = e.id
             WHERE valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) 
-            """
+            AND (e.carrera_id = $1)
+            """, carrera_id
         )
 
         return row["count"]
     
-    async def total_new_alerts(self) -> int:
+    async def total_new_alerts(self, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM alertas WHERE (estado = 'nueva' OR estado = 'en_revision')
-            """
+            FROM alertas 
+            INNER JOIN estudiantes e ON alertas.estudiante_id = e.id
+            WHERE (estado = 'nueva' OR estado = 'en_revision')
+            AND (e.carrera_id = $1)
+            """, carrera_id
         )
 
         return row["count"]
 
-    async def total_interventions_month(self) -> int:
+    async def total_interventions_month(self, month: int, year: int, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM intervenciones
-            WHERE date_part('month', creado_en) = date_part('month', CURRENT_DATE)
-            AND date_part('year', creado_en) = date_part('year', CURRENT_DATE)
-            """
+            INNER JOIN alertas a ON intervenciones.alerta_id = a.id
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE date_part('month', creado_en) = $1
+            AND date_part('year', creado_en) = $2
+            AND (e.carrera_id = $3)
+            """, month, year, carrera_id
         )
-
         return row["count"]
     
     async def count_by_risk(self, carrera_id: int, anio: int):
@@ -77,7 +84,7 @@ class dashboardAdminRepository:
         return {row["tipo_riesgo"]: row["count"] for row in rows}
     
     
-    async def monthly_evolution_score(self, anio: int) -> dict[int, float]:
+    async def monthly_evolution_score(self, anio: int, carrera_id: int | None = None) -> dict[int, float]:
         rows = await self.conn.fetch(
             """
             SELECT
@@ -85,11 +92,11 @@ class dashboardAdminRepository:
                 AVG(valor) AS average_score
             FROM score_total s
             INNER JOIN estudiantes e ON s.estudiante_id = e.id
-            WHERE e.anio_ingreso = $1 AND e.activo = TRUE
+            WHERE e.anio_ingreso = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
             GROUP BY month
             ORDER BY month
             """,
-            anio
+            anio, carrera_id
         )
 
 
@@ -160,7 +167,7 @@ class dashboardAdminRepository:
 
         return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
 
-    async def get_students_by_year(self, anio: int) -> list[EstudianteDashboardAdminResponse]:
+    async def get_students_by_year(self, anio: int, carrera_id: int | None = None) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
             SELECT 
@@ -185,14 +192,14 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE e.anio_ingreso = $1 AND e.activo = TRUE
+            WHERE e.anio_ingreso = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
             """,
-            anio
+            anio, carrera_id
         )
 
         return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
 
-    async def get_students_by_risk(self, risk_level: str) -> list[EstudianteDashboardAdminResponse]:
+    async def get_students_by_risk(self, risk_level: str, carrera_id: int | None = None) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
                 SELECT 
@@ -222,14 +229,14 @@ class dashboardAdminRepository:
                     WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) THEN 'rojo'
                     WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1)  THEN 'amarillo'
                     ELSE 'verde'
-                END = $1 AND e.activo = TRUE
+                END = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
             """,
-            risk_level
+            risk_level, carrera_id
         )
 
         return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
 
-    async def general_data_by_student(self, legajo: str) -> GeneralEstudianteDashboardAdminResponse | None:
+    async def general_data_by_student(self, legajo: str, carrera_id: int) -> GeneralEstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow("""
             SELECT
                 e.nombre,
@@ -271,8 +278,8 @@ class dashboardAdminRepository:
                         AND anio_vigencia <= e.anio_ingreso
                         AND activo = TRUE
                     )
-            WHERE e.legajo = $1
-        """, legajo)
+            WHERE e.legajo = $1 AND e.carrera_id = $2
+        """, legajo, carrera_id)
         return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     
     async def chronological_alerts(self, estudiante_id: str) -> list[EventoCronologicoResponse]:
@@ -302,7 +309,7 @@ class dashboardAdminRepository:
         return [EventoCronologicoResponse(**dict(row)) for row in rows]
     
     
-    async def change_roles(self, user_id: int, new_role: str) -> dict:
+    async def change_roles(self, user_id: int, new_role: str) -> RolUpdate | None:
         row = await self.conn.fetchrow(
             """
             UPDATE usuarios
@@ -312,7 +319,22 @@ class dashboardAdminRepository:
             """,
             new_role, user_id
         )
-        return dict(row)
+        return RolUpdate(row)
     
-    #indicadores agrupados por dimension
-    #
+    async def indicadores_agrupados_por_dimension(self) -> list[DimensionAgrupadaResponse]:
+        dimensiones = await self.conn.fetch(
+            "SELECT id, nombre FROM indicadores WHERE dimension IS NULL"
+        )
+        indicadores = await self.conn.fetch(
+            "SELECT nombre, dimension AS dimension_id FROM indicadores WHERE dimension IS NOT NULL"
+        )
+
+        dicc = {
+            d['id']: DimensionAgrupadaResponse(nombre_dimension=d['nombre'], indicadores=[])
+            for d in dimensiones
+        }
+
+        for ind in indicadores:
+            dicc[ind['dimension_id']].indicadores.append(IndicadorResponse(nombre=ind['nombre']))
+
+        return list(dicc.values())

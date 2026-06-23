@@ -1,5 +1,5 @@
 from typing import Literal, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, json, field_validator
 
 class PreguntaCreate(BaseModel):
     indicador_id: int | None = Field(None, ge=1)
@@ -38,10 +38,17 @@ class PreguntaResponse(BaseModel):
     indicador_id: int | None
     carrera_id: int | None
     texto_pregunta: str
-    evento_disparador: str
+    evento: str
     tipo_pregunta: str
-    configuracion_riesgo: dict[str, Any] | str | None
+    configuracion_riesgo: dict[str, Any] | None
     activa: bool
+    
+    @field_validator('configuracion_riesgo', mode='before')
+    @classmethod
+    def parsear_json(cls, v):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
     class Config:
         from_attributes = True
