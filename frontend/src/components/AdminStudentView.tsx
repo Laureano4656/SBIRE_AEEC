@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import type { Student, SubjectProgress } from "../types.ts";
-=======
 import { useState } from "react";
-import type { Student, SubjectProgress, TimelineEvent } from "../types/types.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
+import type { Student, SubjectProgress } from "../types/types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface AdminStudentViewProps {
@@ -108,6 +104,7 @@ export default function AdminStudentView({
   student,
   onBack,
 }: AdminStudentViewProps) {
+  const [activeTab, setActiveTab] = useState<"trayectoria" | "timeline">("trayectoria");
   const subjects: SubjectProgress[] =
     student.id === "sofia_martinez"
       ? SUBJECTS_SOFIA
@@ -136,10 +133,10 @@ export default function AdminStudentView({
             />
             <span
               className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${student.riskLevel === "CRÍTICO"
-                  ? "bg-[#ba1a1a]"
-                  : student.riskLevel === "MEDIO"
-                    ? "bg-amber-500"
-                    : "bg-[#006a6a]"
+                ? "bg-[#ba1a1a]"
+                : student.riskLevel === "MEDIO"
+                  ? "bg-amber-500"
+                  : "bg-[#006a6a]"
                 }`}
             />
           </div>
@@ -208,10 +205,10 @@ export default function AdminStudentView({
           </span>
           <span
             className={`text-2xl font-black mt-1 block ${student.engagement === "Bajo"
-                ? "text-brand-error"
-                : student.engagement === "Medio"
-                  ? "text-amber-600"
-                  : "text-[#006a6a]"
+              ? "text-brand-error"
+              : student.engagement === "Medio"
+                ? "text-amber-600"
+                : "text-[#006a6a]"
               }`}
           >
             {student.engagement}
@@ -224,40 +221,13 @@ export default function AdminStudentView({
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div className="mt-6">
-        <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                  <th className="p-3 pl-5 border-b border-brand-outline-variant">
-                    Asignatura
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Parciales
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Final
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-outline-variant">
-                {subjects.map((subj) => (
-                  <tr
-                    key={subj.code}
-                    className="hover:bg-[#f8f9fa] transition-colors"
-=======
       {/* Tabs */}
       <div className="mt-6 bg-[#f3f4f5] border border-brand-outline-variant rounded p-1 flex gap-1 w-fit">
         <button
           onClick={() => setActiveTab("trayectoria")}
           className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${activeTab === "trayectoria"
-              ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
-              : "text-[#43474f] hover:text-brand-primary"
+            ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
+            : "text-[#43474f] hover:text-brand-primary"
             }`}
         >
           Trayectoria Académica
@@ -265,8 +235,8 @@ export default function AdminStudentView({
         <button
           onClick={() => setActiveTab("timeline")}
           className={`px-4 py-2 text-xs font-bold rounded transition-all cursor-pointer ${activeTab === "timeline"
-              ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
-              : "text-[#43474f] hover:text-brand-primary"
+            ? "bg-white text-brand-primary shadow-xs border-b-2 border-brand-primary"
+            : "text-[#43474f] hover:text-brand-primary"
             }`}
         >
           Línea de Tiempo
@@ -338,59 +308,14 @@ export default function AdminStudentView({
         ) : (
           <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
             <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-              <span className="material-symbols-outlined text-lg">
-                timeline
-              </span>
+              <span className="material-symbols-outlined text-lg">timeline</span>
               Línea de Tiempo
-              <span className="bg-[#edeeef] text-[#43474f] text-[10px] font-bold px-2 py-0.5 rounded ml-1">
-                {timelineEvents.length} eventos
-              </span>
             </h4>
-
-            <div className="space-y-0 max-h-[450px] overflow-y-auto">
-              {timelineEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="relative pl-8 pb-5 border-l border-[#c3c6d1] last:border-l-0 last:pb-0"
-                >
-                  <span
-                    className={`absolute -left-3 w-6 h-6 ${event.color} text-white rounded-full flex items-center justify-center shadow-xs`}
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
-                  >
-                    <td className="p-3 pl-5">
-                      <span className="font-bold text-brand-primary">
-                        {subj.name}
-                      </span>
-                      <span className="text-[10px] text-brand-outline block font-medium">
-                        {subj.teacher}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center font-medium">
-                      {subj.midtermGrades}
-                    </td>
-                    <td className="p-3 text-center font-bold">
-                      {subj.finalGrade}
-                    </td>
-                    <td className="p-3 text-center">
-                      {statusSubjectBadge(subj.status)}
-                    </td>
-                  </tr>
-                ))}
-                {subjects.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="p-8 text-center text-brand-outline font-medium"
-                    >
-                      No hay datos de trayectoria académica disponibles para
-                      este estudiante.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div className="text-center py-8 text-brand-outline font-medium text-xs">
+              No hay eventos registrados para este estudiante.
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

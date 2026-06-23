@@ -15,6 +15,17 @@ class UsuarioRepository(CrudRepository[Usuario]):
             )
         )
 
+    async def get_by_mail(self, email: str | None) -> Usuario | None:
+        row = await self.conn.fetchrow(
+            f"""
+            SELECT {self._select_clause()}
+            FROM {self.config.table_name}
+            WHERE email = $1
+            """,
+            email,
+        )
+        return self._map(row)
+
     async def get_by_moodle_id(self, moodle_id: str) -> Usuario | None:
         row = await self.conn.fetchrow(
             f"""

@@ -4,11 +4,7 @@
  */
 
 import { useState } from "react";
-<<<<<<< HEAD
-import type { Student, Interview, Survey } from "../types.ts";
-=======
 import type { Student, TimelineEvent, Interview, Survey } from "../types/types.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
 import AdminStudentView from "./AdminStudentView.tsx";
 import AHPConfigPanel from "./AHPConfigPanel.tsx";
 import ReportesPanel from "./ReportesPanel.tsx";
@@ -151,8 +147,8 @@ export default function AdminPanel({
               setSelectedStudentId(null);
             }}
             className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "panel" && !selectedStudentId
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
@@ -167,8 +163,8 @@ export default function AdminPanel({
               setSelectedStudentId(null);
             }}
             className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes" || selectedStudentId
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
@@ -183,8 +179,8 @@ export default function AdminPanel({
               setSelectedStudentId(null);
             }}
             className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "encuestas"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
@@ -199,8 +195,8 @@ export default function AdminPanel({
               setSelectedStudentId(null);
             }}
             className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "reportes"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
@@ -215,8 +211,8 @@ export default function AdminPanel({
               setSelectedStudentId(null);
             }}
             className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "configuracion"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
@@ -783,8 +779,8 @@ export default function AdminPanel({
                       <button
                         onClick={() => setFilterRisk("TODOS")}
                         className={`px-3 py-1.5 cursor-pointer font-bold ${filterRisk === "TODOS"
-                            ? "bg-brand-primary text-white"
-                            : "bg-white text-brand-primary"
+                          ? "bg-brand-primary text-white"
+                          : "bg-white text-brand-primary"
                           }`}
                       >
                         TODOS
@@ -792,8 +788,8 @@ export default function AdminPanel({
                       <button
                         onClick={() => setFilterRisk("CRÍTICO")}
                         className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "CRÍTICO"
-                            ? "bg-[#ffdad6] text-[#ba1a1a]"
-                            : "bg-white text-brand-primary"
+                          ? "bg-[#ffdad6] text-[#ba1a1a]"
+                          : "bg-white text-brand-primary"
                           }`}
                       >
                         CRÍTICO
@@ -801,8 +797,8 @@ export default function AdminPanel({
                       <button
                         onClick={() => setFilterRisk("MEDIO")}
                         className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "MEDIO"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-white text-brand-primary"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-white text-brand-primary"
                           }`}
                       >
                         MEDIO
@@ -810,8 +806,8 @@ export default function AdminPanel({
                       <button
                         onClick={() => setFilterRisk("BAJO")}
                         className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "BAJO"
-                            ? "bg-[#e2f3f5] text-[#006e6e]"
-                            : "bg-white text-brand-primary"
+                          ? "bg-[#e2f3f5] text-[#006e6e]"
+                          : "bg-white text-brand-primary"
                           }`}
                       >
                         BAJO
@@ -881,10 +877,10 @@ export default function AdminPanel({
                           <td className="p-3 text-center">
                             <span
                               className={`font-black text-xs ${s.riskValue >= 7.5
-                                  ? "text-[#ba1a1a]"
-                                  : s.riskValue >= 4.0
-                                    ? "text-amber-600"
-                                    : "text-[#006e6e]"
+                                ? "text-[#ba1a1a]"
+                                : s.riskValue >= 4.0
+                                  ? "text-amber-600"
+                                  : "text-[#006e6e]"
                                 }`}
                             >
                               {s.riskValue.toFixed(2)}
@@ -1035,10 +1031,10 @@ export default function AdminPanel({
                           <td className="p-4 text-center">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
-                                  ? "bg-[#e2f3f5] text-[#006e6e]"
-                                  : sur.status === "Borrador"
-                                    ? "bg-amber-100 text-amber-800"
-                                    : "bg-red-150 text-brand-error"
+                                ? "bg-[#e2f3f5] text-[#006e6e]"
+                                : sur.status === "Borrador"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-red-150 text-brand-error"
                                 }`}
                             >
                               {sur.status}

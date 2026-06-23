@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     LTI_CLIENT_ID: str = "PmTFD2BvvquxJsc"
     MOODLE_AUTH_URL: str = "http://localhost:8080/mod/lti/auth.php"
     REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/lti/launch"
+    FRONTEND_URL: str = "http://localhost:5173"
     # ── JWT ───────────────────────────────────────────────────────────────────
     # Clave secreta para firmar tokens de sesión. NUNCA debe estar en git.
     # Generar con: python -c "import secrets; print(secrets.token_urlsafe(32))"

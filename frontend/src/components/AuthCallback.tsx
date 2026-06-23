@@ -1,22 +1,37 @@
-import { useCallback, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import ValidationScreen from "./ValidationScreen"
-import { useAuth } from "../hooks/useAuth"
+import { useEffect, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { axiosInstance } from "../libs/axios";
+import ValidationScreen from "./ValidationScreen";
 
 export default function AuthCallback() {
-  const navigate = useNavigate()
-  const { refresh, isAuthenticated } = useAuth()
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
 
   const handleValidated = useCallback(() => {
-    if (isAuthenticated) {
-      navigate('/', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
+    navigate("/admin", { replace: true });
+  }, [navigate]);
 
-  // Fetch user info when this page loads (cookie auto-sent)
   useEffect(() => {
-    refresh().catch(() => navigate('/login', { replace: true }))
-  }, [refresh, navigate])
+    const token = params.get("access_token");
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
 
-  return <ValidationScreen onValidated={handleValidated} />
+    const initSession = async () => {
+      // 1. Exchange the URL token for an httpOnly cookie via the proxy
+      await axiosInstance.post("/auth/set-session", {
+        access_token: token,
+      });
+
+      // 2. Cookie is now set on localhost:5173 — verify it with /auth/me
+      await axiosInstance.get("/auth/me");
+    };
+
+    initSession().catch(() => {
+      navigate("/login", { replace: true });
+    });
+  }, [params, navigate]);
+
+  return <ValidationScreen onValidated={handleValidated} />;
 }

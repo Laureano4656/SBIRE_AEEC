@@ -5,24 +5,19 @@
 
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import type { Student, Interview, Survey } from "./types.ts";
-import { INITIAL_STUDENTS, INITIAL_INTERVIEWS, INITIAL_SURVEYS } from "./data.ts";
-=======
 import type { Student, TimelineEvent, Interview, Survey } from "./types/types.ts";
 import {
   INITIAL_STUDENTS,
   INITIAL_INTERVIEWS,
   INITIAL_SURVEYS,
-  INITIAL_TIMELINE_SOFIA,
 } from "./data.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
-import ValidationScreen from "./components/ValidationScreen.tsx";
 import AdminPanel from "./components/AdminPanel.tsx";
 import PrincipalAdminPanel from "./components/PrincipalAdminPanel.tsx";
 import StudentPanel from "./components/StudentPanel.tsx";
 import TeacherPanel from "./components/DocentePanel.tsx";
 import TutorPanel from "./components/TutorPanel.tsx";
+import AuthCallback from "./components/AuthCallback.tsx";
+import { AuthProvider } from "./contexts/AuthProvider.tsx";
 
 export default function App() {
   // Shared Global State for exact real-time response feeling
@@ -53,45 +48,47 @@ export default function App() {
   const navigate = useNavigate();
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<ValidationScreen onValidated={() => navigate("/admin")} />}
-      />
+    <AuthProvider>
+      <Routes>
+        <Route
+          path="/auth/callback"
+          element={<AuthCallback />}
+        />
 
-      <Route
-        path="/admin"
-        element={
-          <AdminPanel
-            onLogout={handleLogout}
-            onUpdateStudent={handleUpdateStudent}
-            students={students}
-            surveys={surveys}
-          />
-        }
-      />
+        <Route
+          path="/admin"
+          element={
+            <AdminPanel
+              onLogout={handleLogout}
+              onUpdateStudent={handleUpdateStudent}
+              students={students}
+              surveys={surveys}
+            />
+          }
+        />
 
-      <Route
-        path="/superadmin"
-        element={
-          <PrincipalAdminPanel
-            onLogout={handleLogout}
-            students={students}
-          />
-        }
-      />
+        <Route
+          path="/superadmin"
+          element={
+            <PrincipalAdminPanel
+              onLogout={handleLogout}
+              students={students}
+            />
+          }
+        />
 
-      <Route
-        path="/student"
-        element={<StudentPanel onLogout={handleLogout} />}
-      />
+        <Route
+          path="/student"
+          element={<StudentPanel onLogout={handleLogout} />}
+        />
 
-      <Route
-        path="/teacher"
-        element={<TeacherPanel onLogout={handleLogout} />}
-      />
+        <Route
+          path="/teacher"
+          element={<TeacherPanel onLogout={handleLogout} />}
+        />
 
-      <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
-    </Routes>
+        <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
+      </Routes>
+    </AuthProvider>
   );
 }
