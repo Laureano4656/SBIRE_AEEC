@@ -33,7 +33,7 @@ class BloqueAcademico(BaseModel):
 
 class FormularioEncuestaResponse(BaseModel):
     asignacion_id: int
-    evento_disparador: str
+    evento_disparador: int
     periodo_lectivo: str
     preguntas_generales: list[PreguntaParaEncuesta] = Field(default_factory=list)
     bloques_academicos: list[BloqueAcademico] = Field(default_factory=list)

@@ -96,29 +96,40 @@ class EncuestasRepository:
         row = await self.conn.fetchrow(
             """
             SELECT 
-            id as id,
-            estudiante_id as estudiante_id,
-            evento_disparador as evento_disparador,
-            periodo_lectivo as periodo_lectivo,
-            completado as completado
+            id,
+            estudiante_id,
+            evento_id as evento_disparador,
+            periodo_lectivo,
+            completado
             FROM asignacion_encuesta WHERE id = $1 AND completado=false AND borrador = false""",
             asignacion_id
         )
         return AsignacionEncuestaResponse(**row) if row else None
 
-    async def get_preguntas(self, evento: str, carrera_id: int | None) -> list[PreguntaResponse]:
+    async def get_preguntas(self, evento: int, carrera_id: int | None) -> list[PreguntaResponse]:
         rows = await self.conn.fetch(
             """
-            SELECT id, indicador_id, carrera_id, texto_pregunta, evento_disparador.nombre as evento,
+            SELECT pregunta.id, indicador_id, carrera_id, texto_pregunta, pregunta.evento_id as evento_id,
                    tipo_pregunta::text, configuracion_riesgo::text, activa
             FROM pregunta
-            INNER JOIN evento_disparador ON pregunta.evento_disparador = evento_disparador.id
-            WHERE activa = TRUE AND evento = $1
+            INNER JOIN evento_disparador ON pregunta.evento_id = evento_disparador.id
+            WHERE pregunta.activa = TRUE AND pregunta.evento_id = $1
               AND (carrera_id = $2 OR carrera_id IS NULL)
             """,
             evento, carrera_id
         )
         return [PreguntaResponse(**r) for r in rows]
+
+    async def get_evento_disparador(self, evento: int):
+        val = await self.conn.fetchval(
+            """
+            SELECT nombre
+            FROM evento_disparador
+            WHERE id = $1
+            """,
+            evento
+        )
+        return val
 
     async def get_opciones(self, pregunta_ids: list[int]) -> list[OpcionEncuestaResponse]:
         rows = await self.conn.fetch(

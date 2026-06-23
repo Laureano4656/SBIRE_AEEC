@@ -35,11 +35,11 @@ class EncuestaService:
 
         # 3. Parsear JSONB
         for p in preguntas_crudas:
-            if p.get('configuracion_riesgo'):
-                p['configuracion_riesgo'] = json.loads(p['configuracion_riesgo'])
+            if isinstance(p.configuracion_riesgo, str):
+                p.configuracion_riesgo = json.loads(p.configuracion_riesgo)
 
         # 4. Traer opciones y respuestas previas
-        pregunta_ids = [p['id'] for p in preguntas_crudas]
+        pregunta_ids = [p.id for p in preguntas_crudas]
         dicc_opciones = self._agrupar_opciones(
             await self.repo.get_opciones(pregunta_ids), pregunta_ids
         )
@@ -47,28 +47,30 @@ class EncuestaService:
             await self.repo.get_respuestas_previas(asignacion_id)
         )
 
+        nombre_evento = await self.repo.get_evento_disparador(evento)
+
         # 5. Distribuir según evento
         EVENTOS_GENERALES = {'unica_vez', 'cuatrimestral', 'anual'}
 
-        if evento in EVENTOS_GENERALES:
+        if nombre_evento in EVENTOS_GENERALES:
             for p in preguntas_crudas:
                 formulario.preguntas_generales.append(
                     self._ensamblar_pregunta(p, None, dicc_opciones, dicc_respuestas)
                 )
 
-        elif evento == 'fin_cuatrimestre_acad':
+        elif nombre_evento == 'fin_cuatrimestre_acad':
             materias = await self.repo.get_materias_cursando(estudiante_id)
             formulario.bloques_academicos = self._armar_bloques(
                 materias, preguntas_crudas, dicc_opciones, dicc_respuestas
             )
 
-        elif evento == 'llamado_final_acad':
+        elif nombre_evento == 'llamado_final_acad':
             materias = await self.repo.get_materias_con_final(estudiante_id)
             formulario.bloques_academicos = self._armar_bloques(
                 materias, preguntas_crudas, dicc_opciones, dicc_respuestas
             )
 
-        elif evento == 'inicio_cuatrimestre_acad':
+        elif nombre_evento == 'inicio_cuatrimestre_acad':
             materias = await self.repo.get_materias_disponibles(estudiante_id)
             formulario.bloques_academicos = self._armar_bloques(
                 materias, preguntas_crudas, dicc_opciones, dicc_respuestas
@@ -100,9 +102,9 @@ class EncuestaService:
 
     def _ensamblar_pregunta(self, p: dict, materia_id: int | None, dicc_opciones: dict, dicc_respuestas: dict) -> PreguntaParaEncuesta:
         return PreguntaParaEncuesta(
-            **p,
-            opciones=dicc_opciones.get(p['id'], []),
-            respuesta_previa=dicc_respuestas.get((p['id'], materia_id))
+            **p.model_dump(),
+            opciones=dicc_opciones.get(p.id, []),
+            respuesta_previa=dicc_respuestas.get((p.id, materia_id))
         )
 
     def _armar_bloques(self, materias: list[MateriaResponse], preguntas: list[dict], dicc_opciones: dict, dicc_respuestas: dict) -> list[BloqueAcademico]:

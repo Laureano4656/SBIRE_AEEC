@@ -5,9 +5,9 @@ from pydantic import BaseModel
 class AsignacionEncuesta(BaseModel):
     id: int
     estudiante_id: int
-    evento_disparador: str
+    evento_id: int
     periodo_lectivo: str
-    estado: Literal['Pendiente', 'Completada', 'Pendiente_Actualizacion']
+    completado: bool
     fecha_asignacion: datetime
 
     class Config:
