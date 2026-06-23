@@ -14,17 +14,17 @@ export const getConteoPorRiesgo = async ({ anio, carrera_id }: { anio: number, c
 }
 
 export const getTotalCriticos = async () => {
-    const response = await axiosInstance.get(`${PREFIX}/estadisticas/total/criticos`)
+    const response = await axiosInstance.get(`${PREFIX}/estadisticas/totales/criticos`)
     return response.data
 }
 
 export const getTotalAlertasNuevas = async () => {
-    const response = await axiosInstance.get(`${PREFIX}/estadisticas/total/alertas-nuevas`)
+    const response = await axiosInstance.get(`${PREFIX}/estadisticas/totales/alertas-nuevas`)
     return response.data
 }
 
 export const getTotalIntervencionesMes = async () => {
-    const response = await axiosInstance.get(`${PREFIX}/estadisticas/total/intervenciones-mes`)
+    const response = await axiosInstance.get(`${PREFIX}/estadisticas/totales/intervenciones-mes`)
     return response.data
 }
 // TODO : 

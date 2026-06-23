@@ -43,7 +43,8 @@ class UsuarioService(CrudService[Usuario]):
         email = user_claims.get("email")
         carrera_id = user_claims.get("carrera_id")
         print (f"Mapped claims: rol={rol}, nombre={nombre}, apellido={apellido}, email={email}, carrera_id={carrera_id}")
-
+        # TODO first check if the user already exists
+        
         usuario: Usuario = await self.repo.create(  # type: ignore
             moodle_id=moodle_id,
             rol=rol,

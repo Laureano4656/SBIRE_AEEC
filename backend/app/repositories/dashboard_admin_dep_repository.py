@@ -2,7 +2,7 @@ import datetime
 
 import asyncpg
 
-from app.schemas.dashboard_admin_dep import DimensionAgrupadaResponse, EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, IndicadorResponse, PreguntasRespuestasResponse, RolUpdate, indicadoresAgrupadosPorDimensionResponse
+from app.schemas.dashboard_admin_dep import DimensionAgrupadaResponse, EstudianteDashboardAdminResponse, EventoCronologicoResponse, GeneralEstudianteDashboardAdminResponse, IndicadorResponse, PreguntasRespuestasResponse, RolUpdate 
 
 class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
