@@ -5,18 +5,8 @@
 
 import { useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import type { Student, Interview, Survey } from "./types.ts";
-import { INITIAL_STUDENTS, INITIAL_INTERVIEWS, INITIAL_SURVEYS } from "./data.ts";
-=======
-import type { Student, TimelineEvent, Interview, Survey } from "./types/types.ts";
-import {
-  INITIAL_STUDENTS,
-  INITIAL_INTERVIEWS,
-  INITIAL_SURVEYS,
-  INITIAL_TIMELINE_SOFIA,
-} from "./data.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
+import type { Student, Survey } from "./types/types.ts";
+import { INITIAL_STUDENTS, INITIAL_SURVEYS } from "./data.ts";
 import ValidationScreen from "./components/ValidationScreen.tsx";
 import AdminPanel from "./components/AdminPanel.tsx";
 import PrincipalAdminPanel from "./components/PrincipalAdminPanel.tsx";
@@ -27,7 +17,6 @@ import TutorPanel from "./components/TutorPanel.tsx";
 export default function App() {
   // Shared Global State for exact real-time response feeling
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
-  const [interviews, setInterviews] = useState<Interview[]>(INITIAL_INTERVIEWS);
   const [surveys] = useState<Survey[]>(INITIAL_SURVEYS);
 
   const handleLogout = () => {
@@ -38,16 +27,6 @@ export default function App() {
     setStudents((prev) =>
       prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s)),
     );
-
-    if (updatedStudent.riskLevel === "SEGURO") {
-      setInterviews((prev) =>
-        prev.map((i) =>
-          i.studentId === updatedStudent.id
-            ? { ...i, status: "COMPLETADA" }
-            : i,
-        ),
-      );
-    }
   };
 
   const navigate = useNavigate();
@@ -74,10 +53,7 @@ export default function App() {
       <Route
         path="/superadmin"
         element={
-          <PrincipalAdminPanel
-            onLogout={handleLogout}
-            students={students}
-          />
+          <PrincipalAdminPanel onLogout={handleLogout} students={students} />
         }
       />
 

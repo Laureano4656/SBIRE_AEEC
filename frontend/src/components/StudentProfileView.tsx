@@ -4,11 +4,7 @@
  */
 
 import { useState, type FormEvent } from "react";
-<<<<<<< HEAD
-import type { Student, SubjectProgress } from "../types.ts";
-=======
-import type { Student, SubjectProgress, TimelineEvent } from "../types/types.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
+import type { Student, SubjectProgress } from "../types/types.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
 
 interface StudentProfileViewProps {
@@ -196,204 +192,206 @@ export default function StudentProfileView({
 
       {/* Content Layout: 2 Columns */}
       <div className="space-y-6">
-          {/* Custom Tabs */}
-          <div className="bg-white border border-brand-outline-variant rounded">
-            <div className="flex border-b border-brand-outline-variant bg-[#f3f4f5]">
-              <button
-                onClick={() => setActiveTab("trayectoria")}
-                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === "trayectoria"
-                    ? "border-brand-primary text-brand-primary bg-white"
-                    : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
-                  }`}
-              >
-                Trayectoria Académica
-              </button>
-              <button
-                onClick={() => setActiveTab("encuestas")}
-                className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${activeTab === "encuestas"
-                    ? "border-brand-primary text-brand-primary bg-white"
-                    : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
-                  }`}
-              >
-                Encuestas & Sentimiento
-              </button>
-            </div>
+        {/* Custom Tabs */}
+        <div className="bg-white border border-brand-outline-variant rounded">
+          <div className="flex border-b border-brand-outline-variant bg-[#f3f4f5]">
+            <button
+              onClick={() => setActiveTab("trayectoria")}
+              className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                activeTab === "trayectoria"
+                  ? "border-brand-primary text-brand-primary bg-white"
+                  : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
+              }`}
+            >
+              Trayectoria Académica
+            </button>
+            <button
+              onClick={() => setActiveTab("encuestas")}
+              className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+                activeTab === "encuestas"
+                  ? "border-brand-primary text-brand-primary bg-white"
+                  : "border-transparent text-[#43474f] hover:text-brand-primary hover:bg-[#e7e8e9]"
+              }`}
+            >
+              Encuestas & Sentimiento
+            </button>
+          </div>
 
-            <div className="p-4">
-              {activeTab === "trayectoria" ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="bg-[#edeeef] text-[#43474f] uppercase tracking-wider font-bold">
-                        <th className="p-3 border-b border-brand-outline-variant">
-                          Asignatura
-                        </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
-                          Parciales
-                        </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
-                          Final
-                        </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
-                          Estado
-                        </th>
+          <div className="p-4">
+            {activeTab === "trayectoria" ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#edeeef] text-[#43474f] uppercase tracking-wider font-bold">
+                      <th className="p-3 border-b border-brand-outline-variant">
+                        Asignatura
+                      </th>
+                      <th className="p-3 border-b border-brand-outline-variant text-center">
+                        Parciales
+                      </th>
+                      <th className="p-3 border-b border-brand-outline-variant text-center">
+                        Final
+                      </th>
+                      <th className="p-3 border-b border-brand-outline-variant text-center">
+                        Estado
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-outline-variant">
+                    {subjects.map((sub, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-[#f8f9fa] transition-colors"
+                      >
+                        <td className="p-3">
+                          <div className="font-bold text-brand-primary">
+                            {sub.name}
+                          </div>
+                          <div className="text-[10px] text-brand-outline">
+                            {sub.teacher}
+                          </div>
+                        </td>
+                        <td className="p-3 text-center text-[#43474f] font-medium">
+                          {sub.midtermGrades}
+                        </td>
+                        <td className="p-3 text-center font-bold text-rose-900">
+                          {sub.finalGrade}
+                        </td>
+                        <td className="p-3 text-center">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                              sub.status === "EN RIESGO"
+                                ? "bg-[#ffdad6] text-[#ba1a1a]"
+                                : sub.status === "APROBADA"
+                                  ? "bg-[#e2f3f5] text-[#006e6e]"
+                                  : sub.status === "PROMOCIONADA"
+                                    ? "bg-[#90efef] text-[#004f4f]"
+                                    : "bg-[#edeeef] text-[#43474f]"
+                            }`}
+                          >
+                            {sub.status}
+                          </span>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-outline-variant">
-                      {subjects.map((sub, idx) => (
-                        <tr
-                          key={idx}
-                          className="hover:bg-[#f8f9fa] transition-colors"
-                        >
-                          <td className="p-3">
-                            <div className="font-bold text-brand-primary">
-                              {sub.name}
-                            </div>
-                            <div className="text-[10px] text-brand-outline">
-                              {sub.teacher}
-                            </div>
-                          </td>
-                          <td className="p-3 text-center text-[#43474f] font-medium">
-                            {sub.midtermGrades}
-                          </td>
-                          <td className="p-3 text-center font-bold text-rose-900">
-                            {sub.finalGrade}
-                          </td>
-                          <td className="p-3 text-center">
-                            <span
-                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${sub.status === "EN RIESGO"
-                                  ? "bg-[#ffdad6] text-[#ba1a1a]"
-                                  : sub.status === "APROBADA"
-                                    ? "bg-[#e2f3f5] text-[#006e6e]"
-                                    : sub.status === "PROMOCIONADA"
-                                      ? "bg-[#90efef] text-[#004f4f]"
-                                      : "bg-[#edeeef] text-[#43474f]"
-                                }`}
-                            >
-                              {sub.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-orange-50 border border-amber-500/10 rounded">
+                  <h3 className="font-bold text-amber-700 text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base">
+                      warning
+                    </span>
+                    Indicador de Alerta de Deserción Tardía Q2
+                  </h3>
+                  <p className="text-xs text-amber-950 mt-1 leading-relaxed">
+                    El sistema detectó correlación significativa entre el
+                    ausentismo y conflictos de horarios laborales. En la
+                    encuesta de ingreso constaba:{" "}
+                    <strong>"Trabaja más de 20hs semanales"</strong>.
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-orange-50 border border-amber-500/10 rounded">
-                    <h3 className="font-bold text-amber-700 text-sm flex items-center gap-1">
-                      <span className="material-symbols-outlined text-base">
-                        warning
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-brand-outline-variant rounded p-4">
+                    <h4 className="text-xs font-bold text-brand-primary mb-2">
+                      SATISFACCIÓN CON LA CARRERA
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-[#edeeef] h-3 rounded overflow-hidden">
+                        <div
+                          className="bg-[#006a6a] h-full rounded"
+                          style={{ width: "85%" }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-bold text-brand-secondary">
+                        8.5/10
                       </span>
-                      Indicador de Alerta de Deserción Tardía Q2
-                    </h3>
-                    <p className="text-xs text-amber-950 mt-1 leading-relaxed">
-                      El sistema detectó correlación significativa entre el
-                      ausentismo y conflictos de horarios laborales. En la
-                      encuesta de ingreso constaba:{" "}
-                      <strong>"Trabaja más de 20hs semanales"</strong>.
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="border border-brand-outline-variant rounded p-4">
-                      <h4 className="text-xs font-bold text-brand-primary mb-2">
-                        SATISFACCIÓN CON LA CARRERA
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-[#edeeef] h-3 rounded overflow-hidden">
-                          <div
-                            className="bg-[#006a6a] h-full rounded"
-                            style={{ width: "85%" }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-bold text-brand-secondary">
-                          8.5/10
-                        </span>
+                  <div className="border border-brand-outline-variant rounded p-4">
+                    <h4 className="text-xs font-bold text-brand-primary mb-2">
+                      APOYO FAMILIAR E INFRAESTRUCTURA
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-[#edeeef] h-3 rounded overflow-hidden">
+                        <div
+                          className="bg-amber-500 h-full rounded"
+                          style={{ width: "45%" }}
+                        ></div>
                       </div>
-                    </div>
-
-                    <div className="border border-brand-outline-variant rounded p-4">
-                      <h4 className="text-xs font-bold text-brand-primary mb-2">
-                        APOYO FAMILIAR E INFRAESTRUCTURA
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-[#edeeef] h-3 rounded overflow-hidden">
-                          <div
-                            className="bg-amber-500 h-full rounded"
-                            style={{ width: "45%" }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-bold text-amber-600">
-                          4.5/10 (Moderado)
-                        </span>
-                      </div>
+                      <span className="text-xs font-bold text-amber-600">
+                        4.5/10 (Moderado)
+                      </span>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Metrics Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm">
+            <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
+              PROMEDIO GENERAL
+            </span>
+            <p className="text-2xl font-black text-brand-primary mt-1">
+              {student.gpa.toFixed(2)}
+            </p>
+            <div className="text-xs text-[#006a6a] font-semibold mt-1 flex items-center justify-center gap-0.5">
+              <span className="material-symbols-outlined text-sm font-bold">
+                trending_up
+              </span>
+              +0.4 vs año anterior
             </div>
           </div>
 
-          {/* Quick Metrics Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm">
+          <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm flex flex-col justify-between">
+            <div>
               <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
-                PROMEDIO GENERAL
+                MATERIAS APROBADAS
               </span>
               <p className="text-2xl font-black text-brand-primary mt-1">
-                {student.gpa.toFixed(2)}
+                {student.subjectsApproved} / {student.subjectsTotal}
               </p>
-              <div className="text-xs text-[#006a6a] font-semibold mt-1 flex items-center justify-center gap-0.5">
-                <span className="material-symbols-outlined text-sm font-bold">
-                  trending_up
-                </span>
-                +0.4 vs año anterior
-              </div>
             </div>
+            <div className="w-full bg-[#edeeef] h-2 rounded mt-2 overflow-hidden">
+              <div
+                className="bg-brand-primary h-full rounded"
+                style={{
+                  width: `${(student.subjectsApproved / student.subjectsTotal) * 100}%`,
+                }}
+              ></div>
+            </div>
+          </div>
 
-            <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm flex flex-col justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
-                  MATERIAS APROBADAS
-                </span>
-                <p className="text-2xl font-black text-brand-primary mt-1">
-                  {student.subjectsApproved} / {student.subjectsTotal}
-                </p>
+          <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm">
+            <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
+              ENGAGEMENT CAMPUS
+            </span>
+            <p
+              className={`text-2xl font-black mt-1 ${
+                student.engagement === "Bajo"
+                  ? "text-brand-error"
+                  : student.engagement === "Medio"
+                    ? "text-amber-500"
+                    : "text-[#006a6a]"
+              }`}
+            >
+              {student.engagement}
+            </p>
+            {student.engagement === "Bajo" && (
+              <div className="text-[10px] text-[#ba1a1a] font-bold mt-1 inline-flex items-center gap-0.5 bg-red-50 px-2 py-0.5 rounded">
+                <span className="material-symbols-outlined text-xs">info</span>
+                Alerta de Inactividad
               </div>
-              <div className="w-full bg-[#edeeef] h-2 rounded mt-2 overflow-hidden">
-                <div
-                  className="bg-brand-primary h-full rounded"
-                  style={{
-                    width: `${(student.subjectsApproved / student.subjectsTotal) * 100}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm">
-              <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
-                ENGAGEMENT CAMPUS
-              </span>
-              <p
-                className={`text-2xl font-black mt-1 ${student.engagement === "Bajo"
-                    ? "text-brand-error"
-                    : student.engagement === "Medio"
-                      ? "text-amber-500"
-                      : "text-[#006a6a]"
-                  }`}
-              >
-                {student.engagement}
-              </p>
-              {student.engagement === "Bajo" && (
-                <div className="text-[10px] text-[#ba1a1a] font-bold mt-1 inline-flex items-center gap-0.5 bg-red-50 px-2 py-0.5 rounded">
-                  <span className="material-symbols-outlined text-xs">
-                    info
-                  </span>
-                  Alerta de Inactividad
-                </div>
-              )}
-            </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -443,20 +441,22 @@ export default function StudentProfileView({
                   <button
                     type="button"
                     onClick={() => setInterviewModality("Presencial")}
-                    className={`p-2 border rounded text-xs font-bold transition-all ${interviewModality === "Presencial"
+                    className={`p-2 border rounded text-xs font-bold transition-all ${
+                      interviewModality === "Presencial"
                         ? "bg-brand-primary text-white border-brand-primary"
                         : "bg-white text-brand-primary border-brand-outline-variant"
-                      }`}
+                    }`}
                   >
                     Presencial
                   </button>
                   <button
                     type="button"
                     onClick={() => setInterviewModality("Virtual")}
-                    className={`p-2 border rounded text-xs font-bold transition-all ${interviewModality === "Virtual"
+                    className={`p-2 border rounded text-xs font-bold transition-all ${
+                      interviewModality === "Virtual"
                         ? "bg-brand-primary text-white border-brand-primary"
                         : "bg-white text-brand-primary border-brand-outline-variant"
-                      }`}
+                    }`}
                   >
                     Virtual
                   </button>

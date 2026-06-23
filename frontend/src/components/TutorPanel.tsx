@@ -1,9 +1,5 @@
 import { useState, type FormEvent } from "react";
-<<<<<<< HEAD
-import type { Student } from "../types.ts";
-=======
-import type { Student, TimelineEvent } from "../types/types.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
+import type { Student } from "../types/types.ts";
 import StudentProfileView from "./StudentProfileView.tsx";
 
 interface Entrevista {
@@ -19,7 +15,12 @@ interface Entrevista {
 interface Intervencion {
   id: string;
   entrevistaId: string;
-  tipo: "tutoria_academica" | "derivacion" | "seguimiento_virtual" | "asesoria_par" | "otro";
+  tipo:
+    | "tutoria_academica"
+    | "derivacion"
+    | "seguimiento_virtual"
+    | "asesoria_par"
+    | "otro";
   descripcion: string;
   resultado: "positivo" | "neutro" | "negativo" | "sin_contacto";
   fecha: string;
@@ -187,9 +188,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
   });
 
   const handleUpdateStudent = (updated: Student) => {
-    setStudents((prev) =>
-      prev.map((s) => (s.id === updated.id ? updated : s)),
-    );
+    setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
   };
 
   const filteredStudents = students.filter((s) => {
@@ -428,10 +427,11 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("estudiantes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "estudiantes"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-lg">groups</span>
             Mis Estudiantes
@@ -442,10 +442,11 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("entrevistas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "entrevistas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "entrevistas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-lg">
               event_note
@@ -466,10 +467,11 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               setActiveMenu("alertas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "alertas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "alertas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-lg">
               notifications_active
@@ -532,8 +534,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
 
         <main className="p-8 flex-1 space-y-6 max-w-6xl w-full mx-auto">
           {/* ── ESTUDIANTES ── */}
-          {activeMenu === "estudiantes" && (
-            selectedStudent ? (
+          {activeMenu === "estudiantes" &&
+            (selectedStudent ? (
               <StudentProfileView
                 student={selectedStudent}
                 onBack={() => setSelectedStudentId(null)}
@@ -592,24 +594,27 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                     />
                   </div>
                   <div className="flex border border-brand-outline-variant rounded overflow-hidden">
-                    {(["TODOS", "CRÍTICO", "MEDIO", "BAJO"] as const).map((r) => (
-                      <button
-                        key={r}
-                        onClick={() => setFilterRisk(r)}
-                        className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${filterRisk === r
-                            ? r === "CRÍTICO"
-                              ? "bg-[#ffdad6] text-[#ba1a1a]"
-                              : r === "MEDIO"
-                                ? "bg-amber-100 text-amber-800"
-                                : r === "BAJO"
-                                  ? "bg-[#e2f3f5] text-[#006e6e]"
-                                  : "bg-brand-primary text-white"
-                            : "bg-white text-brand-primary"
+                    {(["TODOS", "CRÍTICO", "MEDIO", "BAJO"] as const).map(
+                      (r) => (
+                        <button
+                          key={r}
+                          onClick={() => setFilterRisk(r)}
+                          className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
+                            filterRisk === r
+                              ? r === "CRÍTICO"
+                                ? "bg-[#ffdad6] text-[#ba1a1a]"
+                                : r === "MEDIO"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : r === "BAJO"
+                                    ? "bg-[#e2f3f5] text-[#006e6e]"
+                                    : "bg-brand-primary text-white"
+                              : "bg-white text-brand-primary"
                           }`}
-                      >
-                        {r}
-                      </button>
-                    ))}
+                        >
+                          {r}
+                        </button>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -739,8 +744,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                   </div>
                 </div>
               </div>
-            )
-          )}
+            ))}
 
           {/* ── ENTREVISTAS ── */}
           {activeMenu === "entrevistas" && (
@@ -878,7 +882,9 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                         </div>
                       )}
                       {e.estado === "Realizada" &&
-                        !intervenciones.find((i) => i.entrevistaId === e.id) && (
+                        !intervenciones.find(
+                          (i) => i.entrevistaId === e.id,
+                        ) && (
                           <div className="flex gap-2 self-start">
                             <button
                               onClick={() => abrirIntervencionModal(e.id)}
@@ -951,7 +957,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                     <button
                       key={sev}
                       onClick={() => setFilterSeveridad(sev)}
-                      className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${filterSeveridad === sev
+                      className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
+                        filterSeveridad === sev
                           ? sev === "ALTA"
                             ? "bg-[#ffdad6] text-[#ba1a1a]"
                             : sev === "MEDIA"
@@ -960,7 +967,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
                                 ? "bg-[#e2f3f5] text-[#006e6e]"
                                 : "bg-brand-primary text-white"
                           : "bg-white text-brand-primary"
-                        }`}
+                      }`}
                     >
                       {sev}
                     </button>

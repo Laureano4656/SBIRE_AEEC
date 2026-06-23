@@ -4,16 +4,19 @@
  */
 
 import { useState } from "react";
-<<<<<<< HEAD
-import type { Student, Interview, Survey } from "../types.ts";
-=======
-import type { Student, TimelineEvent, Interview, Survey } from "../types/types.ts";
->>>>>>> d1be9e4e97fbee47b4c22b1732eb8506b995bc7d
+import type { Student, Survey } from "../types/types.ts";
 import AdminStudentView from "./AdminStudentView.tsx";
 import AHPConfigPanel from "./AHPConfigPanel.tsx";
 import ReportesPanel from "./ReportesPanel.tsx";
 import SurveyEditor from "./SurveyEditor.tsx";
 import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
+import {
+  useConteoEstudiantes,
+  useConteoPorRiesgo,
+  useTotalCriticos,
+  useTotalAlertasNuevas,
+  useTotalIntervencionesMes,
+} from "../hooks/queries/useAdminDepQueries.ts";
 
 interface AdminPanelProps {
   students: Student[];
@@ -25,7 +28,6 @@ interface AdminPanelProps {
 export default function AdminPanel({
   students,
   surveys,
-  onUpdateStudent,
   onLogout,
 }: AdminPanelProps) {
   const [activeMenu, setActiveMenu] = useState<
@@ -34,6 +36,39 @@ export default function AdminPanel({
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
+
+  // Dashboard aggregate filters
+  const [dashboardAnio] = useState(2024);
+  const [dashboardCarreraId] = useState(1);
+  const {
+    data: totalEstudiantes,
+    isLoading: loadingTotal,
+    isError: errorTotal,
+  } = useConteoEstudiantes(dashboardAnio, dashboardCarreraId);
+  const {
+    data: totalCriticos,
+    isLoading: loadingCriticos,
+    isError: errorCriticos,
+  } = useTotalCriticos();
+  const {
+    data: totalAlertas,
+    isLoading: loadingAlertas,
+    isError: errorAlertas,
+  } = useTotalAlertasNuevas();
+  const {
+    data: totalIntervenciones,
+    isLoading: loadingIntervenciones,
+    isError: errorIntervenciones,
+  } = useTotalIntervencionesMes();
+  const {
+    data: conteoPorRiesgo,
+    isLoading: loadingRiesgo,
+    isError: errorRiesgo,
+  } = useConteoPorRiesgo(dashboardAnio, dashboardCarreraId);
+
+  const donutRojo = conteoPorRiesgo?.rojo ?? 12;
+  const donutAmarillo = conteoPorRiesgo?.amarillo ?? 25;
+  const donutVerde = conteoPorRiesgo?.verde ?? 63;
 
   // Filters for student tracking
   const [searchQuery, setSearchQuery] = useState("");
@@ -150,10 +185,11 @@ export default function AdminPanel({
               setActiveMenu("panel");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "panel" && !selectedStudentId
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "panel" && !selectedStudentId
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               dashboard
@@ -166,10 +202,11 @@ export default function AdminPanel({
               setActiveMenu("estudiantes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes" || selectedStudentId
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "estudiantes" || selectedStudentId
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               groups
@@ -182,10 +219,11 @@ export default function AdminPanel({
               setActiveMenu("encuestas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "encuestas"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "encuestas"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               edit_note
@@ -198,10 +236,11 @@ export default function AdminPanel({
               setActiveMenu("reportes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "reportes"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "reportes"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               query_stats
@@ -214,10 +253,11 @@ export default function AdminPanel({
               setActiveMenu("configuracion");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "configuracion"
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeMenu === "configuracion"
                 ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
                 : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-              }`}
+            }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               settings
@@ -378,19 +418,18 @@ export default function AdminPanel({
                     TOTAL ESTUDIANTES
                   </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-brand-primary">
-                      1,248
-                    </span>
-                    <span className="bg-[#e2f3f5] text-[#006e6e] text-xs font-bold px-2 py-0.5 rounded flex items-center">
-                      <span className="material-symbols-outlined text-[10px] font-bold">
-                        arrow_upward
+                    {loadingTotal ? (
+                      <span className="inline-block w-20 h-8 bg-gray-200 rounded animate-pulse" />
+                    ) : errorTotal || !totalEstudiantes ? (
+                      <span className="text-3xl font-black text-brand-primary">
+                        —
                       </span>
-                      2.4%
-                    </span>
+                    ) : (
+                      <span className="text-3xl font-black text-brand-primary">
+                        {totalEstudiantes.cantidad.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
-                    Cohortes 2019 - 2024
-                  </p>
                 </div>
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
@@ -398,19 +437,18 @@ export default function AdminPanel({
                     RIESGO CRÍTICO
                   </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-brand-error">
-                      156
-                    </span>
-                    <span className="bg-red-50 text-brand-error text-xs font-bold px-2 py-0.5 rounded flex items-center gap-0.5 border border-brand-error/25">
-                      <span className="material-symbols-outlined text-[10px] font-bold">
-                        warning
+                    {loadingCriticos ? (
+                      <span className="inline-block w-20 h-8 bg-gray-200 rounded animate-pulse" />
+                    ) : errorCriticos || !totalCriticos ? (
+                      <span className="text-3xl font-black text-brand-error">
+                        —
                       </span>
-                      12.5%
-                    </span>
+                    ) : (
+                      <span className="text-3xl font-black text-brand-error">
+                        {totalCriticos.total.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
-                    Requieren acción inmediata
-                  </p>
                 </div>
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
@@ -418,13 +456,18 @@ export default function AdminPanel({
                     ALERTAS PENDIENTES
                   </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-[#5a9ef1]">
-                      42
-                    </span>
+                    {loadingAlertas ? (
+                      <span className="inline-block w-20 h-8 bg-gray-200 rounded animate-pulse" />
+                    ) : errorAlertas || !totalAlertas ? (
+                      <span className="text-3xl font-black text-[#5a9ef1]">
+                        —
+                      </span>
+                    ) : (
+                      <span className="text-3xl font-black text-[#5a9ef1]">
+                        {totalAlertas.total.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
-                    Sistemas automáticos activos
-                  </p>
                 </div>
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
@@ -432,19 +475,18 @@ export default function AdminPanel({
                     INTERVENCIONES (MES)
                   </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-[#006a6a]">
-                      89
-                    </span>
-                    <span className="bg-green-50 text-[#006e6e] text-xs font-bold px-2 py-0.5 rounded flex items-center gap-0.5">
-                      <span className="material-symbols-outlined text-[10px] font-bold">
-                        done
+                    {loadingIntervenciones ? (
+                      <span className="inline-block w-20 h-8 bg-gray-200 rounded animate-pulse" />
+                    ) : errorIntervenciones || !totalIntervenciones ? (
+                      <span className="text-3xl font-black text-[#006a6a]">
+                        —
                       </span>
-                      +12
-                    </span>
+                    ) : (
+                      <span className="text-3xl font-black text-[#006a6a]">
+                        {totalIntervenciones.total.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[10px] text-brand-outline mt-2 font-medium">
-                    Gestión integral de tutorías
-                  </p>
                 </div>
               </div>
 
@@ -459,85 +501,96 @@ export default function AdminPanel({
                     Semáforo General de Alumnos
                   </h4>
 
-                  <div className="flex-1 flex flex-col justify-center items-center relative py-4">
-                    {/* SVG circle donut */}
-                    <svg
-                      className="w-40 h-40 transform -rotate-90"
-                      viewBox="0 0 36 36"
-                    >
-                      <circle
-                        cx="18"
-                        cy="18"
-                        fill="transparent"
-                        r="15.915"
-                        stroke="#edeeef"
-                        strokeWidth="3"
-                      ></circle>
-                      {/* Critical Section 12% */}
-                      <circle
-                        cx="18"
-                        cy="18"
-                        fill="transparent"
-                        r="15.915"
-                        stroke="#ba1a1a"
-                        strokeWidth="3.2"
-                        strokeDasharray="12 100"
-                        strokeDashoffset="0"
-                      ></circle>
-                      {/* Medium Section 25% */}
-                      <circle
-                        cx="18"
-                        cy="18"
-                        fill="transparent"
-                        r="15.915"
-                        stroke="#d97706"
-                        strokeWidth="3.2"
-                        strokeDasharray="25 100"
-                        strokeDashoffset="-12"
-                      ></circle>
-                      {/* Safe Section 63% */}
-                      <circle
-                        cx="18"
-                        cy="18"
-                        fill="transparent"
-                        r="15.915"
-                        stroke="#006a6a"
-                        strokeWidth="3.2"
-                        strokeDasharray="63 100"
-                        strokeDashoffset="-37"
-                      ></circle>
-                    </svg>
+                  {loadingRiesgo ? (
+                    <div className="flex-1 flex flex-col justify-center items-center py-4">
+                      <span className="inline-block w-40 h-40 bg-gray-200 rounded-full animate-pulse" />
+                    </div>
+                  ) : errorRiesgo || !conteoPorRiesgo ? (
+                    <div className="flex-1 flex flex-col justify-center items-center py-4">
+                      <p className="text-brand-outline text-xs">Sin datos</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex-1 flex flex-col justify-center items-center relative py-4">
+                        <svg
+                          className="w-40 h-40 transform -rotate-90"
+                          viewBox="0 0 36 36"
+                        >
+                          <circle
+                            cx="18"
+                            cy="18"
+                            fill="transparent"
+                            r="15.915"
+                            stroke="#edeeef"
+                            strokeWidth="3"
+                          ></circle>
+                          <circle
+                            cx="18"
+                            cy="18"
+                            fill="transparent"
+                            r="15.915"
+                            stroke="#ba1a1a"
+                            strokeWidth="3.2"
+                            strokeDasharray={`${donutRojo} 100`}
+                            strokeDashoffset="0"
+                          ></circle>
+                          <circle
+                            cx="18"
+                            cy="18"
+                            fill="transparent"
+                            r="15.915"
+                            stroke="#d97706"
+                            strokeWidth="3.2"
+                            strokeDasharray={`${donutAmarillo} 100`}
+                            strokeDashoffset={`-${donutRojo}`}
+                          ></circle>
+                          <circle
+                            cx="18"
+                            cy="18"
+                            fill="transparent"
+                            r="15.915"
+                            stroke="#006a6a"
+                            strokeWidth="3.2"
+                            strokeDasharray={`${donutVerde} 100`}
+                            strokeDashoffset={`-${donutRojo + donutAmarillo}`}
+                          ></circle>
+                        </svg>
 
-                    <div className="absolute inset-x-0 top-18 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-black text-brand-primary">
-                        1,248
-                      </span>
-                      <span className="text-[9px] text-brand-outline font-bold uppercase">
-                        Población Activa
-                      </span>
-                    </div>
-                  </div>
+                        <div className="absolute inset-x-0 top-18 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-black text-brand-primary">
+                            {loadingTotal
+                              ? "—"
+                              : (totalEstudiantes?.cantidad.toLocaleString() ??
+                                "—")}
+                          </span>
+                          <span className="text-[9px] text-brand-outline font-bold uppercase">
+                            Población Activa
+                          </span>
+                        </div>
+                      </div>
 
-                  <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#006a6a] mx-auto mb-1"></div>
-                      <p className="text-[10px] font-bold text-brand-primary">
-                        63% Seguro
-                      </p>
-                    </div>
-                    <div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mx-auto mb-1"></div>
-                      <p className="text-[10px] font-bold text-brand-primary">
-                        25% Medio
-                      </p>
-                    </div>
-                    <div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] mx-auto mb-1"></div>
-                      <p className="text-[10px] font-bold text-[#ba1a1a]">
-                        12% Crítico
-                      </p>
-                    </div>
-                  </div>
+                      <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#006a6a] mx-auto mb-1"></div>
+                          <p className="text-[10px] font-bold text-brand-primary">
+                            {donutVerde}% Seguro
+                          </p>
+                        </div>
+                        <div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mx-auto mb-1"></div>
+                          <p className="text-[10px] font-bold text-brand-primary">
+                            {donutAmarillo}% Medio
+                          </p>
+                        </div>
+                        <div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] mx-auto mb-1"></div>
+                          <p className="text-[10px] font-bold text-[#ba1a1a]">
+                            {donutRojo}% Crítico
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Risk evolution per Cohort */}
@@ -782,37 +835,41 @@ export default function AdminPanel({
                     <div className="flex border border-brand-outline-variant rounded overflow-hidden">
                       <button
                         onClick={() => setFilterRisk("TODOS")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold ${filterRisk === "TODOS"
+                        className={`px-3 py-1.5 cursor-pointer font-bold ${
+                          filterRisk === "TODOS"
                             ? "bg-brand-primary text-white"
                             : "bg-white text-brand-primary"
-                          }`}
+                        }`}
                       >
                         TODOS
                       </button>
                       <button
                         onClick={() => setFilterRisk("CRÍTICO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "CRÍTICO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "CRÍTICO"
                             ? "bg-[#ffdad6] text-[#ba1a1a]"
                             : "bg-white text-brand-primary"
-                          }`}
+                        }`}
                       >
                         CRÍTICO
                       </button>
                       <button
                         onClick={() => setFilterRisk("MEDIO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "MEDIO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "MEDIO"
                             ? "bg-amber-100 text-amber-800"
                             : "bg-white text-brand-primary"
-                          }`}
+                        }`}
                       >
                         MEDIO
                       </button>
                       <button
                         onClick={() => setFilterRisk("BAJO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "BAJO"
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
+                          filterRisk === "BAJO"
                             ? "bg-[#e2f3f5] text-[#006e6e]"
                             : "bg-white text-brand-primary"
-                          }`}
+                        }`}
                       >
                         BAJO
                       </button>
@@ -880,12 +937,13 @@ export default function AdminPanel({
                           </td>
                           <td className="p-3 text-center">
                             <span
-                              className={`font-black text-xs ${s.riskValue >= 7.5
+                              className={`font-black text-xs ${
+                                s.riskValue >= 7.5
                                   ? "text-[#ba1a1a]"
                                   : s.riskValue >= 4.0
                                     ? "text-amber-600"
                                     : "text-[#006e6e]"
-                                }`}
+                              }`}
                             >
                               {s.riskValue.toFixed(2)}
                             </span>
@@ -1034,12 +1092,13 @@ export default function AdminPanel({
                           </td>
                           <td className="p-4 text-center">
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
+                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${
+                                sur.status === "Activa"
                                   ? "bg-[#e2f3f5] text-[#006e6e]"
                                   : sur.status === "Borrador"
                                     ? "bg-amber-100 text-amber-800"
                                     : "bg-red-150 text-brand-error"
-                                }`}
+                              }`}
                             >
                               {sur.status}
                             </span>
@@ -1064,9 +1123,9 @@ export default function AdminPanel({
                                       const updated = localSurveys.map((s) =>
                                         s.id === sur.id
                                           ? {
-                                            ...s,
-                                            status: "Finalizada" as const,
-                                          }
+                                              ...s,
+                                              status: "Finalizada" as const,
+                                            }
                                           : s,
                                       );
                                       setLocalSurveys(updated);

@@ -1,5 +1,9 @@
 import { useState } from "react";
-import type { Survey, SurveyQuestion, TipoPreguntaEncuesta } from "../types/types.ts";
+import type {
+  Survey,
+  SurveyQuestion,
+  TipoPreguntaEncuesta,
+} from "../types/types.ts";
 
 type SurveyEditorProps = {
   onSave: (survey: Survey) => void;
@@ -124,12 +128,12 @@ export default function SurveyEditor({
         prev.map((q) =>
           q.id === editandoId
             ? {
-              ...q,
-              texto: formTexto.trim(),
-              tipo: formTipo,
-              opciones: opcionesLimpias,
-              obligatoria: formObligatoria,
-            }
+                ...q,
+                texto: formTexto.trim(),
+                tipo: formTipo,
+                opciones: opcionesLimpias,
+                obligatoria: formObligatoria,
+              }
             : q,
         ),
       );
@@ -188,18 +192,20 @@ export default function SurveyEditor({
           </h2>
           <div className="flex gap-1 text-[10px] font-bold uppercase tracking-wider">
             <span
-              className={`px-2 py-1 rounded ${paso === "datos"
+              className={`px-2 py-1 rounded ${
+                paso === "datos"
                   ? "bg-brand-primary text-white"
                   : "bg-[#edeeef] text-[#43474f]"
-                }`}
+              }`}
             >
               1. Datos
             </span>
             <span
-              className={`px-2 py-1 rounded ${paso === "preguntas"
+              className={`px-2 py-1 rounded ${
+                paso === "preguntas"
                   ? "bg-brand-primary text-white"
                   : "bg-[#edeeef] text-[#43474f]"
-                }`}
+              }`}
             >
               2. Preguntas
             </span>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import type { Student } from "../types.ts";
+import type { Student } from "../types/types.ts";
 
 interface Usuario {
   id: string;
@@ -33,7 +33,12 @@ interface PrincipalAdminPanelProps {
   onLogout: () => void;
 }
 
-type ActiveMenu = "panel" | "carreras" | "usuarios" | "reportes" | "configuracion";
+type ActiveMenu =
+  | "panel"
+  | "carreras"
+  | "usuarios"
+  | "reportes"
+  | "configuracion";
 
 const CARRERAS = [
   "Ingeniería en Informática",
@@ -76,19 +81,87 @@ const USUARIOS_MOCK: Usuario[] = [
 ];
 
 const UMBRALES_MOCK: UmbralSemafaro[] = [
-  { carrera: "Ingeniería en Informática", etapa: "INICIAL", criticoDesde: 7, medioDesde: 4, seguroHasta: 2 },
-  { carrera: "Ingeniería en Informática", etapa: "MEDIO", criticoDesde: 6.5, medioDesde: 3.5, seguroHasta: 1.5 },
-  { carrera: "Ingeniería en Informática", etapa: "AVANZADO", criticoDesde: 6, medioDesde: 3, seguroHasta: 1 },
-  { carrera: "Ingeniería Industrial", etapa: "INICIAL", criticoDesde: 7, medioDesde: 4, seguroHasta: 2 },
-  { carrera: "Ingeniería Industrial", etapa: "MEDIO", criticoDesde: 6.5, medioDesde: 3.5, seguroHasta: 1.5 },
-  { carrera: "Ingeniería Industrial", etapa: "AVANZADO", criticoDesde: 6, medioDesde: 3, seguroHasta: 1 },
+  {
+    carrera: "Ingeniería en Informática",
+    etapa: "INICIAL",
+    criticoDesde: 7,
+    medioDesde: 4,
+    seguroHasta: 2,
+  },
+  {
+    carrera: "Ingeniería en Informática",
+    etapa: "MEDIO",
+    criticoDesde: 6.5,
+    medioDesde: 3.5,
+    seguroHasta: 1.5,
+  },
+  {
+    carrera: "Ingeniería en Informática",
+    etapa: "AVANZADO",
+    criticoDesde: 6,
+    medioDesde: 3,
+    seguroHasta: 1,
+  },
+  {
+    carrera: "Ingeniería Industrial",
+    etapa: "INICIAL",
+    criticoDesde: 7,
+    medioDesde: 4,
+    seguroHasta: 2,
+  },
+  {
+    carrera: "Ingeniería Industrial",
+    etapa: "MEDIO",
+    criticoDesde: 6.5,
+    medioDesde: 3.5,
+    seguroHasta: 1.5,
+  },
+  {
+    carrera: "Ingeniería Industrial",
+    etapa: "AVANZADO",
+    criticoDesde: 6,
+    medioDesde: 3,
+    seguroHasta: 1,
+  },
 ];
 
 const LOGS_MOCK: LogAuditoria[] = [
-  { id: "l1", fecha: "22/06/2026 10:30", usuario: "Dr. Juan Pérez", tipo: "IMPORTACION", registros: 45, errores: 2, detalle: "Importación de estudiantes - Ing. Informática" },
-  { id: "l2", fecha: "21/06/2026 15:15", usuario: "Lic. María García", tipo: "IMPORTACION", registros: 38, errores: 0, detalle: "Importación de estudiantes - Ing. Industrial" },
-  { id: "l3", fecha: "20/06/2026 09:00", usuario: "Dr. Juan Pérez", tipo: "RECALCULO", registros: 83, errores: 0, detalle: "Recálculo forzado de indicadores" },
-  { id: "l4", fecha: "18/06/2026 14:45", usuario: "Dr. Juan Pérez", tipo: "CONFIGURACION", registros: 0, errores: 0, detalle: "Actualización de umbrales - Ing. Industrial" },
+  {
+    id: "l1",
+    fecha: "22/06/2026 10:30",
+    usuario: "Dr. Juan Pérez",
+    tipo: "IMPORTACION",
+    registros: 45,
+    errores: 2,
+    detalle: "Importación de estudiantes - Ing. Informática",
+  },
+  {
+    id: "l2",
+    fecha: "21/06/2026 15:15",
+    usuario: "Lic. María García",
+    tipo: "IMPORTACION",
+    registros: 38,
+    errores: 0,
+    detalle: "Importación de estudiantes - Ing. Industrial",
+  },
+  {
+    id: "l3",
+    fecha: "20/06/2026 09:00",
+    usuario: "Dr. Juan Pérez",
+    tipo: "RECALCULO",
+    registros: 83,
+    errores: 0,
+    detalle: "Recálculo forzado de indicadores",
+  },
+  {
+    id: "l4",
+    fecha: "18/06/2026 14:45",
+    usuario: "Dr. Juan Pérez",
+    tipo: "CONFIGURACION",
+    registros: 0,
+    errores: 0,
+    detalle: "Actualización de umbrales - Ing. Industrial",
+  },
 ];
 
 const INITIAL_MAX_CASOS = 15;
@@ -126,7 +199,9 @@ export default function PrincipalAdminPanel({
   });
 
   const [recalculando, setRecalculando] = useState(false);
-  const [logFilter, setLogFilter] = useState<"TODOS" | LogAuditoria["tipo"]>("TODOS");
+  const [logFilter, setLogFilter] = useState<"TODOS" | LogAuditoria["tipo"]>(
+    "TODOS",
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -134,7 +209,9 @@ export default function PrincipalAdminPanel({
     const ests = students.filter((s) => s.career === carrera);
     const criticos = ests.filter((s) => s.riskLevel === "CRÍTICO").length;
     const medios = ests.filter((s) => s.riskLevel === "MEDIO").length;
-    const bajos = ests.filter((s) => s.riskLevel === "BAJO" || s.riskLevel === "SEGURO").length;
+    const bajos = ests.filter(
+      (s) => s.riskLevel === "BAJO" || s.riskLevel === "SEGURO",
+    ).length;
     const riesgoPromedio =
       ests.length > 0
         ? ests.reduce((sum, s) => sum + s.riskValue, 0) / ests.length
@@ -142,7 +219,8 @@ export default function PrincipalAdminPanel({
     const engagementPromedio =
       ests.length > 0
         ? ests.reduce((sum, s) => {
-            const val = s.engagement === "Alto" ? 3 : s.engagement === "Medio" ? 2 : 1;
+            const val =
+              s.engagement === "Alto" ? 3 : s.engagement === "Medio" ? 2 : 1;
             return sum + val;
           }, 0) / ests.length
         : 0;
@@ -162,7 +240,9 @@ export default function PrincipalAdminPanel({
   });
 
   const totalEstudiantes = students.length;
-  const totalCriticos = students.filter((s) => s.riskLevel === "CRÍTICO").length;
+  const totalCriticos = students.filter(
+    (s) => s.riskLevel === "CRÍTICO",
+  ).length;
   const totalAlertasActivas = students.filter(
     (s) => s.statusAlerta !== "SIN ALERTA",
   ).length;
@@ -172,13 +252,12 @@ export default function PrincipalAdminPanel({
   const usuariosActivos = usuarios.filter((u) => u.activo).length;
 
   const filteredLogs =
-    logFilter === "TODOS"
-      ? logs
-      : logs.filter((l) => l.tipo === logFilter);
+    logFilter === "TODOS" ? logs : logs.filter((l) => l.tipo === logFilter);
 
-  const filteredUsuarios = usuarios.filter((u) =>
-    u.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredUsuarios = usuarios.filter(
+    (u) =>
+      u.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAbrirNuevoUsuario = () => {
@@ -210,9 +289,7 @@ export default function PrincipalAdminPanel({
     if (editingUser) {
       setUsuarios((prev) =>
         prev.map((u) =>
-          u.id === editingUser.id
-            ? { ...u, ...userForm, id: u.id }
-            : u,
+          u.id === editingUser.id ? { ...u, ...userForm, id: u.id } : u,
         ),
       );
     } else {
@@ -232,7 +309,10 @@ export default function PrincipalAdminPanel({
     );
   };
 
-  const handleAbrirUmbral = (carrera: string, etapa: UmbralSemafaro["etapa"]) => {
+  const handleAbrirUmbral = (
+    carrera: string,
+    etapa: UmbralSemafaro["etapa"],
+  ) => {
     const actual = umbrales.find(
       (u) => u.carrera === carrera && u.etapa === etapa,
     );
@@ -263,7 +343,13 @@ export default function PrincipalAdminPanel({
     setRecalculando(true);
     setTimeout(() => {
       const ahora = new Date();
-      const fecha = ahora.toLocaleDateString("es-AR") + " " + ahora.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+      const fecha =
+        ahora.toLocaleDateString("es-AR") +
+        " " +
+        ahora.toLocaleTimeString("es-AR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       const nuevoLog: LogAuditoria = {
         id: "l_" + Date.now(),
         fecha,
@@ -373,13 +459,29 @@ export default function PrincipalAdminPanel({
         </div>
 
         <nav className="flex-1 py-6 space-y-1">
-          {([
-            { key: "panel" as const, icon: "dashboard", label: "Panel General" },
+          {[
+            {
+              key: "panel" as const,
+              icon: "dashboard",
+              label: "Panel General",
+            },
             { key: "carreras" as const, icon: "school", label: "Carreras" },
-            { key: "usuarios" as const, icon: "manage_accounts", label: "Usuarios" },
-            { key: "reportes" as const, icon: "query_stats", label: "Reportes" },
-            { key: "configuracion" as const, icon: "settings", label: "Configuración" },
-          ]).map((item) => (
+            {
+              key: "usuarios" as const,
+              icon: "manage_accounts",
+              label: "Usuarios",
+            },
+            {
+              key: "reportes" as const,
+              icon: "query_stats",
+              label: "Reportes",
+            },
+            {
+              key: "configuracion" as const,
+              icon: "settings",
+              label: "Configuración",
+            },
+          ].map((item) => (
             <button
               key={item.key}
               onClick={() => {
@@ -392,7 +494,9 @@ export default function PrincipalAdminPanel({
                   : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
               }`}
             >
-              <span className="material-symbols-outlined text-lg">{item.icon}</span>
+              <span className="material-symbols-outlined text-lg">
+                {item.icon}
+              </span>
               {item.label}
             </button>
           ))}
@@ -431,7 +535,9 @@ export default function PrincipalAdminPanel({
             {activeMenu === "panel"
               ? "Panel General de Control"
               : activeMenu === "carreras"
-                ? selectedCareer ? selectedCareer : "Gestión de Carreras"
+                ? selectedCareer
+                  ? selectedCareer
+                  : "Gestión de Carreras"
                 : activeMenu === "usuarios"
                   ? "Gestión de Usuarios"
                   : activeMenu === "reportes"
@@ -475,7 +581,8 @@ export default function PrincipalAdminPanel({
                   <p className="text-[10px] text-brand-outline mt-1 font-medium">
                     {totalEstudiantes > 0
                       ? Math.round((totalCriticos / totalEstudiantes) * 100)
-                      : 0}% del total
+                      : 0}
+                    % del total
                   </p>
                 </div>
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
@@ -505,7 +612,9 @@ export default function PrincipalAdminPanel({
               <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
                 <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa]">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-lg">school</span>
+                    <span className="material-symbols-outlined text-lg">
+                      school
+                    </span>
                     Distribución por Carrera
                   </h4>
                 </div>
@@ -513,37 +622,68 @@ export default function PrincipalAdminPanel({
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                        <th className="p-3 pl-5 text-left border-b border-brand-outline-variant">Carrera</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Total</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Crítico</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Medio</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Bajo/Seguro</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Riesgo Prom.</th>
-                        <th className="p-3 text-center border-b border-brand-outline-variant">Alertas</th>
+                        <th className="p-3 pl-5 text-left border-b border-brand-outline-variant">
+                          Carrera
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Total
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Crítico
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Medio
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Bajo/Seguro
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Riesgo Prom.
+                        </th>
+                        <th className="p-3 text-center border-b border-brand-outline-variant">
+                          Alertas
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-outline-variant">
                       {estudiantesPorCarrera.map((ec) => (
-                        <tr key={ec.carrera} className="hover:bg-[#f8f9fa] transition-colors">
-                          <td className="p-3 pl-5 font-bold text-brand-primary">{ec.carrera}</td>
-                          <td className="p-3 text-center font-bold">{ec.total}</td>
-                          <td className="p-3 text-center">
-                            <span className="text-[#ba1a1a] font-bold">{ec.criticos}</span>
+                        <tr
+                          key={ec.carrera}
+                          className="hover:bg-[#f8f9fa] transition-colors"
+                        >
+                          <td className="p-3 pl-5 font-bold text-brand-primary">
+                            {ec.carrera}
+                          </td>
+                          <td className="p-3 text-center font-bold">
+                            {ec.total}
                           </td>
                           <td className="p-3 text-center">
-                            <span className="text-amber-600 font-bold">{ec.medios}</span>
+                            <span className="text-[#ba1a1a] font-bold">
+                              {ec.criticos}
+                            </span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className="text-[#006e6e] font-bold">{ec.bajos}</span>
+                            <span className="text-amber-600 font-bold">
+                              {ec.medios}
+                            </span>
                           </td>
-                          <td className="p-3 text-center font-bold">{ec.riesgoPromedio.toFixed(2)}</td>
+                          <td className="p-3 text-center">
+                            <span className="text-[#006e6e] font-bold">
+                              {ec.bajos}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center font-bold">
+                            {ec.riesgoPromedio.toFixed(2)}
+                          </td>
                           <td className="p-3 text-center">
                             {ec.alertasActivas > 0 ? (
                               <span className="bg-[#ffdad6] text-[#93000a] px-2 py-0.5 rounded text-[10px] font-bold">
                                 {ec.alertasActivas}
                               </span>
                             ) : (
-                              <span className="text-brand-outline font-semibold">—</span>
+                              <span className="text-brand-outline font-semibold">
+                                —
+                              </span>
                             )}
                           </td>
                         </tr>
@@ -556,38 +696,52 @@ export default function PrincipalAdminPanel({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-[#ffdad6] flex items-center justify-center text-[#ba1a1a]">
-                    <span className="material-symbols-outlined text-2xl">notifications_active</span>
+                    <span className="material-symbols-outlined text-2xl">
+                      notifications_active
+                    </span>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                       NUEVAS
                     </span>
-                    <span className="text-2xl font-extrabold text-[#ba1a1a]">{totalAlertasNuevas}</span>
+                    <span className="text-2xl font-extrabold text-[#ba1a1a]">
+                      {totalAlertasNuevas}
+                    </span>
                   </div>
                 </div>
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                    <span className="material-symbols-outlined text-2xl">pending_actions</span>
+                    <span className="material-symbols-outlined text-2xl">
+                      pending_actions
+                    </span>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                       EN REVISIÓN
                     </span>
                     <span className="text-2xl font-extrabold text-amber-600">
-                      {students.filter((s) => s.statusAlerta === "EN REVISIÓN").length}
+                      {
+                        students.filter((s) => s.statusAlerta === "EN REVISIÓN")
+                          .length
+                      }
                     </span>
                   </div>
                 </div>
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-[#e2f3f5] flex items-center justify-center text-[#006a6a]">
-                    <span className="material-symbols-outlined text-2xl">check_circle</span>
+                    <span className="material-symbols-outlined text-2xl">
+                      check_circle
+                    </span>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                       INTERVENIDAS
                     </span>
                     <span className="text-2xl font-extrabold text-[#006a6a]">
-                      {students.filter((s) => s.statusAlerta === "INTERVENIDA").length}
+                      {
+                        students.filter((s) => s.statusAlerta === "INTERVENIDA")
+                          .length
+                      }
                     </span>
                   </div>
                 </div>
@@ -604,51 +758,64 @@ export default function PrincipalAdminPanel({
                     onClick={() => setSelectedCareer(null)}
                     className="text-[11px] font-bold text-brand-primary hover:underline mb-4 flex items-center gap-1 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                    <span className="material-symbols-outlined text-sm">
+                      arrow_back
+                    </span>
                     Volver a todas las carreras
                   </button>
 
                   <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
                     <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa]">
                       <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-lg">tune</span>
+                        <span className="material-symbols-outlined text-lg">
+                          tune
+                        </span>
                         Umbrales del Semáforo — {selectedCareer}
                       </h4>
                     </div>
                     <div className="p-6 space-y-4">
-                      {(["INICIAL", "MEDIO", "AVANZADO"] as const).map((etapa) => {
-                        const umbral = umbrales.find(
-                          (u) => u.carrera === selectedCareer && u.etapa === etapa,
-                        );
-                        return (
-                          <div
-                            key={etapa}
-                            className="flex items-center justify-between p-3 bg-[#f8f9fa] rounded border border-brand-outline-variant"
-                          >
-                            <div>
-                              <span className="font-bold text-xs text-brand-primary">
-                                Tramo {etapa}
-                              </span>
-                              <div className="text-[10px] text-[#43474f] mt-0.5">
-                                Crítico desde {umbral?.criticoDesde} | Medio desde {umbral?.medioDesde} | Seguro hasta {umbral?.seguroHasta}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleAbrirUmbral(selectedCareer, etapa)}
-                              className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-3 py-1.5 rounded transition-all cursor-pointer"
+                      {(["INICIAL", "MEDIO", "AVANZADO"] as const).map(
+                        (etapa) => {
+                          const umbral = umbrales.find(
+                            (u) =>
+                              u.carrera === selectedCareer && u.etapa === etapa,
+                          );
+                          return (
+                            <div
+                              key={etapa}
+                              className="flex items-center justify-between p-3 bg-[#f8f9fa] rounded border border-brand-outline-variant"
                             >
-                              Editar
-                            </button>
-                          </div>
-                        );
-                      })}
+                              <div>
+                                <span className="font-bold text-xs text-brand-primary">
+                                  Tramo {etapa}
+                                </span>
+                                <div className="text-[10px] text-[#43474f] mt-0.5">
+                                  Crítico desde {umbral?.criticoDesde} | Medio
+                                  desde {umbral?.medioDesde} | Seguro hasta{" "}
+                                  {umbral?.seguroHasta}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  handleAbrirUmbral(selectedCareer, etapa)
+                                }
+                                className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-3 py-1.5 rounded transition-all cursor-pointer"
+                              >
+                                Editar
+                              </button>
+                            </div>
+                          );
+                        },
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden mt-6">
                     <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa]">
                       <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-lg">groups</span>
+                        <span className="material-symbols-outlined text-lg">
+                          groups
+                        </span>
                         Estudiantes — {selectedCareer}
                       </h4>
                     </div>
@@ -656,18 +823,31 @@ export default function PrincipalAdminPanel({
                       <table className="w-full text-xs border-collapse">
                         <thead>
                           <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                            <th className="p-3 pl-5 text-left border-b border-brand-outline-variant">Estudiante</th>
-                            <th className="p-3 text-center border-b border-brand-outline-variant">Tramo</th>
-                            <th className="p-3 text-center border-b border-brand-outline-variant">Riesgo</th>
-                            <th className="p-3 text-center border-b border-brand-outline-variant">Nivel</th>
-                            <th className="p-3 text-center border-b border-brand-outline-variant">Alerta</th>
+                            <th className="p-3 pl-5 text-left border-b border-brand-outline-variant">
+                              Estudiante
+                            </th>
+                            <th className="p-3 text-center border-b border-brand-outline-variant">
+                              Tramo
+                            </th>
+                            <th className="p-3 text-center border-b border-brand-outline-variant">
+                              Riesgo
+                            </th>
+                            <th className="p-3 text-center border-b border-brand-outline-variant">
+                              Nivel
+                            </th>
+                            <th className="p-3 text-center border-b border-brand-outline-variant">
+                              Alerta
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-outline-variant">
                           {students
                             .filter((s) => s.career === selectedCareer)
                             .map((s) => (
-                              <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors">
+                              <tr
+                                key={s.id}
+                                className="hover:bg-[#f8f9fa] transition-colors"
+                              >
                                 <td className="p-3 pl-5 font-bold text-brand-primary">
                                   {s.lastNames}, {s.firstNames}
                                 </td>
@@ -676,9 +856,15 @@ export default function PrincipalAdminPanel({
                                     TRAMO {s.tramo}
                                   </span>
                                 </td>
-                                <td className="p-3 text-center font-bold">{s.riskValue.toFixed(2)}</td>
-                                <td className="p-3 text-center">{riskBadge(s.riskLevel)}</td>
-                                <td className="p-3 text-center">{s.statusAlerta}</td>
+                                <td className="p-3 text-center font-bold">
+                                  {s.riskValue.toFixed(2)}
+                                </td>
+                                <td className="p-3 text-center">
+                                  {riskBadge(s.riskLevel)}
+                                </td>
+                                <td className="p-3 text-center">
+                                  {s.statusAlerta}
+                                </td>
                               </tr>
                             ))}
                         </tbody>
@@ -695,7 +881,9 @@ export default function PrincipalAdminPanel({
                       onClick={() => setSelectedCareer(ec.carrera)}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-brand-primary text-sm">{ec.carrera}</h4>
+                        <h4 className="font-bold text-brand-primary text-sm">
+                          {ec.carrera}
+                        </h4>
                         <span className="material-symbols-outlined text-brand-outline text-lg">
                           chevron_right
                         </span>
@@ -705,39 +893,53 @@ export default function PrincipalAdminPanel({
                           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                             Estudiantes
                           </span>
-                          <span className="text-2xl font-black text-brand-primary">{ec.total}</span>
+                          <span className="text-2xl font-black text-brand-primary">
+                            {ec.total}
+                          </span>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                             Riesgo Prom.
                           </span>
-                          <span className="text-2xl font-black text-amber-600">{ec.riesgoPromedio.toFixed(1)}</span>
+                          <span className="text-2xl font-black text-amber-600">
+                            {ec.riesgoPromedio.toFixed(1)}
+                          </span>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                             Críticos
                           </span>
-                          <span className="text-2xl font-black text-brand-error">{ec.criticos}</span>
+                          <span className="text-2xl font-black text-brand-error">
+                            {ec.criticos}
+                          </span>
                         </div>
                         <div>
                           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
                             Alertas
                           </span>
-                          <span className="text-2xl font-black text-amber-600">{ec.alertasActivas}</span>
+                          <span className="text-2xl font-black text-amber-600">
+                            {ec.alertasActivas}
+                          </span>
                         </div>
                       </div>
                       <div className="mt-4 flex gap-1.5">
                         <div
                           className="h-2 rounded-full bg-[#ba1a1a]"
-                          style={{ width: `${ec.total > 0 ? (ec.criticos / ec.total) * 100 : 0}%` }}
+                          style={{
+                            width: `${ec.total > 0 ? (ec.criticos / ec.total) * 100 : 0}%`,
+                          }}
                         />
                         <div
                           className="h-2 rounded-full bg-amber-500"
-                          style={{ width: `${ec.total > 0 ? (ec.medios / ec.total) * 100 : 0}%` }}
+                          style={{
+                            width: `${ec.total > 0 ? (ec.medios / ec.total) * 100 : 0}%`,
+                          }}
                         />
                         <div
                           className="h-2 rounded-full bg-[#006a6a]"
-                          style={{ width: `${ec.total > 0 ? (ec.bajos / ec.total) * 100 : 0}%` }}
+                          style={{
+                            width: `${ec.total > 0 ? (ec.bajos / ec.total) * 100 : 0}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -784,7 +986,9 @@ export default function PrincipalAdminPanel({
                 <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa]">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-lg">manage_accounts</span>
+                      <span className="material-symbols-outlined text-lg">
+                        manage_accounts
+                      </span>
                       Usuarios del Sistema
                     </h4>
                     <div className="relative w-56">
@@ -809,7 +1013,9 @@ export default function PrincipalAdminPanel({
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-brand-primary">{u.nombre}</span>
+                          <span className="font-bold text-sm text-brand-primary">
+                            {u.nombre}
+                          </span>
                           {rolBadge(u.rol)}
                           {!u.activo && (
                             <span className="bg-[#f3f4f5] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
@@ -817,7 +1023,9 @@ export default function PrincipalAdminPanel({
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-brand-outline font-semibold">{u.email}</p>
+                        <p className="text-[11px] text-brand-outline font-semibold">
+                          {u.email}
+                        </p>
                         <p className="text-[10px] text-[#43474f]">
                           Carreras: {u.carrerasAsignadas.join(", ")}
                         </p>
@@ -858,7 +1066,9 @@ export default function PrincipalAdminPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-                    <span className="material-symbols-outlined text-lg">monitoring</span>
+                    <span className="material-symbols-outlined text-lg">
+                      monitoring
+                    </span>
                     Riesgo Promedio por Carrera
                   </h4>
                   <div className="space-y-3">
@@ -868,8 +1078,12 @@ export default function PrincipalAdminPanel({
                       return (
                         <div key={ec.carrera}>
                           <div className="flex justify-between text-xs mb-1">
-                            <span className="font-semibold text-[#43474f]">{ec.carrera}</span>
-                            <span className="font-bold">{ec.riesgoPromedio.toFixed(2)} / 10</span>
+                            <span className="font-semibold text-[#43474f]">
+                              {ec.carrera}
+                            </span>
+                            <span className="font-bold">
+                              {ec.riesgoPromedio.toFixed(2)} / 10
+                            </span>
                           </div>
                           <div className="h-3 bg-[#edeeef] rounded-full overflow-hidden">
                             <div
@@ -891,7 +1105,9 @@ export default function PrincipalAdminPanel({
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-                    <span className="material-symbols-outlined text-lg">sentiment_satisfied</span>
+                    <span className="material-symbols-outlined text-lg">
+                      sentiment_satisfied
+                    </span>
                     Engagement Promedio por Carrera
                   </h4>
                   <div className="space-y-3">
@@ -901,7 +1117,9 @@ export default function PrincipalAdminPanel({
                       return (
                         <div key={ec.carrera}>
                           <div className="flex justify-between text-xs mb-1">
-                            <span className="font-semibold text-[#43474f]">{ec.carrera}</span>
+                            <span className="font-semibold text-[#43474f]">
+                              {ec.carrera}
+                            </span>
                             <span className="font-bold">
                               {ec.engagementPromedio <= 1.5
                                 ? "Bajo"
@@ -924,34 +1142,49 @@ export default function PrincipalAdminPanel({
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-                    <span className="material-symbols-outlined text-lg">notifications</span>
+                    <span className="material-symbols-outlined text-lg">
+                      notifications
+                    </span>
                     Alertas por Carrera
                   </h4>
                   <div className="space-y-3">
                     {estudiantesPorCarrera.map((ec) => (
-                      <div key={ec.carrera} className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-[#43474f]">{ec.carrera}</span>
+                      <div
+                        key={ec.carrera}
+                        className="flex items-center justify-between text-xs"
+                      >
+                        <span className="font-semibold text-[#43474f]">
+                          {ec.carrera}
+                        </span>
                         <div className="flex gap-2">
                           <span className="text-[#ba1a1a] font-bold">
-                            {students.filter(
-                              (s) => s.career === ec.carrera && s.statusAlerta === "NUEVA",
-                            ).length}{" "}
+                            {
+                              students.filter(
+                                (s) =>
+                                  s.career === ec.carrera &&
+                                  s.statusAlerta === "NUEVA",
+                              ).length
+                            }{" "}
                             nuevas
                           </span>
                           <span className="text-amber-600 font-bold">
-                            {students.filter(
-                              (s) =>
-                                s.career === ec.carrera &&
-                                s.statusAlerta === "EN REVISIÓN",
-                            ).length}{" "}
+                            {
+                              students.filter(
+                                (s) =>
+                                  s.career === ec.carrera &&
+                                  s.statusAlerta === "EN REVISIÓN",
+                              ).length
+                            }{" "}
                             revisión
                           </span>
                           <span className="text-[#006a6a] font-bold">
-                            {students.filter(
-                              (s) =>
-                                s.career === ec.carrera &&
-                                s.statusAlerta === "INTERVENIDA",
-                            ).length}{" "}
+                            {
+                              students.filter(
+                                (s) =>
+                                  s.career === ec.carrera &&
+                                  s.statusAlerta === "INTERVENIDA",
+                              ).length
+                            }{" "}
                             intervenidas
                           </span>
                         </div>
@@ -962,30 +1195,41 @@ export default function PrincipalAdminPanel({
 
                 <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
-                    <span className="material-symbols-outlined text-lg">layers</span>
+                    <span className="material-symbols-outlined text-lg">
+                      layers
+                    </span>
                     Estudiantes por Tramo
                   </h4>
                   <div className="space-y-3">
-                    {(["INICIAL", "MEDIO", "AVANZADO"] as const).map((tramo) => {
-                      const count = students.filter((s) => s.tramo === tramo).length;
-                      const pct = students.length > 0 ? (count / students.length) * 100 : 0;
-                      return (
-                        <div key={tramo}>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="font-semibold text-[#43474f]">Tramo {tramo}</span>
-                            <span className="font-bold">
-                              {count} ({Math.round(pct)}%)
-                            </span>
+                    {(["INICIAL", "MEDIO", "AVANZADO"] as const).map(
+                      (tramo) => {
+                        const count = students.filter(
+                          (s) => s.tramo === tramo,
+                        ).length;
+                        const pct =
+                          students.length > 0
+                            ? (count / students.length) * 100
+                            : 0;
+                        return (
+                          <div key={tramo}>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="font-semibold text-[#43474f]">
+                                Tramo {tramo}
+                              </span>
+                              <span className="font-bold">
+                                {count} ({Math.round(pct)}%)
+                              </span>
+                            </div>
+                            <div className="h-3 bg-[#edeeef] rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-brand-secondary transition-all"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className="h-3 bg-[#edeeef] rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-brand-secondary transition-all"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                   </div>
                 </div>
               </div>
@@ -999,12 +1243,14 @@ export default function PrincipalAdminPanel({
                 <div className="flex items-start justify-between">
                   <div>
                     <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-lg">refresh</span>
+                      <span className="material-symbols-outlined text-lg">
+                        refresh
+                      </span>
                       Recálculo Manual de Indicadores
                     </h4>
                     <p className="text-[11px] text-[#43474f] mt-1">
-                      Forzar el recálculo de todos los indicadores de riesgo para todos los
-                      estudiantes del sistema.
+                      Forzar el recálculo de todos los indicadores de riesgo
+                      para todos los estudiantes del sistema.
                     </p>
                   </div>
                   <button
@@ -1030,7 +1276,9 @@ export default function PrincipalAdminPanel({
 
               <div className="bg-white border border-brand-outline-variant rounded p-6 shadow-xs">
                 <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-3">
-                  <span className="material-symbols-outlined text-lg">group_work</span>
+                  <span className="material-symbols-outlined text-lg">
+                    group_work
+                  </span>
                   Límite de Casos por Tutor
                 </h4>
                 <div className="flex items-center gap-4">
@@ -1047,7 +1295,9 @@ export default function PrincipalAdminPanel({
                       {maxCasosActivos}
                     </span>
                     <button
-                      onClick={() => setMaxCasosActivos((v) => Math.min(50, v + 1))}
+                      onClick={() =>
+                        setMaxCasosActivos((v) => Math.min(50, v + 1))
+                      }
                       className="w-8 h-8 rounded border border-brand-outline-variant flex items-center justify-center text-sm font-bold hover:bg-[#f3f4f5] cursor-pointer"
                     >
                       +
@@ -1062,25 +1312,38 @@ export default function PrincipalAdminPanel({
               <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
                 <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa] flex items-center justify-between">
                   <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-lg">history</span>
+                    <span className="material-symbols-outlined text-lg">
+                      history
+                    </span>
                     Log de Auditoría
                   </h4>
                   <div className="flex border border-brand-outline-variant rounded overflow-hidden">
-                    {(["TODOS", "IMPORTACION", "RECALCULO", "CONFIGURACION"] as const).map(
-                      (f) => (
-                        <button
-                          key={f}
-                          onClick={() => setLogFilter(f)}
-                          className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
-                            logFilter === f
-                              ? "bg-brand-primary text-white"
-                              : "bg-white text-brand-primary hover:bg-[#f3f4f5]"
-                          }`}
-                        >
-                          {f === "TODOS" ? "TODOS" : f === "IMPORTACION" ? "IMPORTACIÓN" : f === "RECALCULO" ? "RECÁLCULO" : "CONFIG."}
-                        </button>
-                      ),
-                    )}
+                    {(
+                      [
+                        "TODOS",
+                        "IMPORTACION",
+                        "RECALCULO",
+                        "CONFIGURACION",
+                      ] as const
+                    ).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setLogFilter(f)}
+                        className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
+                          logFilter === f
+                            ? "bg-brand-primary text-white"
+                            : "bg-white text-brand-primary hover:bg-[#f3f4f5]"
+                        }`}
+                      >
+                        {f === "TODOS"
+                          ? "TODOS"
+                          : f === "IMPORTACION"
+                            ? "IMPORTACIÓN"
+                            : f === "RECALCULO"
+                              ? "RECÁLCULO"
+                              : "CONFIG."}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="divide-y divide-brand-outline-variant">
@@ -1096,15 +1359,23 @@ export default function PrincipalAdminPanel({
                           </span>
                           {logTipoBadge(log.tipo)}
                         </div>
-                        <p className="text-[11px] text-[#43474f]">{log.detalle}</p>
-                        <p className="text-[10px] text-brand-outline font-semibold">{log.fecha}</p>
+                        <p className="text-[11px] text-[#43474f]">
+                          {log.detalle}
+                        </p>
+                        <p className="text-[10px] text-brand-outline font-semibold">
+                          {log.fecha}
+                        </p>
                       </div>
                       <div className="text-right text-[10px]">
                         {log.tipo !== "CONFIGURACION" && (
                           <>
-                            <p className="font-bold text-[#43474f]">{log.registros} registros</p>
+                            <p className="font-bold text-[#43474f]">
+                              {log.registros} registros
+                            </p>
                             {log.errores > 0 && (
-                              <p className="text-[#ba1a1a] font-bold">{log.errores} errores</p>
+                              <p className="text-[#ba1a1a] font-bold">
+                                {log.errores} errores
+                              </p>
                             )}
                             {log.errores === 0 && (
                               <p className="text-[#006a6a]">sin errores</p>
@@ -1146,7 +1417,10 @@ export default function PrincipalAdminPanel({
                 {editingUser ? "Editar Usuario" : "Nuevo Usuario"}
               </h2>
               <button
-                onClick={() => { setShowUserModal(false); setEditingUser(null); }}
+                onClick={() => {
+                  setShowUserModal(false);
+                  setEditingUser(null);
+                }}
                 aria-label="Cerrar"
                 className="text-brand-outline hover:text-brand-error cursor-pointer"
               >
@@ -1163,7 +1437,9 @@ export default function PrincipalAdminPanel({
                   required
                   type="text"
                   value={userForm.nombre}
-                  onChange={(e) => setUserForm((f) => ({ ...f, nombre: e.target.value }))}
+                  onChange={(e) =>
+                    setUserForm((f) => ({ ...f, nombre: e.target.value }))
+                  }
                   placeholder="Ej: Lic. María García"
                   className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
                 />
@@ -1177,7 +1453,9 @@ export default function PrincipalAdminPanel({
                   required
                   type="email"
                   value={userForm.email}
-                  onChange={(e) => setUserForm((f) => ({ ...f, email: e.target.value }))}
+                  onChange={(e) =>
+                    setUserForm((f) => ({ ...f, email: e.target.value }))
+                  }
                   placeholder="email@fi.mdp.edu.ar"
                   className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
                 />
@@ -1198,7 +1476,9 @@ export default function PrincipalAdminPanel({
                   className="w-full border border-brand-outline rounded px-3 py-2 text-xs focus:ring-1 focus:ring-brand-primary focus:outline-none"
                 >
                   <option value="SUPER_ADMIN">Super Admin</option>
-                  <option value="ADMIN_DEPARTAMENTAL">Admin Departamental</option>
+                  <option value="ADMIN_DEPARTAMENTAL">
+                    Admin Departamental
+                  </option>
                   <option value="TUTOR">Tutor</option>
                 </select>
               </div>
@@ -1219,7 +1499,9 @@ export default function PrincipalAdminPanel({
                         onChange={() => toggleCarreraUsuario(c)}
                         className="accent-brand-primary"
                       />
-                      <span className="text-xs font-medium text-[#43474f]">{c}</span>
+                      <span className="text-xs font-medium text-[#43474f]">
+                        {c}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -1234,13 +1516,18 @@ export default function PrincipalAdminPanel({
                   }
                   className="accent-brand-primary"
                 />
-                <span className="text-xs font-medium text-[#43474f]">Cuenta activa</span>
+                <span className="text-xs font-medium text-[#43474f]">
+                  Cuenta activa
+                </span>
               </label>
 
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => { setShowUserModal(false); setEditingUser(null); }}
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setEditingUser(null);
+                  }}
                   className="px-4 py-2 border border-brand-outline-variant text-[#43474f] rounded text-xs font-semibold hover:bg-[#edeeef] transition-all"
                 >
                   Cancelar
