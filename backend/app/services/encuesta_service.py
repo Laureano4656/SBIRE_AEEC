@@ -8,6 +8,7 @@ from app.schemas.encuesta import FormularioEncuestaResponse, BloqueAcademico, Ma
 class EncuestaService:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.conn = conn
+        self.repo = EncuestasRepository(conn)
 
 
     async def obtener_formulario(self, asignacion_id: int) -> FormularioEncuestaResponse:

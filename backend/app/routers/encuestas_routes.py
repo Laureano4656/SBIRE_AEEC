@@ -33,9 +33,9 @@ async def enviar_respuestas(
     service = EncuestaService(conn)
     
     # Convertir los objetos Pydantic a dicts para el guardado en lote
-    respuestas_dicts = [r.model_dump(exclude_unset=True) for r in body.respuestas]
+    #respuestas_dicts = [r.model_dump(exclude_unset=True) for r in body.respuestas]
     
-    await service.guardar_respuestas(asignacion_id, respuestas_dicts)
+    await service.guardar_respuestas(asignacion_id, body.respuestas)
     
     # Aquí se podría emitir un evento en background para que el motor AHP recalcule el riesgo
     
