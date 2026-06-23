@@ -21,37 +21,42 @@ class dashboardAdminRepository:
         )
         return row["count"]
     
-    async def total_critics(self, carrera_id: int | None = None) -> int:
+    async def total_critics(self, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM score_total 
+            INNER JOIN estudiantes e ON score_total.estudiante_id = e.id
             WHERE valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) 
-            AND ($1::int IS NULL OR carrera_id = $1)
+            AND (e.carrera_id = $1)
             """, carrera_id
         )
 
         return row["count"]
     
-    async def total_new_alerts(self, carrera_id: int | None = None) -> int:
+    async def total_new_alerts(self, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM alertas WHERE (estado = 'nueva' OR estado = 'en_revision')
-            AND ($1::int IS NULL OR carrera_id = $1)
+            FROM alertas 
+            INNER JOIN estudiantes e ON alertas.estudiante_id = e.id
+            WHERE (estado = 'nueva' OR estado = 'en_revision')
+            AND (e.carrera_id = $1)
             """, carrera_id
         )
 
         return row["count"]
 
-    async def total_interventions_month(self, month: int, year: int, carrera_id: int | None = None) -> int:
+    async def total_interventions_month(self, month: int, year: int, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM intervenciones
+            INNER JOIN alertas a ON intervenciones.alerta_id = a.id
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
             WHERE date_part('month', creado_en) = $1
             AND date_part('year', creado_en) = $2
-            AND ($3::int IS NULL OR carrera_id = $3)
+            AND (e.carrera_id = $3)
             """, month, year, carrera_id
         )
         return row["count"]
