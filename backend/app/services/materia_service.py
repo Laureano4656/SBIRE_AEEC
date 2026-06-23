@@ -20,6 +20,7 @@ class MateriaService(CrudService[Materia]):
                         "codigo",
                         "cuatrimestre_sugerido",
                         "es_basica_critica",
+                        "cuatrimestre_dictado",
                     ),
                 ),
             ),

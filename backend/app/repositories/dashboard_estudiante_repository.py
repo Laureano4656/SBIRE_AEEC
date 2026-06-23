@@ -73,7 +73,8 @@ class dashboardEstudiantesRepository:
                 m.codigo,
                 m.cuatrimestre_sugerido,
                 m.es_basica_critica,
-                c.estado
+                c.estado,
+                m.cuatrimestre_dictado
             FROM cursadas c
             INNER JOIN materias m ON m.id = c.materia_id
             WHERE c.estudiante_id = $1
