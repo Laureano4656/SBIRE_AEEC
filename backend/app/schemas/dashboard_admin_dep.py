@@ -51,3 +51,7 @@ class IndicadorResponse(BaseModel):
 class DimensionAgrupadaResponse(BaseModel):
     nombre_dimension: str
     indicadores: list[IndicadorResponse]
+    
+class RolUpdate(BaseModel):
+    nombre: str 
+    
