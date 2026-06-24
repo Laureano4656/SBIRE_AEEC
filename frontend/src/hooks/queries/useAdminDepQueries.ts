@@ -63,10 +63,10 @@ export const useTotalIntervencionesMes = () => {
     })
 }
 
-export const useEvolucionScore = (anio: number, carrera_id: number) => {
+export const useEvolucionScore = (anio: number, carrera_id?: number) => {
     return useQuery({
-        queryKey: adminDepKeys.evolucionScore(anio, carrera_id),
-        queryFn: () => getEvolucionScore({ anio, carrera_id })
+        queryKey: adminDepKeys.evolucionScore(anio, carrera_id ?? 0),
+        queryFn: () => getEvolucionScore(anio, carrera_id)
     })
 }
 

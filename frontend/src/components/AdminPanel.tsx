@@ -13,6 +13,9 @@ import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
 import {
   useConteoEstudiantes,
   useConteoPorRiesgo,
+  useEvolucionScore,
+  useEstudiantesPorCarrera,
+  useHistorialAlertas,
   useTotalCriticos,
   useTotalAlertasNuevas,
   useTotalIntervencionesMes,
@@ -20,17 +23,11 @@ import {
 import { useAuth } from "../hooks/useAuth.ts";
 
 interface AdminPanelProps {
-  students: Student[];
   surveys: Survey[];
-  onUpdateStudent: (updated: Student) => void;
   onLogout: () => void;
 }
 
-export default function AdminPanel({
-  students,
-  surveys,
-  onLogout,
-}: AdminPanelProps) {
+export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
   const [activeMenu, setActiveMenu] = useState<
     "panel" | "estudiantes" | "encuestas" | "reportes" | "configuracion"
   >("panel");
@@ -39,7 +36,8 @@ export default function AdminPanel({
   );
 
   // Dashboard aggregate filters
-  const [dashboardAnio] = [2023];
+  const dashboardAnio = 2023;
+  const [evolucionAnio, setEvolucionAnio] = useState<number>(2023);
   const dashboardCarreraId = useAuth().user?.carrera_id ?? 1;
   const {
     data: totalEstudiantes,
@@ -71,6 +69,25 @@ export default function AdminPanel({
   const donutAmarillo = conteoPorRiesgo?.amarillo ?? 25;
   const donutVerde = conteoPorRiesgo?.verde ?? 63;
 
+  const {
+    data: evolucionScore,
+    isLoading: loadingEvolucion,
+    isError: errorEvolucion,
+  } = useEvolucionScore(evolucionAnio, dashboardCarreraId);
+
+  const {
+    data: apiStudents = [],
+    isLoading: loadingStudents,
+    isError: errorStudents,
+  } = useEstudiantesPorCarrera("Industrial");
+
+  const [historialStudentId, setHistorialStudentId] = useState<string | null>(null);
+  const {
+    data: historialAlertas = [],
+    isLoading: loadingHistorial,
+    isError: errorHistorial,
+  } = useHistorialAlertas(historialStudentId ?? "");
+
   // Filters for student tracking
   const [searchQuery, setSearchQuery] = useState("");
   const [filterYear, setFilterYear] = useState("Todos");
@@ -94,31 +111,101 @@ export default function AdminPanel({
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // Selected student object helper
-  const selectedStudent = students.find((s) => s.id === selectedStudentId);
+  // Derive risk level from indice_riesgo
+  const getRiskLevel = (ir: number): "CRÍTICO" | "MEDIO" | "BAJO" =>
+    ir >= 7.5 ? "CRÍTICO" : ir >= 4.0 ? "MEDIO" : "BAJO";
+
+  // Selected student object helper (mapped for AdminStudentView)
+  const selectedStudent = (() => {
+    const api = apiStudents.find((s) => s.dni === selectedStudentId);
+    if (!api) return undefined;
+    return {
+      id: api.dni,
+      dni: api.dni,
+      firstNames: api.nombre,
+      lastNames: api.apellido,
+      fullName: `${api.nombre} ${api.apellido}`,
+      email: "",
+      avatarUrl: "",
+      career: api.carrera,
+      year: parseInt(api.etapa) || 0,
+      legajo: "",
+      riskLevel: getRiskLevel(api.indice_riesgo),
+      riskValue: api.indice_riesgo,
+      tramo: "INICIAL" as const,
+      lastRecalculation:
+        typeof api.ultima_fecha_recalculo === "string"
+          ? api.ultima_fecha_recalculo
+          : (api.ultima_fecha_recalculo?.toISOString() ?? "-"),
+      statusAlerta: (api.estado_alerta ?? "SIN ALERTA") as
+        | "NUEVA"
+        | "EN REVISIÓN"
+        | "INTERVENIDA"
+        | "SIN ALERTA",
+      gpa: 0,
+      subjectsApproved: 0,
+      subjectsTotal: 0,
+      engagement: "Medio" as const,
+      phone: "",
+    } as Student;
+  })();
 
   // Filter students based on year, career, search state, risk
-  const filteredStudents = students.filter((student) => {
+  const filteredStudents = apiStudents.filter((s) => {
+    const fullName = `${s.nombre} ${s.apellido}`.toLowerCase();
     const matchesSearch =
-      student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.dni.includes(searchQuery) ||
-      student.legajo.includes(searchQuery);
+      fullName.includes(searchQuery.toLowerCase()) ||
+      s.dni.includes(searchQuery);
 
-    const matchesYear =
-      filterYear === "Todos" || student.year.toString() === filterYear;
+    const matchesYear = filterYear === "Todos" || s.etapa === filterYear;
     const matchesCareer =
       filterCareer === "Todas" ||
-      student.career.toLowerCase().includes(filterCareer.toLowerCase());
+      s.carrera.toLowerCase().includes(filterCareer.toLowerCase());
 
+    const riskLevel = getRiskLevel(s.indice_riesgo);
     const matchesRisk =
       filterRisk === "TODOS" ||
-      (filterRisk === "CRÍTICO" && student.riskLevel === "CRÍTICO") ||
-      (filterRisk === "MEDIO" && student.riskLevel === "MEDIO") ||
-      (filterRisk === "BAJO" &&
-        (student.riskLevel === "BAJO" || student.riskLevel === "SEGURO"));
+      (filterRisk === "CRÍTICO" && riskLevel === "CRÍTICO") ||
+      (filterRisk === "MEDIO" && riskLevel === "MEDIO") ||
+      (filterRisk === "BAJO" && riskLevel === "BAJO");
 
     return matchesSearch && matchesYear && matchesCareer && matchesRisk;
   });
+
+  // Mapped students for ReportesPanel
+  const studentsForChildren = apiStudents.map((s) => ({
+    id: s.dni,
+    dni: s.dni,
+    firstNames: s.nombre,
+    lastNames: s.apellido,
+    fullName: `${s.nombre} ${s.apellido}`,
+    email: "",
+    avatarUrl: "",
+    career: s.carrera,
+    year: parseInt(s.etapa) || 0,
+    legajo: "",
+    riskLevel: getRiskLevel(s.indice_riesgo) as
+      | "CRÍTICO"
+      | "MEDIO"
+      | "BAJO"
+      | "SEGURO",
+    riskValue: s.indice_riesgo,
+    tramo: "INICIAL" as const,
+    lastRecalculation:
+      typeof s.ultima_fecha_recalculo === "string"
+        ? s.ultima_fecha_recalculo
+        : (s.ultima_fecha_recalculo?.toISOString() ?? "-"),
+    statusAlerta: (s.estado_alerta ?? "SIN ALERTA") as
+      | "NUEVA"
+      | "EN REVISIÓN"
+      | "INTERVENIDA"
+      | "SIN ALERTA",
+    gpa: 0,
+    subjectsApproved: 0,
+    subjectsTotal: 0,
+    engagement: "Medio" as const,
+    phone: "",
+  }));
 
   // Survey creation/edición handler (delegado a SurveyEditor)
   const handleSaveSurvey = (survey: Survey) => {
@@ -605,106 +692,288 @@ export default function AdminPanel({
                     </h4>
 
                     <div className="flex gap-1.5">
-                      <span className="px-2 py-0.5 bg-[#f3f4f5] border border-brand-outline-variant rounded text-[10px] font-semibold text-[#43474f]">
-                        2022
-                      </span>
-                      <span className="px-2 py-0.5 bg-brand-primary text-white border border-brand-primary rounded text-[10px] font-extrabold">
-                        2023
-                      </span>
-                      <span className="px-2 py-0.5 bg-[#f3f4f5] border border-brand-outline-variant rounded text-[10px] font-semibold text-[#43474f]">
-                        2024
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* SVG line / area chart representing screenshot */}
-                  <div className="relative flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
-                    <svg
-                      className="w-full h-full"
-                      viewBox="0 0 540 140"
-                      preserveAspectRatio="none"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="areaGrad"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
+                      {[2022, 2023, 2024].map((year) => (
+                        <button
+                          key={year}
+                          onClick={() => setEvolucionAnio(year)}
+                          className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
+                            evolucionAnio === year
+                              ? "bg-brand-primary text-white border border-brand-primary font-extrabold"
+                              : "bg-[#f3f4f5] text-[#43474f] border border-brand-outline-variant font-semibold hover:bg-[#e0e1e5]"
+                          }`}
                         >
-                          <stop
-                            offset="0%"
-                            stopColor="#001e40"
-                            stopOpacity="0.15"
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="#001e40"
-                            stopOpacity="0.0"
-                          />
-                        </linearGradient>
-                      </defs>
-                      {/* Grid lines */}
-                      <line
-                        x1="0"
-                        y1="35"
-                        x2="540"
-                        y2="35"
-                        stroke="#c3c6d1"
-                        strokeWidth="0.5"
-                        strokeDasharray="4 4"
-                      />
-                      <line
-                        x1="0"
-                        y1="70"
-                        x2="540"
-                        y2="70"
-                        stroke="#c3c6d1"
-                        strokeWidth="0.5"
-                        strokeDasharray="4 4"
-                      />
-                      <line
-                        x1="0"
-                        y1="105"
-                        x2="540"
-                        y2="105"
-                        stroke="#c3c6d1"
-                        strokeWidth="0.5"
-                        strokeDasharray="4 4"
-                      />
-                      {/* Area Path */}
-                      <path
-                        d="M 0,110 C 60,95 120,115 180,90 C 240,65 300,75 360,50 C 420,30 480,45 540,25 L 540,140 L 0,140 Z"
-                        fill="url(#areaGrad)"
-                      />
-                      {/* Trend Line */}
-                      <path
-                        d="M 0,110 C 60,95 120,115 180,90 C 240,65 300,75 360,50 C 420,30 480,45 540,25"
-                        fill="none"
-                        stroke="#001e40"
-                        strokeWidth="2.5"
-                      />
-                      {/* Points */}
-                      <circle cx="180" cy="90" r="3.5" fill="#006a6a" />
-                      <circle cx="360" cy="50" r="3.5" fill="#ba1a1a" />
-                      <circle cx="540" cy="25" r="3.5" fill="#003366" />
-                    </svg>
-
-                    <div className="absolute inset-x-0 bottom-1 flex justify-between px-3 text-[9px] text-[#43474f] font-bold">
-                      <span>MARZO</span>
-                      <span>MAYO</span>
-                      <span>JULIO</span>
-                      <span>SEPTIEMBRE</span>
-                      <span>NOVIEMBRE</span>
+                          {year}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#43474f] italic mt-3 leading-normal">
-                    Tendencia descendente generalizada en las alertas del
-                    segundo trimestre de Ingeniería Industrial (-3.2%).
-                  </p>
+                  {loadingEvolucion ? (
+                    <div className="flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
+                      <span className="inline-block w-full h-full bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  ) : errorEvolucion || !evolucionScore ? (
+                    <div className="flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
+                      <p className="text-brand-outline text-xs">Sin datos</p>
+                    </div>
+                  ) : (
+                    (() => {
+                      const monthLabels = [
+                        "",
+                        "ENE",
+                        "FEB",
+                        "MAR",
+                        "ABR",
+                        "MAY",
+                        "JUN",
+                        "JUL",
+                        "AGO",
+                        "SEP",
+                        "OCT",
+                        "NOV",
+                        "DIC",
+                      ];
+                      const data = Object.entries(evolucionScore)
+                        .map(([m, s]) => ({
+                          month: parseInt(m),
+                          score: s as number,
+                        }))
+                        .sort((a, b) => a.month - b.month);
+                      const n = data.length;
+                      const w = 540,
+                        h = 140;
+                      const pts = data.map((d, i) => ({
+                        x: n > 1 ? (i / (n - 1)) * w : w / 2,
+                        y: h - (Math.min(Math.max(d.score, 0), 10) / 10) * h,
+                      }));
+                      const buildPath = (p: { x: number; y: number }[]) => {
+                        if (p.length < 2) return "";
+                        let d = `M ${p[0].x.toFixed(2)},${p[0].y.toFixed(2)}`;
+                        for (let i = 1; i < p.length; i++) {
+                          const mx = (p[i - 1].x + p[i].x) / 2;
+                          d += ` C ${mx.toFixed(2)},${p[i - 1].y.toFixed(2)} ${mx.toFixed(2)},${p[i].y.toFixed(2)} ${p[i].x.toFixed(2)},${p[i].y.toFixed(2)}`;
+                        }
+                        return d;
+                      };
+                      const linePath = buildPath(pts);
+                      const areaPath = linePath
+                        ? `${linePath} L ${pts[n - 1].x.toFixed(2)},${h} L ${pts[0].x.toFixed(2)},${h} Z`
+                        : "";
+
+                      return (
+                        <>
+                          <div className="relative flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
+                            <svg
+                              className="w-full h-full"
+                              viewBox="0 0 540 140"
+                              preserveAspectRatio="none"
+                            >
+                              <defs>
+                                <linearGradient
+                                  id="areaGrad"
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="0%"
+                                    stopColor="#001e40"
+                                    stopOpacity="0.15"
+                                  />
+                                  <stop
+                                    offset="100%"
+                                    stopColor="#001e40"
+                                    stopOpacity="0.0"
+                                  />
+                                </linearGradient>
+                              </defs>
+                              <line
+                                x1="0"
+                                y1="35"
+                                x2="540"
+                                y2="35"
+                                stroke="#c3c6d1"
+                                strokeWidth="0.5"
+                                strokeDasharray="4 4"
+                              />
+                              <line
+                                x1="0"
+                                y1="70"
+                                x2="540"
+                                y2="70"
+                                stroke="#c3c6d1"
+                                strokeWidth="0.5"
+                                strokeDasharray="4 4"
+                              />
+                              <line
+                                x1="0"
+                                y1="105"
+                                x2="540"
+                                y2="105"
+                                stroke="#c3c6d1"
+                                strokeWidth="0.5"
+                                strokeDasharray="4 4"
+                              />
+                              {areaPath && (
+                                <path d={areaPath} fill="url(#areaGrad)" />
+                              )}
+                              {linePath && (
+                                <path
+                                  d={linePath}
+                                  fill="none"
+                                  stroke="#001e40"
+                                  strokeWidth="2.5"
+                                />
+                              )}
+                              {pts.map((p, i) => (
+                                <circle
+                                  key={i}
+                                  cx={p.x}
+                                  cy={p.y}
+                                  r="3.5"
+                                  fill="#001e40"
+                                />
+                              ))}
+                            </svg>
+                            <div className="absolute inset-x-0 bottom-1 flex justify-between px-3 text-[9px] text-[#43474f] font-bold">
+                              {data.map((d, i) => (
+                                <span key={i}>{monthLabels[d.month]}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()
+                  )}
                 </div>
               </div>
+
+              {/* Critical Alerts Recent list */}
+              <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+                <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
+                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-lg">emergency</span>
+                    Alertas Críticas Recientes
+                  </h4>
+                  <button
+                    onClick={() => { setActiveMenu("estudiantes"); setFilterRisk("CRÍTICO"); }}
+                    className="text-xs text-brand-primary font-bold hover:underline"
+                  >
+                    Ver listado completo
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                        <th className="p-3 pl-6">Estudiante</th>
+                        <th className="p-3">Carrera / Año</th>
+                        <th className="p-3 text-center">Nivel Riesgo</th>
+                        <th className="p-3 text-center">Último Recálculo</th>
+                        <th className="p-3 text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-outline-variant">
+                      {studentsForChildren
+                        .filter((s) => s.riskLevel === "CRÍTICO")
+                        .slice(0, 5)
+                        .map((s) => (
+                          <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors">
+                            <td className="p-3 pl-6 font-bold text-brand-primary">
+                              {s.lastNames}, {s.firstNames}
+                            </td>
+                            <td className="p-3 font-medium">
+                              {s.career} ({s.year}° Año)
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="bg-[#ffdad6] text-[#93000a] text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full"></span>
+                                CRÍTICO ({s.riskValue.toFixed(1)})
+                              </span>
+                            </td>
+                            <td className="p-3 text-center text-brand-outline font-medium">
+                              {s.lastRecalculation}
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex justify-center items-center gap-2">
+                                <button
+                                  onClick={() => setHistorialStudentId(s.id)}
+                                  className="text-brand-secondary hover:underline font-bold"
+                                >
+                                  Historial
+                                </button>
+                                <button
+                                  onClick={() => setSelectedStudentId(s.id)}
+                                  className="text-brand-primary hover:underline font-bold"
+                                >
+                                  Intervenir
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      {studentsForChildren.filter((s) => s.riskLevel === "CRÍTICO").length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-brand-outline font-medium">
+                            No hay alertas críticas activas.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Alert history detail for selected student */}
+              {historialStudentId && (() => {
+                const selected = studentsForChildren.find((s) => s.id === historialStudentId);
+                return (
+                  <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+                    <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
+                      <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
+                        <span className="material-symbols-outlined text-lg">timeline</span>
+                        Historial de Alertas — {selected?.lastNames}, {selected?.firstNames}
+                      </h4>
+                      <button
+                        onClick={() => setHistorialStudentId(null)}
+                        className="text-xs text-brand-error font-bold hover:underline"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                    <div className="p-4">
+                      {loadingHistorial ? (
+                        <div className="space-y-3">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+                          ))}
+                        </div>
+                      ) : errorHistorial ? (
+                        <p className="text-center text-brand-outline text-xs py-4">Sin datos</p>
+                      ) : historialAlertas.length === 0 ? (
+                        <p className="text-center text-brand-outline text-xs py-4">
+                          No hay eventos registrados para este estudiante.
+                        </p>
+                      ) : (
+                        <ul className="space-y-3">
+                          {historialAlertas.map((evt, i) => (
+                            <li key={i} className="flex items-start gap-3 text-xs">
+                              <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${evt.tipo === "alerta" ? "bg-[#ba1a1a]" : "bg-[#006a6a]"}`} />
+                              <div className="flex-1">
+                                <span className="font-bold text-brand-primary capitalize">{evt.descripcion}</span>
+                                <span className="text-brand-outline ml-2">{evt.fecha ? new Date(evt.fecha).toLocaleDateString("es-AR") : "-"}</span>
+                              </div>
+                              <span className="text-[10px] uppercase font-bold text-brand-outline">{evt.tipo}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
             </div>
           ) : activeMenu === "estudiantes" ? (
             /* Student alerts tracking listing view */
@@ -762,41 +1031,25 @@ export default function AdminPanel({
                     <div className="flex border border-brand-outline-variant rounded overflow-hidden">
                       <button
                         onClick={() => setFilterRisk("TODOS")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold ${
-                          filterRisk === "TODOS"
-                            ? "bg-brand-primary text-white"
-                            : "bg-white text-brand-primary"
-                        }`}
+                        className={`px-3 py-1.5 cursor-pointer font-bold ${filterRisk === "TODOS" ? "bg-brand-primary text-white" : "bg-white text-brand-primary"}`}
                       >
                         TODOS
                       </button>
                       <button
                         onClick={() => setFilterRisk("CRÍTICO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "CRÍTICO"
-                            ? "bg-[#ffdad6] text-[#ba1a1a]"
-                            : "bg-white text-brand-primary"
-                        }`}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "CRÍTICO" ? "bg-[#ffdad6] text-[#ba1a1a]" : "bg-white text-brand-primary"}`}
                       >
                         CRÍTICO
                       </button>
                       <button
                         onClick={() => setFilterRisk("MEDIO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "MEDIO"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-white text-brand-primary"
-                        }`}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "MEDIO" ? "bg-amber-100 text-amber-800" : "bg-white text-brand-primary"}`}
                       >
                         MEDIO
                       </button>
                       <button
                         onClick={() => setFilterRisk("BAJO")}
-                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${
-                          filterRisk === "BAJO"
-                            ? "bg-[#e2f3f5] text-[#006e6e]"
-                            : "bg-white text-brand-primary"
-                        }`}
+                        className={`px-3 py-1.5 cursor-pointer font-bold border-l border-brand-outline-variant ${filterRisk === "BAJO" ? "bg-[#e2f3f5] text-[#006e6e]" : "bg-white text-brand-primary"}`}
                       >
                         BAJO
                       </button>
@@ -820,7 +1073,6 @@ export default function AdminPanel({
               </div>
 
               {/* Grid table showing current students */}
-              {/* Left side: Table list */}
               <div className="xl:col-span-3 bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-center border-collapse text-xs">
@@ -828,9 +1080,6 @@ export default function AdminPanel({
                       <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
                         <th className="p-3 pl-5 border-b border-brand-outline-variant">
                           ESTUDIANTE / DNI
-                        </th>
-                        <th className="p-3 border-b border-brand-outline-variant text-center">
-                          TRAMO
                         </th>
                         <th className="p-3 border-b border-brand-outline-variant text-center">
                           ÍNDICE RISK
@@ -843,40 +1092,35 @@ export default function AdminPanel({
                     <tbody className="divide-y divide-brand-outline-variant">
                       {filteredStudents.map((s) => (
                         <tr
-                          key={s.id}
+                          key={s.dni}
                           className="hover:bg-[#f8f9fa] transition-all"
                         >
                           <td className="p-3 pl-5">
                             <div
                               className="font-bold text-brand-primary hover:underline cursor-pointer"
-                              onClick={() => setSelectedStudentId(s.id)}
+                              onClick={() => setSelectedStudentId(s.dni)}
                             >
-                              {s.lastNames}, {s.firstNames}
+                              {s.apellido}, {s.nombre}
                             </div>
                             <div className="text-[10px] text-brand-outline font-semibold">
-                              DNI: {s.dni} | {s.career}
+                              DNI: {s.dni} | {s.carrera}
                             </div>
-                          </td>
-                          <td className="p-3 text-center">
-                            <span className="bg-[#edeeef] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
-                              TRAMO {s.tramo}
-                            </span>
                           </td>
                           <td className="p-3 text-center">
                             <span
-                              className={`font-black text-xs ${
-                                s.riskValue >= 7.5
-                                  ? "text-[#ba1a1a]"
-                                  : s.riskValue >= 4.0
-                                    ? "text-amber-600"
-                                    : "text-[#006e6e]"
-                              }`}
+                              className={`font-black text-xs ${s.indice_riesgo >= 7.5 ? "text-[#ba1a1a]" : s.indice_riesgo >= 4.0 ? "text-amber-600" : "text-[#006e6e]"}`}
                             >
-                              {s.riskValue.toFixed(2)}
+                              {s.indice_riesgo.toFixed(2)}
                             </span>
                           </td>
                           <td className="p-3 text-center">
-                            {getAlertPill(s.statusAlerta)}
+                            {getAlertPill(
+                              (s.estado_alerta ?? "SIN ALERTA") as
+                                | "NUEVA"
+                                | "EN REVISIÓN"
+                                | "INTERVENIDA"
+                                | "SIN ALERTA",
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -884,7 +1128,7 @@ export default function AdminPanel({
                       {filteredStudents.length === 0 && (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={3}
                             className="p-8 text-center text-brand-outline font-medium"
                           >
                             No se encontraron estudiantes que coincidan con los
@@ -899,7 +1143,7 @@ export default function AdminPanel({
                 {/* Summary bar */}
                 <div className="p-4 bg-[#f8f9fa] border-t border-brand-outline-variant flex justify-between items-center text-xs text-[#43474f]">
                   <span className="font-semibold">
-                    Mostrando {filteredStudents.length} de {students.length}{" "}
+                    Mostrando {filteredStudents.length} de {apiStudents.length}{" "}
                     estudiantes asignados
                   </span>
                   <div className="flex gap-1">
@@ -1110,7 +1354,7 @@ export default function AdminPanel({
               )}
             </div>
           ) : activeMenu === "reportes" ? (
-            <ReportesPanel students={students} />
+            <ReportesPanel students={studentsForChildren} />
           ) : (
             <AHPConfigPanel />
           )}

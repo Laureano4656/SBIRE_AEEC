@@ -28,8 +28,12 @@ export const getTotalIntervencionesMes = async () => {
     return response.data
 }
 // TODO : 
-export const getEvolucionScore = async ({ anio, carrera_id }: { anio: number, carrera_id: number }) => {
-    const response = await axiosInstance.post(`${PREFIX}/estadisticas/evolucion-score`, { anio, carrera_id })
+export const getEvolucionScore = async (anio: number, carrera_id?: number) => {
+    const params = carrera_id ? { carrera_id } : {};
+    const response = await axiosInstance.get<Record<string, number>>(
+        `${PREFIX}/estadisticas/evolucion-score/${anio}`,
+        { params }
+    );
     return response.data
 }
 
@@ -39,7 +43,7 @@ export const getHistorialAlertas = async (student_id: string) => {
 }
 
 export const getEstudiantesPorCarrera = async (carrera: string) => {
-    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estadisticas/carrera/${carrera}`)
+    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estudiantes/carrera/${carrera}`)
     return response.data
 }
 
