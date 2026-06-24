@@ -32,7 +32,7 @@ class RespuestasRepository(CrudRepository[RespuestaEstudiante]):
         async with self.conn.transaction():
             # 1. Obtener info de la asignación antes de modificarla
             asig = await self.conn.fetchrow(
-                "SELECT estudiante_id, evento_disparador::text FROM asignacion_encuesta WHERE id = $1",
+                "SELECT estudiante_id, e.nombre as evento_disparador FROM asignacion_encuesta as a JOIN evento_disparador as e ON a.evento_id = e.id WHERE a.id = $1",
                 asignacion_id
             )
 

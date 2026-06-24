@@ -113,7 +113,9 @@ app.include_router(intervenciones_router, prefix=API_PREFIX)
 app.include_router(entrevista_planificada_router, prefix=API_PREFIX)
 app.include_router(semaforo_router, prefix=API_PREFIX)
 
-protected_router = APIRouter(dependencies=[Depends(get_current_user)])
+###################### TEMPORAL PARA PRUEBAAAA ############################
+# protected_router = APIRouter(dependencies=[Depends(get_current_user)])
+protected_router = APIRouter()
 
 protected_router.include_router(carreras_router)
 protected_router.include_router(materias_router)

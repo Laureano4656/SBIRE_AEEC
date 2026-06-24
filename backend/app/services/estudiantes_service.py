@@ -16,7 +16,7 @@ class EstudianteService(CrudService[Estudiante]):
         Sobrescribimos el método crear del padre (CrudService) para inyectar 
         la lógica de negocio de la encuesta inicial.
         """
-        nuevo_estudiante = await super().crear(data)
+        nuevo_estudiante = await super().crear(**data.model_dump())
         
         if nuevo_estudiante and nuevo_estudiante.id:
             await self.repo.asignar_encuesta_unica_vez(nuevo_estudiante.id)

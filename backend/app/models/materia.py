@@ -8,6 +8,7 @@ class Materia(BaseModel):
     codigo: str
     cuatrimestre_sugerido: int
     es_basica_critica: bool
+    cuatrimestre_dictado: int
 
     class Config:
         from_attributes = True

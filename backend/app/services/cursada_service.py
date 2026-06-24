@@ -17,7 +17,6 @@ class CursadaService(CrudService[Cursada]):
                         "id",
                         "estudiante_id",
                         "materia_id",
-                        "inscripcion_id",
                         "anio",
                         "cuatrimestre",
                         "estado",

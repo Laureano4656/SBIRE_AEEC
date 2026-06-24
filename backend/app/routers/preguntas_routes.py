@@ -31,7 +31,9 @@ async def crear_pregunta(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> PreguntaResponse:
     service = PreguntaService(conn)
-    item = await service.crear_pregunta(body)
+    # Cambiamos "crear_pregunta" por "crear" 
+    # y desempaquetamos el schema usando **body.model_dump()
+    item = await service.crear(**body.model_dump(exclude_unset=True))
     return PreguntaResponse.model_validate(item)
 
 @router.patch("/{pregunta_id}", response_model=PreguntaResponse)
@@ -41,7 +43,8 @@ async def actualizar_pregunta(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> PreguntaResponse:
     service = PreguntaService(conn)
-    item = await service.actualizar_pregunta(pregunta_id, body)
+    # Cambiamos "actualizar_pregunta" por "actualizar"
+    item = await service.actualizar(pregunta_id, **body.model_dump(exclude_unset=True))
     return PreguntaResponse.model_validate(item)
 
 @router.delete("/{pregunta_id}", response_model=dict[str, str])

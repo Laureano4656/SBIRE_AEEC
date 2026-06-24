@@ -40,7 +40,7 @@ async def crear_estudiante(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> EstudianteResponse:
     service = EstudianteService(conn)
-    estudiante = await service.crear(**body.model_dump())
+    estudiante = await service.crear(body)
     return EstudianteResponse.model_validate(estudiante)
 
 

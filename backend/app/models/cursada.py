@@ -7,7 +7,6 @@ class Cursada(BaseModel):
     id: int
     estudiante_id: int | None
     materia_id: int | None
-    inscripcion_id: int | None
     anio: int
     cuatrimestre: int
     estado: Literal["cursando", "aprobada", "desaprobada", "libre", "abandono"]

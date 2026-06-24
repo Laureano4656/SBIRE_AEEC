@@ -1,18 +1,12 @@
 from typing import Literal, Any
-from pydantic import BaseModel, Field, json, field_validator
+from pydantic import BaseModel, Field, field_validator
+import json
 
 class PreguntaCreate(BaseModel):
     indicador_id: int | None = Field(None, ge=1)
     carrera_id: int | None = Field(None, ge=1)
     texto_pregunta: str = Field(..., min_length=5)
-    evento_disparador: Literal[
-        "unica_vez",
-        "cuatrimestral_general",
-        "anual",
-        "inicio_cuatrimestre_acad",
-        "fin_cuatrimestre_acad",
-        "llamado_final_acad"
-    ]
+    evento_id: int
     tipo_pregunta: Literal["texto_libre", "opcion_multiple", "escala", "si_no", "numero"]
     configuracion_riesgo: dict[str, Any] | None = None
     activa: bool = True
@@ -21,14 +15,7 @@ class PreguntaUpdate(BaseModel):
     indicador_id: int | None = Field(None, ge=1)
     carrera_id: int | None = Field(None, ge=1)
     texto_pregunta: str | None = Field(None, min_length=5)
-    evento_disparador: Literal[
-        "unica_vez",
-        "cuatrimestral_general",
-        "anual",
-        "inicio_cuatrimestre_acad",
-        "fin_cuatrimestre_acad",
-        "llamado_final_acad"
-    ] | None = None
+    evento_id: int
     tipo_pregunta: Literal["texto_libre", "opcion_multiple", "escala", "si_no", "numero"] | None = None
     configuracion_riesgo: dict[str, Any] | None = None
     activa: bool | None = None
@@ -38,7 +25,7 @@ class PreguntaResponse(BaseModel):
     indicador_id: int | None
     carrera_id: int | None
     texto_pregunta: str
-    evento: str
+    evento_id: int
     tipo_pregunta: str
     configuracion_riesgo: dict[str, Any] | None
     activa: bool

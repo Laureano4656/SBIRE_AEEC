@@ -4,8 +4,7 @@ from app.schemas.encuesta import AsignacionEncuestaResponse
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 import asyncpg
 
-from app.schemas.encuesta import OpcionEncuestaResponse, PreguntaParaEncuesta, RespuestaItemSubmit, RespuestaPrevia
-from app.schemas.materia import MateriaResponse
+from app.schemas.encuesta import OpcionEncuestaResponse, PreguntaParaEncuesta, RespuestaItemSubmit, RespuestaPrevia, MateriaResponse
 from app.schemas.pregunta import PreguntaResponse
     
 
@@ -22,18 +21,24 @@ class EncuestasRepository:
         rows = await self.conn.fetch(
                 """
                 SELECT m.id as materia_id, m.nombre as materia_nombre
-                FROM inscripciones i
-                JOIN materias m ON i.materia_id = m.id
-                WHERE i.estudiante_id = $1 
-                AND i.estado_cursada = $2::public.enum_estado_cursada
+                FROM cursadas c
+                JOIN materias m ON c.materia_id = m.id
+                WHERE c.estudiante_id = $1 
+                AND c.estado = $2::public.enum_estado_cursada
             """, estudiante_id, estado)
         return [MateriaResponse(**row) for row in rows]
     
     async def _obtener_materias_disponibles(self, estudiante_id: int) -> list[MateriaResponse]:
         """
         Cruza al estudiante con su plan de estudios, filtrando las materias
-        que ya aprobó/está cursando, y asegurando que cumpla con las CORRELATIVAS.
+        que ya aprobó/está cursando, asegurando que cumpla con las CORRELATIVAS,
+        y validando que la materia se dicte en el cuatrimestre actual.
         """
+        # 1. Calculamos en qué cuatrimestre estamos según el mes actual
+        mes_actual = datetime.now().month
+        cuatrimestre_actual = 1 if mes_actual <= 7 else 2
+
+        # 2. Actualizamos la query agregando el filtro y corrigiendo el alias
         query = """
             SELECT m.id as materia_id, m.nombre as materia_nombre
             FROM estudiantes e
@@ -41,6 +46,7 @@ class EncuestasRepository:
             JOIN materias m ON m.plan_id = pe.id
             WHERE e.id = $1 
               AND pe.activo = TRUE
+              AND m.cuatrimestre_dictado IN (0, $2)
               AND NOT EXISTS (
                   SELECT 1 
                   FROM cursadas c 
@@ -51,7 +57,7 @@ class EncuestasRepository:
               AND NOT EXISTS (
                   SELECT 1
                   FROM correlativas co
-                  WHERE c.materia_id = m.id
+                  WHERE co.materia_id = m.id
                     AND NOT EXISTS (
                         SELECT 1
                         FROM cursadas c2
@@ -62,7 +68,10 @@ class EncuestasRepository:
               )
         """
         
-        return [MateriaResponse(**row) for row in await self.conn.fetch(query, estudiante_id)]
+        # 3. Le pasamos el estudiante_id ($1) y el cuatrimestre_actual ($2) a asyncpg
+        filas = await self.conn.fetch(query, estudiante_id, cuatrimestre_actual)
+        
+        return [MateriaResponse(**dict(row)) for row in filas]
     
     async def guardar_respuestas(self, asignacion_id: int, respuestas: list[RespuestaItemSubmit]) -> None:
         """Guarda el array de respuestas de forma transaccional."""
@@ -96,29 +105,40 @@ class EncuestasRepository:
         row = await self.conn.fetchrow(
             """
             SELECT 
-            id as id,
-            estudiante_id as estudiante_id,
-            evento_disparador as evento_disparador,
-            periodo_lectivo as periodo_lectivo,
-            completado as completado
+            id,
+            estudiante_id,
+            evento_id as evento_disparador,
+            periodo_lectivo,
+            completado
             FROM asignacion_encuesta WHERE id = $1 AND completado=false AND borrador = false""",
             asignacion_id
         )
         return AsignacionEncuestaResponse(**row) if row else None
 
-    async def get_preguntas(self, evento: str, carrera_id: int | None) -> list[PreguntaResponse]:
+    async def get_preguntas(self, evento: int, carrera_id: int | None) -> list[PreguntaResponse]:
         rows = await self.conn.fetch(
             """
-            SELECT id, indicador_id, carrera_id, texto_pregunta, evento_disparador.nombre as evento,
+            SELECT pregunta.id, indicador_id, carrera_id, texto_pregunta, pregunta.evento_id as evento_id,
                    tipo_pregunta::text, configuracion_riesgo::text, activa
             FROM pregunta
-            INNER JOIN evento_disparador ON pregunta.evento_disparador = evento_disparador.id
-            WHERE activa = TRUE AND evento = $1
+            INNER JOIN evento_disparador ON pregunta.evento_id = evento_disparador.id
+            WHERE pregunta.activa = TRUE AND pregunta.evento_id = $1
               AND (carrera_id = $2 OR carrera_id IS NULL)
             """,
             evento, carrera_id
         )
         return [PreguntaResponse(**r) for r in rows]
+
+    async def get_evento_disparador(self, evento: int):
+        val = await self.conn.fetchval(
+            """
+            SELECT nombre
+            FROM evento_disparador
+            WHERE id = $1
+            """,
+            evento
+        )
+        return val
 
     async def get_opciones(self, pregunta_ids: list[int]) -> list[OpcionEncuestaResponse]:
         rows = await self.conn.fetch(

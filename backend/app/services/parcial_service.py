@@ -3,6 +3,8 @@ import asyncpg
 from app.models.parcial import Parcial
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 from app.services.crud_service import CrudService
+from typing import Any
+from fastapi import HTTPException
 
 
 class ParcialService(CrudService[Parcial]):
@@ -18,3 +20,21 @@ class ParcialService(CrudService[Parcial]):
             ),
             "Parcial",
         )
+
+    async def crear(self, **kwargs: Any) -> Parcial:
+        try:
+            return await super().crear(**kwargs)
+        except asyncpg.exceptions.UniqueViolationError:
+            raise HTTPException(
+                status_code=409, 
+                detail="Este número de parcial ya se encuentra registrado para esta cursada."
+            )
+
+    async def actualizar(self, id: int, **kwargs: Any) -> Parcial:
+        try:
+            return await super().actualizar(id, **kwargs)
+        except asyncpg.exceptions.UniqueViolationError:
+            raise HTTPException(
+                status_code=409, 
+                detail="La actualización choca con otro parcial ya registrado para esta cursada."
+            )

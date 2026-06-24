@@ -1,6 +1,6 @@
 
 from typing import Literal
-
+from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -60,6 +60,8 @@ class EstudianteCreate(BaseModel):
     )
     porcentaje_carrera: float = Field(
         default=0.0,
+        ge=0.0,
+        le=100.0,
         description="Porcentaje de avance en la carrera",
         examples=[0.0],
     )
@@ -85,6 +87,19 @@ class EstudianteCreate(BaseModel):
     def strip_optional_fields(cls, value: str | None) -> str | None:
         return value.strip() if value else value
 
+    @field_validator('anio_ingreso')
+    @classmethod
+    def validar_anio_maximo(cls, v: int) -> int:
+        anio_actual = datetime.now().year
+        
+        if v > anio_actual:
+            raise ValueError(f"El año de ingreso no puede ser mayor al año actual ({anio_actual}).")
+        
+        if v < 1950:
+            raise ValueError("El año de ingreso no es válido.")
+            
+        return v
+
 
 class EstudianteUpdate(BaseModel):
     """
@@ -100,9 +115,22 @@ class EstudianteUpdate(BaseModel):
     dni: str | None = Field(None, min_length=1, max_length=16)
     anio_ingreso: int | None = Field(None, ge=1900)
     etapa: Literal["temprana", "media", "tardia"] | None = None
-    porcentaje_carrera: float | None = None
+    porcentaje_carrera: float | None = Field(None, ge=0.0, le=100.0)
     activo: bool | None = None
     moodle_id: str | None = Field(None, max_length=255)
+
+    @field_validator('anio_ingreso')
+    @classmethod
+    def validar_anio_maximo(cls, v: int) -> int:
+        anio_actual = datetime.now().year
+        
+        if v > anio_actual:
+            raise ValueError(f"El año de ingreso no puede ser mayor al año actual ({anio_actual}).")
+        
+        if v < 1950:
+            raise ValueError("El año de ingreso no es válido.")
+            
+        return v
 
 
 class EstudianteResponse(BaseModel):

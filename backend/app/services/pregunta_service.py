@@ -14,18 +14,18 @@ class PreguntaService(CrudService[Pregunta]):
                 conn,
                 Pregunta,
                 CrudTableConfig(
-                    table_name="pregunta", # Ojo acá: asegurate que coincida con el nombre en tu BD ("pregunta" o "preguntas")
+                    table_name="pregunta",
                     columns=(
                         "id",
                         "indicador_id",
                         "carrera_id",
                         "texto_pregunta",
-                        "evento_disparador",
+                        "evento_id",
                         "tipo_pregunta",
                         "configuracion_riesgo",
                         "activa",
                     ),
-                    active_column="activa" # Esto engancha perfecto con tu CrudRepository para el borrado lógico
+                    active_column="activa" 
                 ),
             ),
             "Pregunta",
