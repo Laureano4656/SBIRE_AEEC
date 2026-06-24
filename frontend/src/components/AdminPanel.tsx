@@ -22,7 +22,7 @@ import {
   useHistorialAlertasGenerales,
 } from "../hooks/queries/useAdminDepQueries.ts";
 import { useAuth } from "../hooks/useAuth.ts";
-  
+
 interface AdminPanelProps {
   surveys: Survey[];
   onLogout: () => void;
@@ -37,8 +37,8 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
   );
 
   // Dashboard aggregate filters
-  const dashboardAnio = 2023;
-  const [evolucionAnio, setEvolucionAnio] = useState<number>(2023);
+  const dashboardAnio = 2019;
+  const [evolucionAnio, setEvolucionAnio] = useState<number>(2019);
   const dashboardCarreraId = useAuth().user?.carrera_id ?? 1;
   const {
     data: totalEstudiantes,
@@ -87,7 +87,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
     data: historialAlertas = [],
     isLoading: loadingHistorial,
     isError: errorHistorial,
-  } = useHistorialAlertas(historialStudentId ?? "");
+  } = useHistorialAlertas(historialStudentId);
 
   const {
     data: historialAlertasGenerales = [],
@@ -280,11 +280,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               setActiveMenu("panel");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "panel" && !selectedStudentId
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "panel" && !selectedStudentId
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               dashboard
@@ -297,11 +296,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               setActiveMenu("estudiantes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "estudiantes" || selectedStudentId
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "estudiantes" || selectedStudentId
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               groups
@@ -314,11 +312,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               setActiveMenu("encuestas");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "encuestas"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "encuestas"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               edit_note
@@ -331,11 +328,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               setActiveMenu("reportes");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "reportes"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "reportes"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               query_stats
@@ -348,11 +344,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               setActiveMenu("configuracion");
               setSelectedStudentId(null);
             }}
-            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              activeMenu === "configuracion"
-                ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
-                : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
-            }`}
+            className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${activeMenu === "configuracion"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+              }`}
           >
             <span className="material-symbols-outlined text-[#43474f] text-lg">
               settings
@@ -521,7 +516,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                       </span>
                     ) : (
                       <span className="text-3xl font-black text-brand-primary">
-                        {totalEstudiantes.cantidad.toLocaleString()}
+                        {totalEstudiantes?.toLocaleString() ?? "—"}
                       </span>
                     )}
                   </div>
@@ -540,7 +535,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                       </span>
                     ) : (
                       <span className="text-3xl font-black text-brand-error">
-                        {totalCriticos.total.toLocaleString()}
+                        {totalCriticos?.total.toLocaleString() ?? "—"}
                       </span>
                     )}
                   </div>
@@ -559,7 +554,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                       </span>
                     ) : (
                       <span className="text-3xl font-black text-[#5a9ef1]">
-                        {totalAlertas.total.toLocaleString()}
+                        {totalAlertas?.total.toLocaleString() ?? "—"}
                       </span>
                     )}
                   </div>
@@ -578,7 +573,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                       </span>
                     ) : (
                       <span className="text-3xl font-black text-[#006a6a]">
-                        {totalIntervenciones.total.toLocaleString()}
+                        {totalIntervenciones?.total.toLocaleString() ?? "—"}
                       </span>
                     )}
                   </div>
@@ -655,7 +650,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                           <span className="text-2xl font-black text-brand-primary">
                             {loadingTotal
                               ? "—"
-                              : (totalEstudiantes?.cantidad.toLocaleString() ??
+                              : (totalEstudiantes?.toLocaleString() ??
                                 "—")}
                           </span>
                           <span className="text-[9px] text-brand-outline font-bold uppercase">
@@ -703,11 +698,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                         <button
                           key={year}
                           onClick={() => setEvolucionAnio(year)}
-                          className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
-                            evolucionAnio === year
-                              ? "bg-brand-primary text-white border border-brand-primary font-extrabold"
-                              : "bg-[#f3f4f5] text-[#43474f] border border-brand-outline-variant font-semibold hover:bg-[#e0e1e5]"
-                          }`}
+                          className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${evolucionAnio === year
+                            ? "bg-brand-primary text-white border border-brand-primary font-extrabold"
+                            : "bg-[#f3f4f5] text-[#43474f] border border-brand-outline-variant font-semibold hover:bg-[#e0e1e5]"
+                            }`}
                         >
                           {year}
                         </button>
@@ -1123,10 +1117,10 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                           <td className="p-3 text-center">
                             {getAlertPill(
                               (s.estado_alerta ?? "SIN ALERTA") as
-                                | "NUEVA"
-                                | "EN REVISIÓN"
-                                | "INTERVENIDA"
-                                | "SIN ALERTA",
+                              | "NUEVA"
+                              | "EN REVISIÓN"
+                              | "INTERVENIDA"
+                              | "SIN ALERTA",
                             )}
                           </td>
                         </tr>
@@ -1270,13 +1264,12 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                           </td>
                           <td className="p-4 text-center">
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${
-                                sur.status === "Activa"
-                                  ? "bg-[#e2f3f5] text-[#006e6e]"
-                                  : sur.status === "Borrador"
-                                    ? "bg-amber-100 text-amber-800"
-                                    : "bg-red-150 text-brand-error"
-                              }`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
+                                ? "bg-[#e2f3f5] text-[#006e6e]"
+                                : sur.status === "Borrador"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-red-150 text-brand-error"
+                                }`}
                             >
                               {sur.status}
                             </span>
@@ -1301,9 +1294,9 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                                       const updated = localSurveys.map((s) =>
                                         s.id === sur.id
                                           ? {
-                                              ...s,
-                                              status: "Finalizada" as const,
-                                            }
+                                            ...s,
+                                            status: "Finalizada" as const,
+                                          }
                                           : s,
                                       );
                                       setLocalSurveys(updated);

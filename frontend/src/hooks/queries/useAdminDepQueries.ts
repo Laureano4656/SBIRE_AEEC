@@ -100,10 +100,11 @@ export const useEstudiantePorRiesgo = (riesgo: string) => {
     })
 }
 
-export const useHistorialAlertas = (student_id: string) => {
+export const useHistorialAlertas = (student_id: string | null) => {
     return useQuery({
-        queryKey: adminDepKeys.historialAlertas(student_id),
-        queryFn: () => getHistorialAlertas(student_id)
+        enabled: !!student_id,
+        queryKey: adminDepKeys.historialAlertas(student_id!),
+        queryFn: () => getHistorialAlertas(student_id!)
     })
 }
 

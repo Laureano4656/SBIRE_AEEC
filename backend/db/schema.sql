@@ -264,10 +264,11 @@ ALTER TABLE public.alertas ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 CREATE TABLE public.asignacion_encuesta (
     id integer NOT NULL,
     estudiante_id integer NOT NULL,
-    evento_disparador public.enum_periodicidad NOT NULL,
     periodo_lectivo character varying(50) NOT NULL,
     completado boolean DEFAULT false,
-    fecha_asignacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    fecha_asignacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    evento_id integer,
+    borrador boolean DEFAULT true NOT NULL
 );
 
 
@@ -494,6 +495,30 @@ ALTER TABLE public.estudiantes ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
 
 
 --
+-- Name: evento_disparador; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evento_disparador (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL
+);
+
+
+--
+-- Name: evento_disparador_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evento_disparador ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.evento_disparador_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: importacion_archivo; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -616,7 +641,9 @@ CREATE TABLE public.materias (
     nombre character varying(255) NOT NULL,
     codigo character varying(50) NOT NULL,
     cuatrimestre_sugerido integer NOT NULL,
-    es_basica_critica boolean DEFAULT false NOT NULL
+    es_basica_critica boolean DEFAULT false NOT NULL,
+    cuatrimestre_dictado integer DEFAULT 0 NOT NULL,
+    CONSTRAINT check_cuatrimestre_dictado CHECK ((cuatrimestre_dictado = ANY (ARRAY[0, 1, 2])))
 );
 
 
@@ -751,10 +778,10 @@ CREATE TABLE public.pregunta (
     indicador_id integer,
     carrera_id integer,
     texto_pregunta text NOT NULL,
-    evento_disparador public.enum_periodicidad NOT NULL,
     tipo_pregunta public.enum_tipo_pregunta NOT NULL,
     configuracion_riesgo jsonb,
-    activa boolean DEFAULT true
+    activa boolean DEFAULT true,
+    evento_id integer
 );
 
 
@@ -989,6 +1016,22 @@ ALTER TABLE ONLY public.estudiantes
 
 
 --
+-- Name: evento_disparador evento_disparador_nombre_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evento_disparador
+    ADD CONSTRAINT evento_disparador_nombre_key UNIQUE (nombre);
+
+
+--
+-- Name: evento_disparador evento_disparador_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evento_disparador
+    ADD CONSTRAINT evento_disparador_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: importacion_archivo importacion_archivo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1106,6 +1149,14 @@ ALTER TABLE ONLY public.score_total
 
 ALTER TABLE ONLY public.configuracion_indicador
     ADD CONSTRAINT uq_configuracion_carrera_etapa UNIQUE (carrera_id, etapa);
+
+
+--
+-- Name: parciales uq_cursada_numero_parcial; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parciales
+    ADD CONSTRAINT uq_cursada_numero_parcial UNIQUE (cursada_id, numero_parcial);
 
 
 --
@@ -1318,6 +1369,14 @@ ALTER TABLE ONLY public.alertas
 
 
 --
+-- Name: asignacion_encuesta fk_asignacion_evento; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asignacion_encuesta
+    ADD CONSTRAINT fk_asignacion_evento FOREIGN KEY (evento_id) REFERENCES public.evento_disparador(id);
+
+
+--
 -- Name: peso_indicadores fk_configuracion; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1403,6 +1462,14 @@ ALTER TABLE ONLY public.intervenciones
 
 ALTER TABLE ONLY public.intervenciones
     ADD CONSTRAINT fk_intervencion_tutor FOREIGN KEY (tutor_id) REFERENCES public.usuarios(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: pregunta fk_pregunta_evento; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pregunta
+    ADD CONSTRAINT fk_pregunta_evento FOREIGN KEY (evento_id) REFERENCES public.evento_disparador(id);
 
 
 --
@@ -1571,4 +1638,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260620161556'),
     ('20260620171940'),
     ('20260620191526'),
-    ('20260621153402');
+    ('20260621153402'),
+    ('20260621220622'),
+    ('20260622194648'),
+    ('20260623212022'),
+    ('20260624163638');
