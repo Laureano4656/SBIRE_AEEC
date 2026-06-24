@@ -70,3 +70,41 @@ class IndicadorService(CrudService[Indicador]):
             await self.reasignar_preguntas(indicador.id, preguntas_ids)
             
         return indicador
+
+    async def eliminar(self, indicador_id: int) -> dict[str, str]:
+        """
+        Realiza un borrado lógico (soft-delete) en cascada.
+        Desactiva el indicador/dimensión solicitado, todos sus indicadores hijos,
+        y todas las preguntas asociadas a cualquiera de ellos.
+        """
+        # Abrimos una transacción para garantizar la integridad de los datos
+        async with self.repo.conn.transaction():
+            
+            # 1. Desactivamos el indicador principal y sus dependencias.
+            # Si el id es de un indicador normal, solo apaga ese.
+            # Si es de una dimensión, apaga la dimensión y todos sus hijos.
+            query_indicadores = """
+                UPDATE indicador
+                SET activo = FALSE
+                WHERE id = $1 OR dimension = $1
+                RETURNING id;
+            """
+            
+            # fetch nos devuelve las filas afectadas, extraemos los IDs
+            registros = await self.repo.conn.fetch(query_indicadores, indicador_id)
+            ids_afectados = [row["id"] for row in registros]
+
+            # 2. Si efectivamente se desactivaron indicadores, bajamos sus preguntas
+            if ids_afectados:
+                query_preguntas = """
+                    UPDATE pregunta
+                    SET activa = FALSE
+                    WHERE indicador_id = ANY($1::int[]);
+                """
+                # ANY() es la forma nativa y segura de PostgreSQL para buscar 
+                # contra una lista de Python (array) sin hacer concatenación de strings
+                await self.repo.conn.execute(query_preguntas, ids_afectados)
+
+        return {
+            "mensaje": f"Borrado lógico exitoso. Se desactivaron {len(ids_afectados)} indicador(es)/dimensión y sus preguntas asociadas."
+        }
