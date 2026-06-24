@@ -18,10 +18,11 @@ import {
   useHistorialAlertas,
   useTotalCriticos,
   useTotalAlertasNuevas,
-  useTotalIntervencionesMes,
+  useTotalIntervenciones,
+  useHistorialAlertasGenerales,
 } from "../hooks/queries/useAdminDepQueries.ts";
 import { useAuth } from "../hooks/useAuth.ts";
-
+  
 interface AdminPanelProps {
   surveys: Survey[];
   onLogout: () => void;
@@ -48,17 +49,17 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
     data: totalCriticos,
     isLoading: loadingCriticos,
     isError: errorCriticos,
-  } = useTotalCriticos();
+  } = useTotalCriticos(dashboardCarreraId);
   const {
     data: totalAlertas,
     isLoading: loadingAlertas,
     isError: errorAlertas,
-  } = useTotalAlertasNuevas();
+  } = useTotalAlertasNuevas(dashboardCarreraId);
   const {
     data: totalIntervenciones,
     isLoading: loadingIntervenciones,
     isError: errorIntervenciones,
-  } = useTotalIntervencionesMes();
+  } = useTotalIntervenciones(dashboardCarreraId);
   const {
     data: conteoPorRiesgo,
     isLoading: loadingRiesgo,
@@ -87,6 +88,12 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
     isLoading: loadingHistorial,
     isError: errorHistorial,
   } = useHistorialAlertas(historialStudentId ?? "");
+
+  const {
+    data: historialAlertasGenerales = [],
+    isLoading: loadingHistorialGenerales,
+    isError: errorHistorialGenerales,
+  } = useHistorialAlertasGenerales(dashboardCarreraId.toString());
 
   // Filters for student tracking
   const [searchQuery, setSearchQuery] = useState("");
@@ -951,9 +958,9 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                         </div>
                       ) : errorHistorial ? (
                         <p className="text-center text-brand-outline text-xs py-4">Sin datos</p>
-                      ) : historialAlertas.length === 0 ? (
+                      ) : historialAlertasGenerales.length === 0 ? (
                         <p className="text-center text-brand-outline text-xs py-4">
-                          No hay eventos registrados para este estudiante.
+                          No hay eventos registrados para esta carrera.
                         </p>
                       ) : (
                         <ul className="space-y-3">

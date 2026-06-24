@@ -19,20 +19,21 @@ class DashboardAdminDepService:
     async def obtener_conteo_estudiantes(self, anio: int | None = None, carrera_id: int | None = None) -> int:
         return await self.repo.students_count(anio, carrera_id)
 
-    async def obtener_total_criticos(self) -> int:
-        return await self.repo.total_critics()
+    async def obtener_total_criticos(self, carrera_id: int) -> int:
+        print("obteniendo total de criticos")
+        return await self.repo.total_critics(carrera_id)
 
-    async def obtener_total_alertas_nuevas(self) -> int:
-        return await self.repo.total_new_alerts()
+    async def obtener_total_alertas_nuevas(self, carrera_id: int | None = None) -> int:
+        return await self.repo.total_new_alerts(carrera_id)
 
-    async def obtener_intervenciones_del_mes(self) -> int:
-        return await self.repo.total_interventions_month()
+    async def obtener_intervenciones(self, carrera_id: int | None = None) -> int:
+        return await self.repo.total_interventions(carrera_id)
 
     async def obtener_conteo_por_riesgo(self, carrera_id: int, anio: int) -> dict[str,int]:
         return await self.repo.count_by_risk(carrera_id, anio)
 
-    async def obtener_evolucion_mensual_score(self, anio: int) -> dict[int, float]:
-        return await self.repo.monthly_evolution_score(anio)
+    async def obtener_evolucion_mensual_score(self, anio: int, carrera_id: int | None = None) -> dict[int, float]:
+        return await self.repo.monthly_evolution_score(anio, carrera_id)
 
     async def obtener_estudiante_por_dni(self, dni: str) -> EstudianteDashboardAdminResponse:
         estudiante = await self.repo.get_student_by_dni(dni)
@@ -67,8 +68,11 @@ class DashboardAdminDepService:
             )
         return datos
 
-    async def obtener_alertas_cronologicas(self, estudiante_id: str) -> list[EventoCronologicoResponse]:
+    async def obtener_alertas_cronologicas_por_estudiante(self, estudiante_id: str) -> list[EventoCronologicoResponse]:
         return await self.repo.chronological_alerts(estudiante_id)
+    
+    async def obtener_alertas_cronologicas_generales(self, carrera_id: int) -> list[EventoCronologicoResponse]:
+        return await self.repo.general_chronological_alerts(carrera_id)
 
     async def cambiar_rol_usuario(self, user_id: int, new_role: str) -> dict:
         # aca tambien podrias validar que el new_role exista en tu sistema (ej: 'admin', 'tutor', etc)

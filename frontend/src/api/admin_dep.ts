@@ -4,27 +4,27 @@ import type { EstudianteDashboardAdminResponse, EventoCronologicoResponse } from
 const PREFIX = '/dashboard-admin-dep'
 
 export const getConteoEstudiantes = async ({ anio, carrera_id }: { anio: number, carrera_id: number }) => {
-    const response = await axiosInstance.post<{ cantidad: number }>(`${PREFIX}/estadisticas/estudiantes`, { anio, carrera_id })
+    const response = await axiosInstance.get<{ cantidad: number }>(`${PREFIX}/estadisticas/estudiantes`, { params: { anio, carrera_id } })
     return response.data
 }
 
 export const getConteoPorRiesgo = async ({ anio, carrera_id }: { anio: number, carrera_id: number }) => {
-    const response = await axiosInstance.post<{ rojo: number; amarillo: number; verde: number }>(`${PREFIX}/estadisticas/riesgo`, { anio, carrera_id })
+    const response = await axiosInstance.get<{ rojo: number; amarillo: number; verde: number }>(`${PREFIX}/estadisticas/riesgo`, { params: { anio, carrera_id } })
     return response.data
 }
 
-export const getTotalCriticos = async () => {
-    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/criticos`)
+export const getTotalCriticos = async ({ carrera_id }: { carrera_id: number }) => {
+    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/criticos`, { params: { carrera_id } })
     return response.data
 }
 
-export const getTotalAlertasNuevas = async () => {
-    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/alertas-nuevas`)
+export const getTotalAlertasNuevas = async ({ carrera_id }: { carrera_id: number }) => {
+    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/alertas-nuevas`, { params: { carrera_id } })
     return response.data
 }
 
-export const getTotalIntervencionesMes = async () => {
-    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/intervenciones-mes`)
+export const getTotalIntervenciones = async ({ carrera_id }: { carrera_id: number }) => {
+    const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/intervenciones`, { params: { carrera_id } })
     return response.data
 }
 // TODO : 
@@ -39,6 +39,11 @@ export const getEvolucionScore = async (anio: number, carrera_id?: number) => {
 
 export const getHistorialAlertas = async (student_id: string) => {
     const response = await axiosInstance.get<EventoCronologicoResponse[]>(`${PREFIX}/estudiantes/${student_id}/historial`)
+    return response.data
+}
+
+export const getHistorialAlertasGenerales = async (carrera_id: string) => {
+    const response = await axiosInstance.get<EventoCronologicoResponse[]>(`${PREFIX}/carrera/${carrera_id}/historial`)
     return response.data
 }
 

@@ -9,9 +9,10 @@ import {
     getEstudiantesPorCarrera,
     getEvolucionScore,
     getHistorialAlertas,
+    getHistorialAlertasGenerales,
     getTotalAlertasNuevas,
     getTotalCriticos,
-    getTotalIntervencionesMes
+    getTotalIntervenciones
 } from '../../api/admin_dep.ts'
 
 export const adminDepKeys = {
@@ -19,13 +20,14 @@ export const adminDepKeys = {
     conteoPorRiesgo: (anio: number, carrera_id: number) => ['conteoPorRiesgo', anio, carrera_id] as const,
     totalCriticos: ['totalCriticos'] as const,
     totalAlertasNuevas: ['totalAlertasNuevas'] as const,
-    totalIntervencionesMes: ['totalIntervencionesMes'] as const,
+    totalIntervenciones: ['totalIntervenciones'] as const,
     evolucionScore: (anio: number, carrera_id: number) => ['evolucionScore', anio, carrera_id] as const,
     estudiantesPorCarrera: (carrera: string) => ['estudiantesPorCarrera', carrera] as const,
     estudiantePorDni: (dni: string) => ['estudiantePorDni', dni] as const,
     estudiantePorAnio: (anio: number) => ['estudiantePorAnio', anio] as const,
     estudiantePorRiesgo: (riesgo: string) => ['estudiantePorRiesgo', riesgo] as const,
-    historialAlertas: (student_id: string) => ['historialAlertas', student_id] as const
+    historialAlertas: (student_id: string) => ['historialAlertas', student_id] as const,
+    historialAlertasGenerales: (carrera_id: string) => ['historialAlertasGenerales', carrera_id] as const
 }
 
 export const useConteoEstudiantes = (anio: number, carrera_id: number) => {
@@ -42,24 +44,24 @@ export const useConteoPorRiesgo = (anio: number, carrera_id: number) => {
     })
 }
 
-export const useTotalCriticos = () => {
+export const useTotalCriticos = (carrera_id: number) => {
     return useQuery({
         queryKey: adminDepKeys.totalCriticos,
-        queryFn: getTotalCriticos
+        queryFn: () => getTotalCriticos({ carrera_id })
     })
 }
 
-export const useTotalAlertasNuevas = () => {
+export const useTotalAlertasNuevas = (carrera_id: number) => {
     return useQuery({
         queryKey: adminDepKeys.totalAlertasNuevas,
-        queryFn: getTotalAlertasNuevas
+        queryFn: () => getTotalAlertasNuevas({ carrera_id })
     })
 }
 
-export const useTotalIntervencionesMes = () => {
+export const useTotalIntervenciones = (carrera_id: number) => {
     return useQuery({
-        queryKey: adminDepKeys.totalIntervencionesMes,
-        queryFn: getTotalIntervencionesMes
+        queryKey: adminDepKeys.totalIntervenciones,
+        queryFn: () => getTotalIntervenciones({ carrera_id })
     })
 }
 
@@ -102,5 +104,12 @@ export const useHistorialAlertas = (student_id: string) => {
     return useQuery({
         queryKey: adminDepKeys.historialAlertas(student_id),
         queryFn: () => getHistorialAlertas(student_id)
+    })
+}
+
+export const useHistorialAlertasGenerales = (carrera_id: string) => {
+    return useQuery({
+        queryKey: adminDepKeys.historialAlertasGenerales(carrera_id),
+        queryFn: () => getHistorialAlertasGenerales(carrera_id)
     })
 }

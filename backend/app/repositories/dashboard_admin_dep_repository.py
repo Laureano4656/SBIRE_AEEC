@@ -47,17 +47,15 @@ class dashboardAdminRepository:
 
         return row["count"]
 
-    async def total_interventions_month(self, month: int, year: int, carrera_id: int) -> int:
+    async def total_interventions(self, carrera_id: int) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM intervenciones
             INNER JOIN alertas a ON intervenciones.alerta_id = a.id
             INNER JOIN estudiantes e ON a.estudiante_id = e.id
-            WHERE date_part('month', creado_en) = $1
-            AND date_part('year', creado_en) = $2
-            AND (e.carrera_id = $3)
-            """, month, year, carrera_id
+            WHERE (carrera_id = $1) 
+            """, carrera_id
         )
         return row["count"]
     
@@ -306,6 +304,34 @@ class dashboardAdminRepository:
             """,
             estudiante_id
         )
+        return [EventoCronologicoResponse(**dict(row)) for row in rows]
+    
+    async def general_chronological_alerts(self, carrera_id: int) -> list[EventoCronologicoResponse]:
+        rows = await self.conn.fetch(
+            """
+            SELECT 
+                'alerta' AS tipo,
+                a.estado::text AS descripcion,
+                a.generada_en AS fecha
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.carrera_id = $1
+
+            UNION ALL
+
+            SELECT 
+                'intervencion' AS tipo,
+                i.tipo::text AS descripcion,
+                i.creado_en AS fecha
+            FROM intervenciones i
+            INNER JOIN alertas a ON i.alerta_id = a.id
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.carrera_id = $2
+
+            ORDER BY fecha DESC
+            LIMIT 5
+            """, carrera_id, carrera_id 
+        )# dos veces porque hay dos $1
         return [EventoCronologicoResponse(**dict(row)) for row in rows]
     
     
