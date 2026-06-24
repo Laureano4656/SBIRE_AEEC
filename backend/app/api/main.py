@@ -84,6 +84,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:5501",           # desarrollo frontend
         "http://localhost:8080",           # desarrollo Moodle local
+        settings.FRONTEND_URL,             # desarrollo Vite
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],

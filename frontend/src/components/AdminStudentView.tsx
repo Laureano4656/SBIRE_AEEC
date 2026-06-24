@@ -107,7 +107,6 @@ export default function AdminStudentView({
   const [activeTab, setActiveTab] = useState<"trayectoria" | "timeline">(
     "trayectoria",
   );
-
   const subjects: SubjectProgress[] =
     student.id === "sofia_martinez"
       ? SUBJECTS_SOFIA
@@ -252,65 +251,79 @@ export default function AdminStudentView({
 
       {/* Tab Content */}
       <div className="mt-4">
-        <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                  <th className="p-3 pl-5 border-b border-brand-outline-variant">
-                    Asignatura
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Parciales
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Final
-                  </th>
-                  <th className="p-3 border-b border-brand-outline-variant text-center">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-outline-variant">
-                {subjects.map((subj) => (
-                  <tr
-                    key={subj.code}
-                    className="hover:bg-[#f8f9fa] transition-colors"
-                  >
-                    <td className="p-3 pl-5">
-                      <span className="font-bold text-brand-primary">
-                        {subj.name}
-                      </span>
-                      <span className="text-[10px] text-brand-outline block font-medium">
-                        {subj.teacher}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center font-medium">
-                      {subj.midtermGrades}
-                    </td>
-                    <td className="p-3 text-center font-bold">
-                      {subj.finalGrade}
-                    </td>
-                    <td className="p-3 text-center">
-                      {statusSubjectBadge(subj.status)}
-                    </td>
+        {activeTab === "trayectoria" ? (
+          <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                    <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                      Asignatura
+                    </th>
+                    <th className="p-3 border-b border-brand-outline-variant text-center">
+                      Parciales
+                    </th>
+                    <th className="p-3 border-b border-brand-outline-variant text-center">
+                      Final
+                    </th>
+                    <th className="p-3 border-b border-brand-outline-variant text-center">
+                      Estado
+                    </th>
                   </tr>
-                ))}
-                {subjects.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="p-8 text-center text-brand-outline font-medium"
+                </thead>
+                <tbody className="divide-y divide-brand-outline-variant">
+                  {subjects.map((subj) => (
+                    <tr
+                      key={subj.code}
+                      className="hover:bg-[#f8f9fa] transition-colors"
                     >
-                      No hay datos de trayectoria académica disponibles para
-                      este estudiante.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      <td className="p-3 pl-5">
+                        <span className="font-bold text-brand-primary">
+                          {subj.name}
+                        </span>
+                        <span className="text-[10px] text-brand-outline block font-medium">
+                          {subj.teacher}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center font-medium">
+                        {subj.midtermGrades}
+                      </td>
+                      <td className="p-3 text-center font-bold">
+                        {subj.finalGrade}
+                      </td>
+                      <td className="p-3 text-center">
+                        {statusSubjectBadge(subj.status)}
+                      </td>
+                    </tr>
+                  ))}
+                  {subjects.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="p-8 text-center text-brand-outline font-medium"
+                      >
+                        No hay datos de trayectoria académica disponibles para
+                        este estudiante.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
+            <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5 mb-4">
+              <span className="material-symbols-outlined text-lg">
+                timeline
+              </span>
+              Línea de Tiempo
+            </h4>
+            <div className="text-center py-8 text-brand-outline font-medium text-xs">
+              No hay eventos registrados para este estudiante.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@
 import logging
 
 import asyncpg
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.database import get_pool
@@ -27,20 +27,33 @@ async def get_conn() -> asyncpg.Connection:  # type: ignore[no-untyped-def]
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_optional),
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> Usuario:
     """
     Valida el token JWT de sesión y retorna el usuario autenticado.
 
-    El token debe enviarse en el header:
-        Authorization: Bearer <token>
+    El token se lee del header Authorization: Bearer <token>
+    o, en su defecto, de la cookie httpOnly access_token.
 
     Levanta HTTPException si:
     - El token es inválido o expirado
     - El usuario no existe o está inactivo
     """
-    token = credentials.credentials
+    # Try Authorization header first
+    token = credentials.credentials if credentials else None
+
+    # Fall back to cookie
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No autenticado.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     # Validar token
     try:
@@ -96,6 +109,7 @@ async def get_current_user(
 
 
 async def get_current_user_optional(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security_optional),
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> Usuario | None:
@@ -104,10 +118,15 @@ async def get_current_user_optional(
     o el token es inválido/expirado. Útil para endpoints que
     se comportan distinto para usuarios autenticados vs anónimos.
     """
-    if credentials is None:
-        return None
+    # Try Authorization header first
+    token = credentials.credentials if credentials else None
 
-    token = credentials.credentials
+    # Fall back to cookie
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        return None
 
     try:
         payload = TokenManager.validate_session_token(token)

@@ -17,6 +17,7 @@ import {
   useTotalAlertasNuevas,
   useTotalIntervencionesMes,
 } from "../hooks/queries/useAdminDepQueries.ts";
+import { useAuth } from "../hooks/useAuth.ts";
 
 interface AdminPanelProps {
   students: Student[];
@@ -38,8 +39,8 @@ export default function AdminPanel({
   );
 
   // Dashboard aggregate filters
-  const [dashboardAnio] = useState(2024);
-  const [dashboardCarreraId] = useState(1);
+  const [dashboardAnio] = [2023];
+  const dashboardCarreraId = useAuth().user?.carrera_id ?? 1;
   const {
     data: totalEstudiantes,
     isLoading: loadingTotal,
@@ -704,80 +705,6 @@ export default function AdminPanel({
                   </p>
                 </div>
               </div>
-
-              {/* Critical Alerts Recent list */}
-              <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
-                <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
-                  <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-lg">
-                      emergency
-                    </span>
-                    Alertas Críticas Recientes
-                  </h4>
-                  <button
-                    onClick={() => {
-                      setActiveMenu("estudiantes");
-                      setFilterRisk("CRÍTICO");
-                    }}
-                    className="text-xs text-brand-primary font-bold hover:underline"
-                  >
-                    Ver listado completo
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                        <th className="p-3 pl-6">Estudiante</th>
-                        <th className="p-3">Carrera / Año</th>
-                        <th className="p-3 text-center">Nivel Riesgo</th>
-                        <th className="p-3 text-center">Último Recálculo</th>
-                        <th className="p-3 text-center">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-outline-variant">
-                      {students
-                        .filter(
-                          (s) =>
-                            s.riskLevel === "CRÍTICO" ||
-                            s.riskLevel === "MEDIO",
-                        )
-                        .slice(0, 4)
-                        .map((s) => (
-                          <tr
-                            key={s.id}
-                            className="hover:bg-[#f8f9fa] transition-colors"
-                          >
-                            <td className="p-3 pl-6 font-bold text-brand-primary">
-                              {s.lastNames}, {s.firstNames}
-                            </td>
-                            <td className="p-3 font-medium">
-                              {s.career} ({s.year}° Año)
-                            </td>
-                            <td className="p-3 text-center">
-                              <span className="bg-[#ffdad6] text-[#93000a] text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full"></span>
-                                CRÍTICO ({s.riskValue})
-                              </span>
-                            </td>
-                            <td className="p-3 text-center text-brand-outline font-medium">
-                              {s.lastRecalculation}
-                            </td>
-                            <td className="p-3 text-center">
-                              <button
-                                onClick={() => setSelectedStudentId(s.id)}
-                                className="text-brand-primary hover:text-brand-primary-container hover:underline font-bold"
-                              >
-                                Intervenir
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           ) : activeMenu === "estudiantes" ? (
             /* Student alerts tracking listing view */
@@ -1189,25 +1116,6 @@ export default function AdminPanel({
           )}
         </main>
       </div>
-
-      {/* Dynamic Floating Action Button for prompt intervention entry */}
-      {!selectedStudentId && activeMenu === "panel" && (
-        <button
-          onClick={() => {
-            setActiveMenu("estudiantes");
-            alert(
-              "Por favor, seleccione un estudiante de la grilla principal para registrar su intervención.",
-            );
-          }}
-          title="Nueva Intervención Rápida"
-          className="fixed bottom-6 right-6 w-14 h-14 bg-brand-primary hover:bg-[#002f5e] text-white rounded-full shadow-2xl flex items-center justify-center transition-all cursor-pointer active:scale-95 group z-30"
-        >
-          <span className="material-symbols-outlined text-2xl">add</span>
-          <span className="absolute right-16 bg-brand-primary text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Nueva Intervención
-          </span>
-        </button>
-      )}
     </div>
   );
 }

@@ -6,6 +6,8 @@ from app.services.crud_service import CrudService
 from app.core.lti_handler import LTIHandler
 from app.core.token_manager import TokenManager
 from app.schemas.usuario import AuthResponse, UsuarioResponse
+from typing import cast
+
 
 class UsuarioService(CrudService[Usuario]):
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -42,18 +44,30 @@ class UsuarioService(CrudService[Usuario]):
         apellido = user_claims.get("apellido")
         email = user_claims.get("email")
         carrera_id = user_claims.get("carrera_id")
-        print (f"Mapped claims: rol={rol}, nombre={nombre}, apellido={apellido}, email={email}, carrera_id={carrera_id}")
-        # TODO first check if the user already exists
-        
-        usuario: Usuario = await self.repo.create(  # type: ignore
-            moodle_id=moodle_id,
-            rol=rol,
-            nombre=self._normalize_optional(nombre),
-            apellido=self._normalize_optional(apellido),
-            email=self._normalize_optional(email),
-            carrera_id=carrera_id,
-            max_casos_activos=5 if rol == RolUsuario.estudiante else None,
+        print(
+            f"Mapped claims: rol={rol}, nombre={nombre}, apellido={apellido}, email={email}, carrera_id={carrera_id}"
         )
+
+        usuario_repo = cast(UsuarioRepository, self.repo)  # Cast to UsuarioRepository
+        # I need to cast the repository to UsuarioRepository to access the get_by_mail method
+        usuario: Usuario | None = await usuario_repo.get_by_mail(email)
+        if not usuario:
+            usuario = await self.repo.create(  # type: ignore
+                moodle_id=moodle_id,
+                rol=rol,
+                nombre=self._normalize_optional(nombre),
+                apellido=self._normalize_optional(apellido),
+                email=self._normalize_optional(email),
+                carrera_id=carrera_id,
+                max_casos_activos=5 if rol == RolUsuario.estudiante else None,
+            )
+        else:
+            usuario = await self.repo.update(  # type: ignore
+                usuario.id,
+                nombre=self._normalize_optional(nombre),
+                apellido=self._normalize_optional(apellido),
+                carrera_id=carrera_id,
+            )
         try:
             session_token = TokenManager.create_session_token(usuario)
         except Exception as e:

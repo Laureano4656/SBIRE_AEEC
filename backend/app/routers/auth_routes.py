@@ -13,14 +13,13 @@ from fastapi import APIRouter, Depends,Form, HTTPException, status
 from app.api.deps import get_conn, get_current_user
 
 from app.services.usuarios_service import UsuarioService
-from app.schemas.usuario import(
-    AuthResponse,
-)
+
 from app.models.usuario import Usuario
 from app.core.config import settings
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
-from fastapi import APIRouter, Query, Response,Request, HTTPException, status
+from fastapi import APIRouter, Query, Response, Request, HTTPException, status
+from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
@@ -29,44 +28,83 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 
-@router.post("/lti/launch", response_model=AuthResponse)
+@router.post("/lti/launch")
 async def lti_launch(
-    id_token: str = Form(...),      # Correctly reads from form-data
-    state: str = Form(...),         # Correctly reads from form-data
-    lti_state: str = Cookie(None),  # Reads the cookie set in /lti/login
+    id_token: str = Form(...),
+    state: str = Form(...),
+    lti_state: str = Cookie(None),
     conn: asyncpg.Connection = Depends(get_conn),
-) -> AuthResponse:
+) -> RedirectResponse:
     """
     Receives the LTI 1.3 launch token directly from Moodle as form fields.
+    Redirects to the frontend with the session token in the URL so the
+    frontend can set the httpOnly cookie through the Vite proxy (same-origin).
     """
     # --- TEMPORARY DEBUG PRINT ---
     print("--- CSRF VALIDATION DEBUG ---")
     print(f"Form State Received:  {state}")
     print(f"Cookie State Found:   {lti_state}")
     print("-----------------------------")
-    # # 1. Protect against CSRF attacks by matching state tokens
-    # if not lti_state or state != lti_state:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Validación de estado CSRF fallida. Sesión inválida."
-    #     )
 
-    # 2. Sync and handle the user inside your DB logic
     try:
         usuario_service = UsuarioService(conn)
-        # Pass the id_token string directly down into your validation pipeline
-        response = await usuario_service.upsert_desde_lti(id_token)
-        return response
+        auth_response = await usuario_service.upsert_desde_lti(id_token)
+
+        redirect_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={auth_response.access_token}"
+        return RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
     except HTTPException as e:
         raise e
     except Exception as e:
-        # Keep an eye out for errors in your token parsing layers
         print(f"Error crítico en LTI Launch handling: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error procesando autenticación interna."
         )
+
+
+class SetSessionRequest(BaseModel):
+    access_token: str
+
+
+@router.post("/set-session")
+async def set_session(payload: SetSessionRequest, response: Response):
+    """
+    Validates the token and sets it as an httpOnly cookie.
+    Called by the frontend through the Vite proxy so the cookie
+    is associated with the frontend's origin (port 5173).
+    """
+    from app.core.token_manager import TokenManager
+    try:
+        TokenManager.validate_session_token(payload.access_token)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado.",
+        )
+
+    response.set_cookie(
+        key="access_token",
+        value=payload.access_token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=86400,
+        path="/",
+    )
+    return {"message": "Sesión establecida"}
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        samesite="lax",
+        secure=False,
+    )
+    return {"message": "Sesión cerrada"}
 
 
 
