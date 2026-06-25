@@ -10,6 +10,49 @@ class RiesgoService:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.repo = RiesgoRepository(conn)
 
+    @staticmethod
+    async def tarea_background_calcular_riesgo(pool: asyncpg.Pool, estudiante_id: int, asignacion_id: int):
+        """
+        Esta función está diseñada para correr en background.
+        Pide su propia conexión al pool para no chocar con el request principal.
+        """
+        try:
+            # Pedimos una conexión fresca exclusivamente para esta tarea
+            async with pool.acquire() as conn:
+                service = RiesgoService(conn)
+                await service.calcular_y_guardar_riesgo(estudiante_id, asignacion_id)
+                print(f"✅ Background: Riesgo calculado para estudiante {estudiante_id}")
+        except Exception as e:
+            print(f"❌ Error en background task (AHP): {str(e)}")
+
+    @staticmethod
+    async def tarea_background_recalcular_masivo(
+        pool: asyncpg.Pool, 
+        estudiantes_afectados: list[dict[str, int]]
+    ):
+        """
+        Procesa una lista masiva de estudiantes.
+        Formato esperado: [{"estudiante_id": 1, "asignacion_id": 10}, ...]
+        """
+        print(f"⚙️ Iniciando cálculo masivo en background para {len(estudiantes_afectados)} alumnos...")
+        
+        # Procesamos de forma secuencial. Al estar en background, no importa si tarda 
+        # 10 segundos, lo vital es no saturar el pool de conexiones con 500 queries a la vez.
+        for item in estudiantes_afectados:
+            try:
+                # Pedimos una conexión por alumno, calculamos y la devolvemos al pool
+                async with pool.acquire() as conn:
+                    service = RiesgoService(conn)
+                    await service.calcular_y_guardar_riesgo(
+                        estudiante_id=item['estudiante_id'], 
+                        asignacion_id=item['asignacion_id']
+                    )
+            except Exception as e:
+                # Si un alumno falla, lo logueamos pero el loop sigue con el próximo
+                print(f"❌ Error calculando riesgo para estudiante {item['estudiante_id']}: {str(e)}")
+        
+        print(f"✅ Cálculo masivo finalizado.")
+
     # ==========================================
     # LÓGICA INTERNA: CÁLCULO Y NORMALIZACIÓN
     # ==========================================

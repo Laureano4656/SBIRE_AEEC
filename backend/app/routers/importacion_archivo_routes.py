@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status, BackgroundTasks, Request
 import asyncpg
 from app.models.usuario import Usuario
 from app.schemas.importacion_archivo import (
@@ -7,6 +7,7 @@ from app.schemas.importacion_archivo import (
 )
 from app.services.importacion_archivo_service import ImportacionArchivoService
 from app.api.deps import get_conn, get_current_user
+from app.services.riesgo_service import RiesgoService
 
 router = APIRouter(prefix="/importaciones-archivo", tags=["importaciones_archivo"])
 
@@ -33,6 +34,8 @@ async def obtener_importacion(
 
 @router.post("/upload", response_model=ImportacionArchivoResponse, status_code=201)
 async def subir_archivo(
+    request: Request,                               # <-- NUEVO: Para manotear el pool global de la app
+    background_tasks: BackgroundTasks,             # <-- NUEVO: Para inyectar la tarea en segundo plano
     file: UploadFile = File(...),
     materia_id: int = Form(...),
     usuario: Usuario = Depends(get_current_user),
@@ -47,19 +50,34 @@ async def subir_archivo(
 
     content = await file.read()
     service = ImportacionArchivoService(conn)
+    
     try:
+        # 1. Guardado síncrona en la BD (tu código original intacto)
         importacion = await service.importar(
             file_content=content,
             filename=file.filename or "archivo",
             materia_id=materia_id,
             usuario_id=usuario.id,
         )
+        
+        # 2. ENCOLAR TRABAJO PESADO A BACKGROUND (La magia estática)
+        # Sacamos el pool de conexiones del estado global de la app
+        pool = request.app.state.pool
+        
+        # Le pasamos la pelota al método estático junto con el ID de la importación recién creada
+        background_tasks.add_task(
+            RiesgoService.tarea_background_recalcular_por_importacion,
+            pool,
+            importacion.id 
+        )
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
 
+    # Devuelve el 201 de inmediato al usuario avisando cuántas filas leyó
     return ImportacionArchivoResponse.model_validate(importacion)
 
 
