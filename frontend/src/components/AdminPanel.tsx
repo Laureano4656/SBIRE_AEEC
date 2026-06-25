@@ -66,9 +66,9 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
     isError: errorRiesgo,
   } = useConteoPorRiesgo(dashboardAnio, dashboardCarreraId);
 
-  const donutRojo = conteoPorRiesgo?.rojo ?? 12;
-  const donutAmarillo = conteoPorRiesgo?.amarillo ?? 25;
-  const donutVerde = conteoPorRiesgo?.verde ?? 63;
+  const donutRojo = conteoPorRiesgo?.rojo ?? 0;
+  const donutAmarillo = conteoPorRiesgo?.amarillo ?? 0;
+  const donutVerde = conteoPorRiesgo?.verde ?? 100;
 
   const {
     data: evolucionScore,
@@ -77,7 +77,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
   } = useEvolucionScore(evolucionAnio, dashboardCarreraId);
 
   const {
-    data: apiStudents = [],
+    data: apiStudents,
     isLoading: loadingStudents,
     isError: errorStudents,
   } = useEstudiantesPorCarrera("Industrial");

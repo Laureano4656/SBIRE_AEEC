@@ -27,11 +27,12 @@ export const getTotalIntervenciones = async ({ carrera_id }: { carrera_id: numbe
     const response = await axiosInstance.get<{ total: number }>(`${PREFIX}/estadisticas/totales/intervenciones`, { params: { carrera_id } })
     return response.data
 }
-// TODO : 
+
 export const getEvolucionScore = async (anio: number, carrera_id?: number) => {
-    const params = carrera_id ? { carrera_id } : {};
+    const params = carrera_id ? { carrera_id, anio } : { anio };
+
     const response = await axiosInstance.get<Record<string, number>>(
-        `${PREFIX}/estadisticas/evolucion-score/${anio}`,
+        `${PREFIX}/estadisticas/evolucion-score`,
         { params }
     );
     return response.data
@@ -43,12 +44,14 @@ export const getHistorialAlertas = async (student_id: string) => {
 }
 
 export const getHistorialAlertasGenerales = async (carrera_id: string) => {
-    const response = await axiosInstance.get<EventoCronologicoResponse[]>(`${PREFIX}/carrera/${carrera_id}/historial`)
+    const response = await axiosInstance.get<EventoCronologicoResponse[]>(`${PREFIX}/carrera/historial`, { params: { carrera_id } })
     return response.data
 }
 
 export const getEstudiantesPorCarrera = async (carrera: string) => {
-    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estudiantes/carrera/${carrera}`)
+    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estudiantes/carrera/`,
+        { params: { carrera } }
+    );
     return response.data
 }
 
