@@ -1,0 +1,414 @@
+[
+  {
+    "materia": "Análisis Matemático I",
+    "codigo": "INGM101",
+    "anio": 1,
+    "cuatrimestre": 1,
+    "correlativas": [
+      "Introducción a la Ciencia y la Ingeniería"
+    ]
+  },
+  {
+    "materia": "Álgebra I-B",
+    "codigo": "INGM105",
+    "anio": 1,
+    "cuatrimestre": 1,
+    "correlativas": [
+      "Introducción a la Ciencia y la Ingeniería"
+    ]
+  },
+  {
+    "materia": "Química General e Inorgánica",
+    "codigo": "ING1101",
+    "anio": 1,
+    "cuatrimestre": 1,
+    "correlativas": [
+      "Introducción a la Ciencia y la Ingeniería"
+    ]
+  },
+  {
+    "materia": "Taller de Ingeniería I (anual)",
+    "codigo": "ING1502",
+    "anio": 1,
+    "cuatrimestre": 1,
+    "correlativas": [
+      "Introducción a la Ciencia y la Ingeniería"
+    ]
+  },
+  {
+    "materia": "Análisis Matemático II",
+    "codigo": "INGM102",
+    "anio": 1,
+    "cuatrimestre": 2,
+    "correlativas": [
+      "Análisis Matemático I"
+    ]
+  },
+  {
+    "materia": "Álgebra II",
+    "codigo": "INGM106",
+    "anio": 1,
+    "cuatrimestre": 2,
+    "correlativas": [
+      "Álgebra I-B"
+    ]
+  },
+  {
+    "materia": "Física A",
+    "codigo": "INGF101",
+    "anio": 1,
+    "cuatrimestre": 2,
+    "correlativas": [
+      "Análisis Matemático I",
+      "Álgebra I-B"
+    ]
+  },
+  {
+    "materia": "Fisicoquímica I",
+    "codigo": "ING1201",
+    "anio": 1,
+    "cuatrimestre": 2,
+    "correlativas": [
+      "Química General e Inorgánica"
+    ]
+  },
+  {
+    "materia": "Análisis Matemático III",
+    "codigo": "INGM103",
+    "anio": 2,
+    "cuatrimestre": 3,
+    "correlativas": [
+      "Análisis Matemático II",
+      "Álgebra II"
+    ]
+  },
+  {
+    "materia": "Balances de Masa y Energía",
+    "codigo": "ING1307",
+    "anio": 2,
+    "cuatrimestre": 3,
+    "correlativas": [
+      "Análisis Matemático II",
+      "Física A",
+      "Química General e Inorgánica"
+    ]
+  },
+  {
+    "materia": "Fundamentos de la Programación",
+    "codigo": "ING6101",
+    "anio": 2,
+    "cuatrimestre": 3,
+    "correlativas": [
+      "Álgebra I-B"
+    ]
+  },
+  {
+    "materia": "Física B-II",
+    "codigo": "INGF103",
+    "anio": 2,
+    "cuatrimestre": 3,
+    "correlativas": [
+      "Álgebra II",
+      "Análisis Matemático II",
+      "Física A"
+    ]
+  },
+  {
+    "materia": "Sistemas de Representación en Plantas de Procesos",
+    "codigo": "ING1102",
+    "anio": 2,
+    "cuatrimestre": 3,
+    "correlativas": [
+      "Química General e Inorgánica"
+    ]
+  },
+  {
+    "materia": "Taller de Ingeniería II (anual)",
+    "codigo": "ING1503",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Taller de Ingeniería I"
+    ]
+  },
+  {
+    "materia": "Química del Carbono",
+    "codigo": "ING1206",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Fisicoquímica I"
+    ]
+  },
+  {
+    "materia": "Termodinámica I",
+    "codigo": "ING1211",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Balances de Masa y Energía",
+      "Análisis Matemático II"
+    ]
+  },
+  {
+    "materia": "Fisicoquímica II",
+    "codigo": "ING1202",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Fisicoquímica I",
+      "Análisis Matemático II"
+    ]
+  },
+  {
+    "materia": "Física C-II",
+    "codigo": "INGF105",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Física B-II"
+    ]
+  },
+  {
+    "materia": "Inglés I",
+    "codigo": "ING8408",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Introducción a la Ciencia y la Ingeniería"
+    ]
+  },
+  {
+    "materia": "Operación de Plantas de Procesos",
+    "codigo": "ING1501",
+    "anio": 2,
+    "cuatrimestre": 4,
+    "correlativas": [
+      "Física B-II",
+      "Balances de Masa y Energía",
+      "Sistemas de Representación en Plantas de Procesos"
+    ]
+  },
+  {
+    "materia": "Métodos Numéricos para Ingeniería",
+    "codigo": "INGM109",
+    "anio": 3,
+    "cuatrimestre": 5,
+    "correlativas": [
+      "Análisis Matemático III",
+      "Fundamentos de la Programación"
+    ]
+  },
+  {
+    "materia": "Operaciones Unitarias I",
+    "codigo": "ING1301",
+    "anio": 3,
+    "cuatrimestre": 5,
+    "correlativas": [
+      "Análisis Matemático III",
+      "Operación de Plantas de Procesos"
+    ]
+  },
+  {
+    "materia": "Organización Empresarial e Industrial",
+    "codigo": "ING8411",
+    "anio": 3,
+    "cuatrimestre": 5,
+    "correlativas": [
+      "Análisis Matemático III"
+    ]
+  },
+  {
+    "materia": "Termodinámica II",
+    "codigo": "ING1212",
+    "anio": 3,
+    "cuatrimestre": 5,
+    "correlativas": [
+      "Termodinámica I"
+    ]
+  },
+  {
+    "materia": "Taller de Ingeniería III (anual)",
+    "codigo": "ING1504",
+    "anio": 3,
+    "cuatrimestre": 5,
+    "correlativas": [
+      "Taller de Ingeniería II"
+    ]
+  },
+  {
+    "materia": "Operaciones Unitarias II",
+    "codigo": "ING1302",
+    "anio": 3,
+    "cuatrimestre": 6,
+    "correlativas": [
+      "Termodinámica I",
+      "Operaciones Unitarias I"
+    ]
+  },
+  {
+    "materia": "Probabilidad y Estadística",
+    "codigo": "INGM108",
+    "anio": 3,
+    "cuatrimestre": 6,
+    "correlativas": [
+      "Análisis Matemático II"
+    ]
+  },
+  {
+    "materia": "Inglés II",
+    "codigo": "ING8409",
+    "anio": 3,
+    "cuatrimestre": 6,
+    "correlativas": [
+      "Inglés I"
+    ]
+  },
+  {
+    "materia": "Ingeniería de Sistemas de Procesos",
+    "codigo": "ING1315",
+    "anio": 3,
+    "cuatrimestre": 6,
+    "correlativas": [
+      "Métodos Numéricos para Ingeniería",
+      "Termodinámica I",
+      "Fisicoquímica II"
+    ]
+  },
+  {
+    "materia": "Ingeniería de Reacciones Químicas I",
+    "codigo": "ING1313",
+    "anio": 4,
+    "cuatrimestre": 7,
+    "correlativas": [
+      "Fisicoquímica II"
+    ]
+  },
+  {
+    "materia": "Operaciones Unitarias III",
+    "codigo": "ING1303",
+    "anio": 4,
+    "cuatrimestre": 7,
+    "correlativas": [
+      "Operación de Plantas de Procesos",
+      "Termodinámica II"
+    ]
+  },
+  {
+    "materia": "Formulación y Evaluación de Proyectos de Inversión",
+    "codigo": "ING8406",
+    "anio": 4,
+    "cuatrimestre": 7,
+    "correlativas": [
+      "Organización Empresarial e Industrial",
+      "Taller de Ingeniería III"
+    ]
+  },
+  {
+    "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+    "codigo": "ING8405",
+    "anio": 4,
+    "cuatrimestre": 7,
+    "correlativas": [
+      "Análisis Matemático III"
+    ]
+  },
+  {
+    "materia": "Taller de Proyectos de Ingeniería Química (anual)",
+    "codigo": "ING1505",
+    "anio": 4,
+    "cuatrimestre": 7,
+    "correlativas": [
+      "Taller de Ingeniería III",
+      "Termodinámica I",
+      "Fisicoquímica II"
+    ]
+  },
+  {
+    "materia": "Ingeniería de Reacciones Químicas II",
+    "codigo": "ING1314",
+    "anio": 4,
+    "cuatrimestre": 8,
+    "correlativas": [
+      "Ingeniería de las Reacciones Químicas I",
+      "Operaciones Unitarias III"
+    ]
+  },
+  {
+    "materia": "Química Biológica y Microbiología",
+    "codigo": "ING1210",
+    "anio": 4,
+    "cuatrimestre": 8,
+    "correlativas": [
+      "Química del Carbono"
+    ]
+  },
+  {
+    "materia": "Técnicas de Análisis Fisicoquímicos",
+    "codigo": "ING1204",
+    "anio": 4,
+    "cuatrimestre": 8,
+    "correlativas": [
+      "Química del Carbono"
+    ]
+  },
+  {
+    "materia": "Sistemas de Gestión Integrados",
+    "codigo": "ING8413",
+    "anio": 4,
+    "cuatrimestre": 8,
+    "correlativas": [
+      "Organización Empresarial e Industrial"
+    ]
+  },
+  {
+    "materia": "Tecnología de los Materiales",
+    "codigo": "ING1209",
+    "anio": 5,
+    "cuatrimestre": 9,
+    "correlativas": [
+      "Física B-II",
+      "Fisicoquímica I"
+    ]
+  },
+  {
+    "materia": "Ingeniería de Procesos Biotecnológicos",
+    "codigo": "ING1306",
+    "anio": 5,
+    "cuatrimestre": 9,
+    "correlativas": [
+      "Fisicoquímica II",
+      "Química Biológica y Microbiología"
+    ]
+  },
+  {
+    "materia": "Proyecto Integrador de Ingeniería Química (anual)",
+    "codigo": "ING1506",
+    "anio": 5,
+    "cuatrimestre": 9,
+    "correlativas": [
+      "Taller de Proyectos de Ingeniería Química",
+      "Ingeniería de Sistemas de Procesos",
+      "Ingeniería de las Reacciones Químicas I",
+      "Operaciones Unitarias III"
+    ]
+  },
+  {
+    "materia": "Seguridad y Salud Ocupacional",
+    "codigo": "ING8412",
+    "anio": 5,
+    "cuatrimestre": 9,
+    "correlativas": [
+      "Organización Empresarial e Industrial"
+    ]
+  },
+  {
+    "materia": "Dinámica, Instrumentación y Control de Procesos",
+    "codigo": "ING1312",
+    "anio": 5,
+    "cuatrimestre": 10,
+    "correlativas": [
+      "Operaciones Unitarias II"
+    ]
+  }
+]

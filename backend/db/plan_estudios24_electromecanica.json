@@ -1,0 +1,484 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-A",
+        "codigo": "INGM104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Química",
+        "codigo": "ING1103",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Sistemas de Representación para Ingeniería",
+        "codigo": "ING2104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Fundamentos de la Programación",
+        "codigo": "ING6101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física B-I",
+        "codigo": "INGF102",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Probabilidad y Estadística",
+        "codigo": "INGM108",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Estática I",
+        "codigo": "ING2207",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Física C-I",
+        "codigo": "INGF104",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Electrotecnia A",
+        "codigo": "ING3201",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Introducción a la Termodinámica y Máquinas Térmicas",
+        "codigo": "ING2216",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Fundamentos de Química",
+            "Física A",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Estática II",
+        "codigo": "ING2208",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Estática I",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Electrotecnia B",
+        "codigo": "ING3202",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Electrotecnia A",
+            "Física C-I"
+        ]
+    },
+    {
+        "materia": "Mediciones Eléctricas A",
+        "codigo": "ING3205",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Electrotecnia A",
+            "Probabilidad y Estadística"
+        ]
+    },
+    {
+        "materia": "Automatización A",
+        "codigo": "ING3301",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Electrotecnia A"
+        ]
+    },
+    {
+        "materia": "Introducción a la Mecánica del Continuo",
+        "codigo": "ING2209",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Materiales Estructurales",
+        "codigo": "ING2225",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Economía para Ingeniería",
+        "codigo": "ING8403",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Máquinas Eléctricas A",
+        "codigo": "ING3207",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Mediciones Eléctricas A",
+            "Electrotecnia B"
+        ]
+    },
+    {
+        "materia": "Mediciones Eléctricas B",
+        "codigo": "ING3206",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Mediciones Eléctricas A",
+            "Electrotecnia B",
+            "Automatización A"
+        ]
+    },
+    {
+        "materia": "Tecnología CAD Aplicada",
+        "codigo": "ING3101",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Sistemas de Representación para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Principios de Electrónica",
+        "codigo": "ING4216",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Automatización A"
+        ]
+    },
+    {
+        "materia": "Fluidos y Máquinas Fluidodinámicas",
+        "codigo": "ING2213",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Automatización A",
+            "Introducción a la Mecánica del Continuo",
+            "Introducción a la Termodinámica y Máquinas Térmicas"
+        ]
+    },
+    {
+        "materia": "Máquinas Eléctricas B",
+        "codigo": "ING3208",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Máquinas Eléctricas A"
+        ]
+    },
+    {
+        "materia": "Materiales Electrotécnicos",
+        "codigo": "ING3102",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Fundamentos de Química",
+            "Mediciones Eléctricas B"
+        ]
+    },
+    {
+        "materia": "Mecánica de la Partícula y el Cuerpo Rígido",
+        "codigo": "ING2202",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Física A",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Instalaciones Eléctricas A",
+        "codigo": "ING3304",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Electrotecnia B",
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Economía para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Instalaciones Eléctricas B",
+        "codigo": "ING3305",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Instalaciones Eléctricas A",
+            "Máquinas Eléctricas A",
+            "Tecnología CAD Aplicada"
+        ]
+    },
+    {
+        "materia": "Electrónica de Potencia I",
+        "codigo": "ING4316",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Principios de Electrónica"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Sistemas de Gestión Integrados",
+        "codigo": "ING8413",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Componentes de los Sistemas Eléctricos de Potencia",
+        "codigo": "ING3311",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Introducción a la Termodinámica y Máquinas Térmicas",
+            "Instalaciones Eléctricas A",
+            "Materiales Electrotécnicos",
+            "Máquinas Eléctricas B"
+        ]
+    },
+    {
+        "materia": "Transferencia y Tecnología del Calor",
+        "codigo": "ING2304",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Introducción a la Termodinámica y Máquinas Térmicas",
+            "Fluidos y Máquinas Fluidodinámicas"
+        ]
+    },
+    {
+        "materia": "Introducción a la Metrología y Fabricación",
+        "codigo": "ING2311",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Sistemas de Representación para Ingeniería",
+            "Mediciones Eléctricas A"
+        ]
+    },
+    {
+        "materia": "Formulación y Evaluación de Proyectos de Inversión",
+        "codigo": "ING8406",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Economía para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Mantenimiento Industrial",
+        "codigo": "ING2302",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Materiales Estructurales",
+            "Introducción a la Termodinámica y Máquinas Térmicas"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Elementos de Máquinas (anual)",
+        "codigo": "ING2301",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Materiales Estructurales",
+            "Tecnología CAD Aplicada"
+        ]
+    },
+    {
+        "materia": "Procesos de Fabricación",
+        "codigo": "ING2312",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Introducción a la Metrología y Fabricación",
+            "Materiales Estructurales"
+        ]
+    },
+    {
+        "materia": "Control I",
+        "codigo": "ING4317",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Principios de Electrónica"
+        ]
+    },
+    {
+        "materia": "Optativa I",
+        "codigo": "ING3316",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    },
+    {
+        "materia": "Optativa II",
+        "codigo": "ING3317",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    },
+    {
+        "materia": "Trabajo Final",
+        "codigo": "ING3318",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Instalaciones Eléctricas B",
+            "Mecánica de la Partícula y el Cuerpo Rígido"
+        ]
+    }
+]

@@ -1,0 +1,435 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-B",
+        "codigo": "INGM105",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Química General e Inorgánica",
+        "codigo": "ING1101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Taller de Ingeniería I (Anual)",
+        "codigo": "ING1502",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Fisicoquímica I",
+        "codigo": "ING1201",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Química General e Inorgánica"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Balances de Masa y Energía",
+        "codigo": "ING1307",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Física A",
+            "Química General e Inorgánica"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Programación",
+        "codigo": "ING6101",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Física B-II",
+        "codigo": "INGF103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Sistemas de Representación en Plantas de Procesos",
+        "codigo": "ING1102",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Química General e Inorgánica"
+        ]
+    },
+    {
+        "materia": "Taller de Ingeniería II (Anual)",
+        "codigo": "ING1503",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Taller de Ingeniería I"
+        ]
+    },
+    {
+        "materia": "Termodinámica de Alimentos I",
+        "codigo": "ING1207",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Balances de Masa y Energía",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Química del Carbono",
+        "codigo": "ING1206",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Fisicoquímica I"
+        ]
+    },
+    {
+        "materia": "Fisicoquímica II",
+        "codigo": "ING1202",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Fisicoquímica I",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Física C-II",
+        "codigo": "INGF105",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-II"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Operación de Plantas de Procesos",
+        "codigo": "ING1501",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-II",
+            "Balances de Masa y Energía",
+            "Sistemas de Representación en Plantas de Procesos"
+        ]
+    },
+    {
+        "materia": "Métodos Numéricos para Ingeniería",
+        "codigo": "INGM109",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Fundamentos de la Programación"
+        ]
+    },
+    {
+        "materia": "Operaciones Unitarias I",
+        "codigo": "ING1301",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Operación de Plantas de Procesos"
+        ]
+    },
+    {
+        "materia": "Termodinámica de Alimentos II",
+        "codigo": "ING1208",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Fisicoquímica I",
+            "Termodinámica de Alimentos I"
+        ]
+    },
+    {
+        "materia": "Química Biological",
+        "codigo": "ING1205",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Química del Carbono",
+            "Fisicoquímica II"
+        ]
+    },
+    {
+        "materia": "Taller de Ingeniería III (Anual)",
+        "codigo": "ING1504",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Taller de Ingeniería II"
+        ]
+    },
+    {
+        "materia": "Operaciones Unitarias II",
+        "codigo": "ING1302",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Termodinámica de Alimentos I",
+            "Operaciones Unitarias I"
+        ]
+    },
+    {
+        "materia": "Probabilidad y Estadística",
+        "codigo": "INGM108",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Técnicas de Análisis Fisicoquímicos",
+        "codigo": "ING1204",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Química del Carbono"
+        ]
+    },
+    {
+        "materia": "Bioquímica de Alimentos",
+        "codigo": "ING1305",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Química Biológica"
+        ]
+    },
+    {
+        "materia": "Bromatología y Calidad de Alimentos",
+        "codigo": "ING1304",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Técnicas de Análisis Fisicoquímicos",
+            "Bioquímica de Alimentos"
+        ]
+    },
+    {
+        "materia": "Operaciones Unitarias III",
+        "codigo": "ING1303",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Termodinámica de Alimentos II"
+        ]
+    },
+    {
+        "materia": "Microbiología",
+        "codigo": "ING1203",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Química Biológica"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Transformación y Preservación de Alimentos",
+        "codigo": "ING1308",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Microbiología",
+            "Bioquímica de Alimentos",
+            "Operaciones Unitarias II",
+            "Operaciones Unitarias III"
+        ]
+    },
+    {
+        "materia": "Industrialización de Alimentos I",
+        "codigo": "ING1309",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Microbiología",
+            "Bromatología",
+            "Operaciones Unitarias III"
+        ]
+    },
+    {
+        "materia": "Sistemas de Gestión Integrados",
+        "codigo": "ING8413",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Ingeniería de Procesos Biotecnológicos",
+        "codigo": "ING1306",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Fisicoquímica II",
+            "Química Biológica",
+            "Microbiología"
+        ]
+    },
+    {
+        "materia": "Industrialización de Alimentos II",
+        "codigo": "ING1310",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Bromatología y Calidad de Alimentos",
+            "Transformación y Preservación de Alimentos"
+        ]
+    },
+    {
+        "materia": "Gestión en la Industria Alimentaria",
+        "codigo": "ING1401",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Bromatología y Calidad de Alimentos",
+            "Transformación y Preservación de Alimentos"
+        ]
+    },
+    {
+        "materia": "Formulación y Evaluación de Proyectos de Inversión",
+        "codigo": "ING8406",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Proyecto Integrador de Ingeniería en Alimentos (Anual)",
+        "codigo": "ING1507",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Bromatología y Calidad de Alimentos",
+            "Transformación y Preservación de Alimentos",
+            "Operaciones Unitarias III"
+        ]
+    },
+    {
+        "materia": "Control de Procesos en Alimentos",
+        "codigo": "ING1311",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Operaciones Unitarias II"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    }
+]

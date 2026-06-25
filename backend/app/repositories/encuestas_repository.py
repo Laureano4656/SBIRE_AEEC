@@ -43,7 +43,8 @@ class EncuestasRepository:
             SELECT m.id as materia_id, m.nombre as materia_nombre
             FROM estudiantes e
             JOIN plan_estudios pe ON e.carrera_id = pe.carrera_id
-            JOIN materias m ON m.plan_id = pe.id
+            JOIN plan_materia pm ON pm.plan_id = pe.id
+            JOIN materias m ON m.id = pm.materia_id
             WHERE e.id = $1 
               AND pe.activo = TRUE
               AND m.cuatrimestre_dictado IN (0, $2)

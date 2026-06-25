@@ -1,0 +1,430 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-A",
+        "codigo": "INGM104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Informática Básica",
+        "codigo": "ING6102",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Introducción a la Matemática Discreta",
+        "codigo": "INGM107",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A",
+            "Informática Básica"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Física B-I",
+        "codigo": "INGF102",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Probabilidad y Estadística",
+        "codigo": "INGM108",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Informática Básica"
+        ]
+    },
+    {
+        "materia": "Programación I",
+        "codigo": "ING4218",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Informática Básica",
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal C I",
+        "codigo": "ING4221",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Teoría de Circuitos",
+        "codigo": "ING4222",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Física C-II",
+        "codigo": "INGF105",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Programación II",
+        "codigo": "ING4219",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Programación I"
+        ]
+    },
+    {
+        "materia": "Señales y Sistemas de Tiempo Continuo",
+        "codigo": "ING4223",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Probabilidad y Estadística",
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal C II",
+        "codigo": "ING4227",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Proyecto Transversal C I",
+            "Programación I",
+            "Teoría de Circuitos"
+        ]
+    },
+    {
+        "materia": "Dispositivos y Circuitos Electrónicos",
+        "codigo": "ING4225",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Teoría de Circuitos"
+        ]
+    },
+    {
+        "materia": "Señales y Sistemas de Tiempo Discreto",
+        "codigo": "ING4224",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Señales y Sistemas de Tiempo Continuo"
+        ]
+    },
+    {
+        "materia": "Programación III",
+        "codigo": "ING4220",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Programación II"
+        ]
+    },
+    {
+        "materia": "Circuitos Digitales",
+        "codigo": "ING4226",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Teoría de Circuitos",
+            "Programación II"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal C III",
+        "codigo": "ING4318",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Proyecto Transversal C II",
+            "Circuitos Digitales"
+        ]
+    },
+    {
+        "materia": "Arquitectura de Computadoras",
+        "codigo": "ING4321",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Dispositivos y Circuitos Electrónicos"
+        ]
+    },
+    {
+        "materia": "Control Discreto",
+        "codigo": "ING4319",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Dispositivos y Circuitos Electrónicos",
+            "Señales y Sistemas de Tiempo Discreto"
+        ]
+    },
+    {
+        "materia": "Principios de Seguridad Informática",
+        "codigo": "ING4320",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Programación III"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Comunicaciones Digitales",
+        "codigo": "ING4228",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Señales y Sistemas de Tiempo Discreto"
+        ]
+    },
+    {
+        "materia": "Sistemas Operativos",
+        "codigo": "ING4322",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Programación II",
+            "Arquitectura de Computadoras"
+        ]
+    },
+    {
+        "materia": "Sistemas Embebidos",
+        "codigo": "ING4323",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Arquitectura de Computadoras"
+        ]
+    },
+    {
+        "materia": "Ingeniería de Soluciones",
+        "codigo": "ING4324",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Programación III"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Proyecto Transversal C III"
+        ]
+    },
+    {
+        "materia": "Sistemas de Bases de Datos",
+        "codigo": "ING6307",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Ingeniería de Soluciones",
+            "Sistemas Operativos"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Redes de Transmisión de Datos",
+        "codigo": "ING4309",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Fundamentos de Comunicaciones Digitales",
+            "Circuitos Digitales"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Ejercicio Profesional",
+        "codigo": "ING8404",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Inteligencia Computacional",
+        "codigo": "ING4311",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Señales y Sistemas de Tiempo Discreto",
+            "Programación III"
+        ]
+    },
+    {
+        "materia": "Sistemas de Computación Distribuidos I",
+        "codigo": "ING4310",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Programación III"
+        ]
+    },
+    {
+        "materia": "Mecanismos de Seguridad en Redes",
+        "codigo": "ING4314",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Redes de Transmisión de Datos",
+            "Principios de Seguridad Informática"
+        ]
+    },
+    {
+        "materia": "Economía para Ingeniería",
+        "codigo": "ING8403",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Diseño Digital Avanzado",
+        "codigo": "ING4313",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Circuitos Digitales"
+        ]
+    },
+    {
+        "materia": "Optativa I (Tecnológica)",
+        "codigo": "ING4326",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "(**)"
+        ]
+    },
+    {
+        "materia": "Proyecto Final de Computación",
+        "codigo": "ING4315",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Mecanismos de Seguridad en Redes",
+            "Diseño Digital Avanzado",
+            "Sistemas de Bases de Datos",
+            "Control Discreto"
+        ]
+    },
+    {
+        "materia": "Sistemas de Computación Distribuidos II",
+        "codigo": "ING4312",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Redes de Transmisión de Datos",
+            "Principios de Seguridad Informática",
+            "Sistemas Operativos"
+        ]
+    },
+    {
+        "materia": "Optativa II (Complementaria)",
+        "codigo": "ING4327",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    }
+]

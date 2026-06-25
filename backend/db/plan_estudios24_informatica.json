@@ -1,0 +1,411 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-B",
+        "codigo": "INGM105",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Informática Básica",
+        "codigo": "ING6102",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Tecnologías Informáticas A",
+        "codigo": "ING6301",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Programación A",
+        "codigo": "ING6201",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B",
+            "Informática Básica"
+        ]
+    },
+    {
+        "materia": "Introducción a la Matemática Discreta",
+        "codigo": "INGM107",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-B",
+            "Informática Básica"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-B"
+        ]
+    },
+    {
+        "materia": "Programación B",
+        "codigo": "ING6202",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Programación A",
+            "Introducción a la Matemática Discreta"
+        ]
+    },
+    {
+        "materia": "Tecnologías Informáticas B",
+        "codigo": "ING6302",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Tecnologías Informáticas A",
+            "Programación A"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Probabilidad y Estadística",
+        "codigo": "INGM108",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Física B-II",
+        "codigo": "INGF103",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Teorías de la Información y la Comunicación",
+        "codigo": "ING6203",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Probabilidad y Estadística",
+            "Programación B"
+        ]
+    },
+    {
+        "materia": "Fundamentos de la Arquitectura de Computadoras",
+        "codigo": "ING6204",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física A",
+            "Programación B"
+        ]
+    },
+    {
+        "materia": "Programación C",
+        "codigo": "ING6205",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Programación B",
+            "Tecnologías Informáticas B"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Investigación de Operaciones",
+        "codigo": "ING8410",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Probabilidad y Estadística"
+        ]
+    },
+    {
+        "materia": "Estructura y Organización de Datos",
+        "codigo": "ING6207",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Programación B",
+            "Teoría de la Información y la Comunicación"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Sistemas Operativos",
+        "codigo": "ING6303",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Fundamentos de la Arquitectura de Computadoras",
+            "Programación C"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Lenguajes Formales",
+        "codigo": "ING6208",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Programación B",
+            "Fundamentos de la Arquitectura de Computadoras"
+        ]
+    },
+    {
+        "materia": "Administración Empresarial en la Economía del Conocimiento",
+        "codigo": "ING4801",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Investigación de Operaciones"
+        ]
+    },
+    {
+        "materia": "Calidad de Software A",
+        "codigo": "ING6304",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Programación C"
+        ]
+    },
+    {
+        "materia": "Redes y Comunicación de Datos A",
+        "codigo": "ING6305",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Física B-II",
+            "Fundamentos de Sistemas Operativos"
+        ]
+    },
+    {
+        "materia": "Análisis y Diseño de Sistemas A",
+        "codigo": "ING6306",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Programación C"
+        ]
+    },
+    {
+        "materia": "Sistemas de Bases de Datos",
+        "codigo": "ING6307",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Estructura y Organización de Datos"
+        ]
+    },
+    {
+        "materia": "Introducción a la Inteligencia Artificial",
+        "codigo": "ING6316",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Programación C"
+        ]
+    },
+    {
+        "materia": "Redes y Comunicación de Datos B",
+        "codigo": "ING6309",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Redes y Comunicación de Datos A"
+        ]
+    },
+    {
+        "materia": "Análisis y Diseño de Sistemas B",
+        "codigo": "ING6310",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Análisis y Diseño de Sistemas A",
+            "Administración Empresarial en la Economía del Conocimiento"
+        ]
+    },
+    {
+        "materia": "Comportamiento Organizacional y Relaciones del Trabajo",
+        "codigo": "ING8402",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Análisis y Diseño de Sistemas A"
+        ]
+    },
+    {
+        "materia": "Calidad de Software B",
+        "codigo": "ING6411",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Calidad de Software A",
+            "Sistemas de Bases de Datos",
+            "Redes y Comunicación de Datos B"
+        ]
+    },
+    {
+        "materia": "Gestión de Proyectos Informáticos",
+        "codigo": "ING6401",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Análisis y Diseño de Sistemas B"
+        ]
+    },
+    {
+        "materia": "Gestión de la Seguridad Informática",
+        "codigo": "ING6312",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Redes y Comunicación de Datos A"
+        ]
+    },
+    {
+        "materia": "Diseño e Implementación de Sistemas Distribuidos",
+        "codigo": "ING6313",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Redes y Comunicación de Datos B",
+            "Análisis y Diseño de Sistemas B"
+        ]
+    },
+    {
+        "materia": "Trabajo Final Integrador",
+        "codigo": "ING6314",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Gestión de Proyectos Informáticos"
+        ]
+    },
+    {
+        "materia": "Teoría de Modelos y Simulación",
+        "codigo": "ING6209",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Probabilidad y Estadística",
+            "Diseño e Implementación de Sistemas Distribuidos"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Probabilidad y Estadística"
+        ]
+    },
+    {
+        "materia": "Auditoría y Homologación",
+        "codigo": "ING6315",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Calidad de Software A",
+            "Gestión de la Seguridad Informática",
+            "Gestión de Proyectos Informáticos"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Comportamiento Organizacional y Relaciones del Trabajo"
+        ]
+    },
+    {
+        "materia": "Optativa I",
+        "codigo": "ING6501",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    },
+    {
+        "materia": "Optativa II",
+        "codigo": "ING6502",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    },
+    {
+        "materia": "Optativa III",
+        "codigo": "ING6503",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(**)"
+        ]
+    }
+]

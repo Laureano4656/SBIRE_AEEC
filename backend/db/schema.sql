@@ -637,10 +637,8 @@ ALTER TABLE public.intervenciones ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTI
 
 CREATE TABLE public.materias (
     id integer NOT NULL,
-    plan_id integer NOT NULL,
     nombre character varying(255) NOT NULL,
     codigo character varying(50) NOT NULL,
-    cuatrimestre_sugerido integer NOT NULL,
     es_basica_critica boolean DEFAULT false NOT NULL,
     cuatrimestre_dictado integer DEFAULT 0 NOT NULL,
     CONSTRAINT check_cuatrimestre_dictado CHECK ((cuatrimestre_dictado = ANY (ARRAY[0, 1, 2])))
@@ -761,6 +759,32 @@ CREATE TABLE public.plan_estudios (
 
 ALTER TABLE public.plan_estudios ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME public.plan_estudios_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: plan_materia; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.plan_materia (
+    id integer NOT NULL,
+    plan_id integer NOT NULL,
+    materia_id integer NOT NULL,
+    cuatrimestre_sugerido integer NOT NULL
+);
+
+
+--
+-- Name: plan_materia_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.plan_materia ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.plan_materia_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1064,6 +1088,14 @@ ALTER TABLE ONLY public.intervenciones
 
 
 --
+-- Name: materias materias_codigo_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.materias
+    ADD CONSTRAINT materias_codigo_key UNIQUE (codigo);
+
+
+--
 -- Name: materias materias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1101,6 +1133,22 @@ ALTER TABLE ONLY public.peso_indicadores
 
 ALTER TABLE ONLY public.plan_estudios
     ADD CONSTRAINT plan_estudios_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: plan_materia plan_materia_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plan_materia
+    ADD CONSTRAINT plan_materia_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: plan_materia plan_materia_plan_id_materia_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plan_materia
+    ADD CONSTRAINT plan_materia_plan_id_materia_id_key UNIQUE (plan_id, materia_id);
 
 
 --
@@ -1529,14 +1577,6 @@ ALTER TABLE ONLY public.intentos_finales
 
 
 --
--- Name: materias materias_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.materias
-    ADD CONSTRAINT materias_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.plan_estudios(id);
-
-
---
 -- Name: opcion_pregunta opcion_pregunta_pregunta_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1558,6 +1598,22 @@ ALTER TABLE ONLY public.parciales
 
 ALTER TABLE ONLY public.plan_estudios
     ADD CONSTRAINT plan_estudios_carrera_id_fkey FOREIGN KEY (carrera_id) REFERENCES public.carreras(id);
+
+
+--
+-- Name: plan_materia plan_materia_materia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plan_materia
+    ADD CONSTRAINT plan_materia_materia_id_fkey FOREIGN KEY (materia_id) REFERENCES public.materias(id) ON DELETE CASCADE;
+
+
+--
+-- Name: plan_materia plan_materia_plan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plan_materia
+    ADD CONSTRAINT plan_materia_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.plan_estudios(id) ON DELETE CASCADE;
 
 
 --
@@ -1643,4 +1699,7 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260622194648'),
     ('20260623212022'),
     ('20260624163638'),
-    ('20260624221247');
+    ('20260624221247'),
+    ('20260624230347'),
+    ('20260625000000'),
+    ('20260625013510');

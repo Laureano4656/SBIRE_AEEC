@@ -48,7 +48,8 @@ class dashboardEstudiantesRepository:
             """
             SELECT COUNT(DISTINCT m.id) AS total
             FROM plan_estudios pe
-            INNER JOIN materias m ON m.plan_id = pe.id
+            INNER JOIN plan_materia pm ON pm.plan_id = pe.id
+            INNER JOIN materias m ON m.id = pm.materia_id
             INNER JOIN estudiantes e ON e.carrera_id = pe.carrera_id
             WHERE pe.activo = TRUE
             AND e.id = $1
@@ -71,14 +72,18 @@ class dashboardEstudiantesRepository:
                 m.id,
                 m.nombre,
                 m.codigo,
-                m.cuatrimestre_sugerido,
+                pm.cuatrimestre_sugerido,
                 m.es_basica_critica,
                 c.estado,
                 m.cuatrimestre_dictado
             FROM cursadas c
             INNER JOIN materias m ON m.id = c.materia_id
+            INNER JOIN plan_materia pm ON pm.materia_id = m.id
+            INNER JOIN plan_estudios pe ON pe.id = pm.plan_id
+            INNER JOIN estudiantes e ON e.id = c.estudiante_id AND e.carrera_id = pe.carrera_id
             WHERE c.estudiante_id = $1
-            ORDER BY m.cuatrimestre_sugerido, m.nombre
+              AND pe.activo = TRUE
+            ORDER BY pm.cuatrimestre_sugerido, m.nombre
             """,
             estudiante_id,
         )

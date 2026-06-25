@@ -68,7 +68,8 @@ class dashboardTutorRepository:
                     pe.carrera_id,
                     COUNT(DISTINCT m.id) AS materias_totales
                 FROM plan_estudios pe
-                INNER JOIN materias m ON m.plan_id = pe.id
+                INNER JOIN plan_materia pm ON pm.plan_id = pe.id
+                INNER JOIN materias m ON m.id = pm.materia_id
                 WHERE pe.activo = TRUE
                 GROUP BY pe.carrera_id
             ) totales ON totales.carrera_id = e.carrera_id

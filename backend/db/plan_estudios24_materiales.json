@@ -1,0 +1,439 @@
+[
+    {
+        "materia": "Álgebra I-A",
+        "codigo": "INGM104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Química",
+        "codigo": "ING1103",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A",
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Fundamentos de la Programación",
+        "codigo": "ING6101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A",
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Física B-I",
+        "codigo": "INGF102",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Introducción a la Ciencia de los Materiales",
+        "codigo": "ING5201",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Fundamentos de Química",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Estática I",
+        "codigo": "ING2207",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Física C-I",
+        "codigo": "INGF104",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Métodos Numéricos para Ingeniería",
+        "codigo": "INGM109",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Fundamentos de la Programación",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Introducción al Diseño 3D",
+        "codigo": "ING5101",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Termodinámica de Materiales",
+        "codigo": "ING5205",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Fundamentos de Química",
+            "Análisis Matemático II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Estática II",
+        "codigo": "ING2208",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Estática I"
+        ]
+    },
+    {
+        "materia": "Introducción a la Física del Estado Sólido",
+        "codigo": "INGF201",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Física C-I"
+        ]
+    },
+    {
+        "materia": "Física Experimental A",
+        "codigo": "INGF106",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Mecánica de Materiales y Componentes",
+        "codigo": "ING5203",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Química del Estado Sólido",
+        "codigo": "ING5204",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Introducción a la Ciencia de los Materiales",
+            "Termodinámica de Materiales"
+        ]
+    },
+    {
+        "materia": "Economía para Ingeniería",
+        "codigo": "ING8403",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Fluidodinámica",
+        "codigo": "ING5305",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Introducción a la Ciencia de los Materiales",
+            "Métodos Numéricos para Ingeniería",
+            "Introducción al Diseño 3D"
+        ]
+    },
+    {
+        "materia": "Introducción a Polímeros",
+        "codigo": "ING5202",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Introducción a la Ciencia de los Materiales",
+            "Termodinámica de Materiales"
+        ]
+    },
+    {
+        "materia": "Propiedades Funcionales de Materiales",
+        "codigo": "ING5313",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Introducción a la Física del Estado Sólido"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Metalurgia Física",
+        "codigo": "ING5206",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Química del Estado Sólido",
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Cerámica de Aplicación Industrial",
+        "codigo": "ING5302",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Química del Estado Sólido"
+        ]
+    },
+    {
+        "materia": "Transporte de Calor y Materia",
+        "codigo": "ING5315",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Fluidodinámica"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Modelado y Simulación de Materiales I",
+        "codigo": "ING5307",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Mecánica de Materiales y Componentes",
+            "Transporte de Calor y Materia"
+        ]
+    },
+    {
+        "materia": "Propiedades Estructurales de Metales",
+        "codigo": "ING5312",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Fundamentos de Metalurgia Física"
+        ]
+    },
+    {
+        "materia": "Comportamiento Mecánico de Polímeros y Cerámicos",
+        "codigo": "ING5303",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Introducción a Polímeros",
+            "Propiedades Estructurales de Metales"
+        ]
+    },
+    {
+        "materia": "Modelado y Simulación de Materiales II",
+        "codigo": "ING5308",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Modelado y Simulación de Materiales I"
+        ]
+    },
+    {
+        "materia": "Procesamiento de Plásticos",
+        "codigo": "ING5311",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Transporte de Calor y Materia",
+            "Introducción a Polímeros"
+        ]
+    },
+    {
+        "materia": "Corrosión de Metales y Aleaciones",
+        "codigo": "ING5304",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Propiedades Estructurales de Metales"
+        ]
+    },
+    {
+        "materia": "Procesamiento de Compuestos",
+        "codigo": "ING5309",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Transporte de Calor y Materia",
+            "Procesamiento de Plásticos"
+        ]
+    },
+    {
+        "materia": "Procesamiento de Metales",
+        "codigo": "ING5310",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Propiedades Estructurales de Metales"
+        ]
+    },
+    {
+        "materia": "Formulación y Evaluación de Proyectos de Inversión",
+        "codigo": "ING8406",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Economía para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Economía para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Adquisición y Análisis de la Información Experimental",
+        "codigo": "ING5301",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Propiedades Estructurales de Metales"
+        ]
+    },
+    {
+        "materia": "Trabajo Final (ANUAL)",
+        "codigo": "ING5316",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Comportamiento Mecánico de Polímeros y Cerámicos",
+            "Modelado y Simulación de Materiales I",
+            "Procesamiento de Plásticos"
+        ]
+    },
+    {
+        "materia": "Laboratorio de Transformación de Materiales",
+        "codigo": "ING5306",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Procesamiento de Compuestos",
+            "Procesamiento de Metales",
+            "Cerámica de Aplicación Industrial"
+        ]
+    },
+    {
+        "materia": "Selección de Materiales",
+        "codigo": "ING5314",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Procesamiento de Metales"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Sistemas de Gestión Integrados",
+        "codigo": "ING8413",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    }
+]

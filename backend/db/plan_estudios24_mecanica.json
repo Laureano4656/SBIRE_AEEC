@@ -1,0 +1,475 @@
+[
+    {
+        "materia": "Dibujo A",
+        "codigo": "ING2101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-A",
+        "codigo": "INGM104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Química",
+        "codigo": "ING1103",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Introducción a la Ingeniería Mecánica (anual)",
+        "codigo": "ING2401",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Dibujo B",
+        "codigo": "ING2102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Dibujo A"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A",
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Mecanismos y Elementos de la Mecánica",
+        "codigo": "ING2201",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Introducción a la Ingeniería Mecánica"
+        ]
+    },
+    {
+        "materia": "Estática I",
+        "codigo": "ING2207",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Física B-II",
+        "codigo": "INGF103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Física A",
+            "Análisis Matemático II",
+            "Álgebra II"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Aplicaciones de la Hidráulica y Neumática",
+        "codigo": "ING2214",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Mecanismos y Elementos de la Mecánica"
+        ]
+    },
+    {
+        "materia": "Estática II",
+        "codigo": "ING2208",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Estática I"
+        ]
+    },
+    {
+        "materia": "Fundamentos de la Programación",
+        "codigo": "ING6101",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física C-II",
+        "codigo": "INGF105",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-II"
+        ]
+    },
+    {
+        "materia": "Electrotecnia D",
+        "codigo": "ING3204",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-II"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Termodinámica para Ingeniería Mecánica",
+        "codigo": "ING2203",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Fundamentos de Química"
+        ]
+    },
+    {
+        "materia": "Física Experimental A",
+        "codigo": "INGF106",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Física C-II"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Introducción a la Ingeniería Mecánica"
+        ]
+    },
+    {
+        "materia": "Introducción a la Mecánica del Continuo",
+        "codigo": "ING2209",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Estática II"
+        ]
+    },
+    {
+        "materia": "Mecánica de la Partícula y del Cuerpo Rígido",
+        "codigo": "ING2202",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis Matemático III",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Introducción al Modelado Computacional",
+        "codigo": "ING2103",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Fundamentos de la Programación"
+        ]
+    },
+    {
+        "materia": "Seminario de Energías Renovables",
+        "codigo": "ING2306",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Termodinámica para Ingeniería Mecánica"
+        ]
+    },
+    {
+        "materia": "Fluidos y Máquinas Fluidodinámicas",
+        "codigo": "ING2213",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Termodinámica para Ingeniería Mecánica"
+        ]
+    },
+    {
+        "materia": "Materiales I",
+        "codigo": "ING2205",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Introducción a la Mecánica del Continuo"
+        ]
+    },
+    {
+        "materia": "Conversión Electromecánica de la Energía",
+        "codigo": "ING2212",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Electrotecnia D"
+        ]
+    },
+    {
+        "materia": "Metrología e Introducción a la Fabricación",
+        "codigo": "ING2204",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Física Experimental A"
+        ]
+    },
+    {
+        "materia": "Transferencia y Tecnología del Calor",
+        "codigo": "ING2304",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Fluidos y Máquinas Fluidodinámicas"
+        ]
+    },
+    {
+        "materia": "Vibraciones Mecánicas",
+        "codigo": "ING2210",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Mecánica de la Partícula y del Cuerpo Rígido"
+        ]
+    },
+    {
+        "materia": "Materiales II",
+        "codigo": "ING2206",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Materiales I"
+        ]
+    },
+    {
+        "materia": "Elementos de Máquinas (anual)",
+        "codigo": "ING2301",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Aplicaciones de Hidráulica y Neumática"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Tribología, Fricción, Desgaste y Lubricación",
+        "codigo": "ING2310",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Materiales II"
+        ]
+    },
+    {
+        "materia": "Sistemas Propulsivos I",
+        "codigo": "ING2303",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Transferencia y Tecnología del Calor"
+        ]
+    },
+    {
+        "materia": "Procesos de Fabricación I",
+        "codigo": "ING2305",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Metrología e Introducción a la Fabricación"
+        ]
+    },
+    {
+        "materia": "Proyecto Integrador I",
+        "codigo": "ING2307",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Seminario de Energías Renovables"
+        ]
+    },
+    {
+        "materia": "Economía para Ingeniería",
+        "codigo": "ING8403",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Seguridad y Salud Ocupacional"
+        ]
+    },
+    {
+        "materia": "Mantenimiento Industrial",
+        "codigo": "ING2302",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Tribología, Fricción, Desgaste y Lubricación"
+        ]
+    },
+    {
+        "materia": "Electiva I",
+        "codigo": "ING2314",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Electiva II",
+        "codigo": "ING2315",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Electiva III",
+        "codigo": "ING2316",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Proyecto Integrador II",
+        "codigo": "ING2308",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional"
+        ]
+    },
+    {
+        "materia": "Electrónica de Control y Automatización",
+        "codigo": "ING2215",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Conversión Electromecánica de la Energía"
+        ]
+    },
+    {
+        "materia": "Electiva IV",
+        "codigo": "ING2317",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Electiva V",
+        "codigo": "ING2318",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Optativa",
+        "codigo": "ING2325",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Proyecto Integrador I"
+        ]
+    },
+    {
+        "materia": "Proyecto Integrador III",
+        "codigo": "ING2309",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Proyecto Integrador II"
+        ]
+    }
+]

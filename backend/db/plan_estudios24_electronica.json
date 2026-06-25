@@ -1,0 +1,456 @@
+[
+    {
+        "materia": "Análisis Matemático I",
+        "codigo": "INGM101",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Álgebra I-A",
+        "codigo": "INGM104",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Fundamentos de Química",
+        "codigo": "ING1103",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal I",
+        "codigo": "ING4201",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Inglés I",
+        "codigo": "ING8408",
+        "anio": 1,
+        "cuatrimestre": 1,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático II",
+        "codigo": "INGM102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Álgebra II",
+        "codigo": "INGM106",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Física A",
+        "codigo": "INGF101",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Análisis Matemático I",
+            "Álgebra I-A"
+        ]
+    },
+    {
+        "materia": "Informática Básica",
+        "codigo": "ING6102",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Introducción a la Ciencia y la Ingeniería"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal II",
+        "codigo": "ING4202",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Proyecto Transversal I"
+        ]
+    },
+    {
+        "materia": "Inglés II",
+        "codigo": "ING8409",
+        "anio": 1,
+        "cuatrimestre": 2,
+        "correlativas": [
+            "Inglés I"
+        ]
+    },
+    {
+        "materia": "Análisis Matemático III",
+        "codigo": "INGM103",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Física B-I",
+        "codigo": "INGF102",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Álgebra II",
+            "Análisis Matemático II",
+            "Física A"
+        ]
+    },
+    {
+        "materia": "Métodos Numéricos para Ingeniería",
+        "codigo": "INGM109",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Informática Básica",
+            "Análisis Matemático II"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal III",
+        "codigo": "ING4203",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Proyecto Transversal II"
+        ]
+    },
+    {
+        "materia": "Programación I",
+        "codigo": "ING4218",
+        "anio": 2,
+        "cuatrimestre": 3,
+        "correlativas": [
+            "Informática Básica",
+            "Análisis Matemático I"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal IV",
+        "codigo": "ING4204",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Proyecto Transversal III"
+        ]
+    },
+    {
+        "materia": "Teoría de Señales y Sistemas",
+        "codigo": "ING4205",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I",
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Física C-I",
+        "codigo": "INGF104",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Análisis de Circuitos",
+        "codigo": "ING4206",
+        "anio": 2,
+        "cuatrimestre": 4,
+        "correlativas": [
+            "Física B-I"
+        ]
+    },
+    {
+        "materia": "Filtros Analógicos",
+        "codigo": "ING4207",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis de Circuitos",
+            "Teoría de Señales y Sistemas"
+        ]
+    },
+    {
+        "materia": "Probabilidad, Estadística y Procesos Estocásticos",
+        "codigo": "ING4208",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Teoría de Señales y Sistemas",
+            "Métodos Numéricos para Ingeniería"
+        ]
+    },
+    {
+        "materia": "Dispositivos Semiconductores",
+        "codigo": "ING4209",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis de Circuitos",
+            "Teoría de Señales y Sistemas",
+            "Física C-I"
+        ]
+    },
+    {
+        "materia": "Tecnología Electrónica",
+        "codigo": "ING4210",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Análisis de Circuitos"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal V",
+        "codigo": "ING4101",
+        "anio": 3,
+        "cuatrimestre": 5,
+        "correlativas": [
+            "Proyecto Transversal IV"
+        ]
+    },
+    {
+        "materia": "Proyecto Transversal VI",
+        "codigo": "ING4401",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Proyecto Transversal V"
+        ]
+    },
+    {
+        "materia": "Introducción al Tratamiento Digital de Señales",
+        "codigo": "ING4211",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Teoría de Señales y Sistemas",
+            "Filtros Analógicos"
+        ]
+    },
+    {
+        "materia": "Líneas de Transmisión y Antenas",
+        "codigo": "ING4212",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Física C-I"
+        ]
+    },
+    {
+        "materia": "Electrónica Digital",
+        "codigo": "ING4213",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Filtros Analógicos",
+            "Dispositivos Semiconductores"
+        ]
+    },
+    {
+        "materia": "Electrónica Aplicada",
+        "codigo": "ING4214",
+        "anio": 3,
+        "cuatrimestre": 6,
+        "correlativas": [
+            "Dispositivos Semiconductores"
+        ]
+    },
+    {
+        "materia": "Técnicas y Dispositivos Digitales",
+        "codigo": "ING4301",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Electrónica Digital"
+        ]
+    },
+    {
+        "materia": "Sistemas y Circuitos Electrónicos",
+        "codigo": "ING4302",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Electrónica Aplicada",
+            "Filtros Analógicos"
+        ]
+    },
+    {
+        "materia": "Sistemas de Comunicaciones",
+        "codigo": "ING4303",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Probabilidad, Estadística y Procesos Estocásticos",
+            "Líneas de Transmisión y Antenas"
+        ]
+    },
+    {
+        "materia": "Organización Empresarial e Industrial",
+        "codigo": "ING8411",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Proyecto Transversal VI"
+        ]
+    },
+    {
+        "materia": "Instrumentación y Mediciones Electrónicas I",
+        "codigo": "ING4215",
+        "anio": 4,
+        "cuatrimestre": 7,
+        "correlativas": [
+            "Electrónica Digital",
+            "Electrónica Aplicada"
+        ]
+    },
+    {
+        "materia": "Instrumentación y Mediciones Electrónicas II",
+        "codigo": "ING4304",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Instrumentación y Mediciones Electrónicas I",
+            "Sistemas y Circuitos Electrónicos"
+        ]
+    },
+    {
+        "materia": "Redes de Datos",
+        "codigo": "ING4305",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Sistemas de Comunicaciones"
+        ]
+    },
+    {
+        "materia": "Introducción a la Arquitectura de Computadoras",
+        "codigo": "ING4307",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Técnicas y Dispositivos Digitales",
+            "Sistemas y Circuitos Electrónicos"
+        ]
+    },
+    {
+        "materia": "Control Automático",
+        "codigo": "ING4306",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Electrónica Aplicada",
+            "Introducción al Tratamiento Digital de Señales"
+        ]
+    },
+    {
+        "materia": "Seguridad y Salud Ocupacional",
+        "codigo": "ING8412",
+        "anio": 4,
+        "cuatrimestre": 8,
+        "correlativas": [
+            "Organización Empresarial e Industrial"
+        ]
+    },
+    {
+        "materia": "Economía para Ingeniería",
+        "codigo": "ING8403",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Optativa I",
+        "codigo": "ING4326",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "(++)"
+        ]
+    },
+    {
+        "materia": "Electiva I",
+        "codigo": "ING4328",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "(++)"
+        ]
+    },
+    {
+        "materia": "Electiva II",
+        "codigo": "ING4329",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "(++)"
+        ]
+    },
+    {
+        "materia": "Proyecto Final (ANUAL)",
+        "codigo": "ING4308",
+        "anio": 5,
+        "cuatrimestre": 9,
+        "correlativas": [
+            "Sistemas y Circuitos Electrónicos",
+            "Control Automático",
+            "Sistemas de Comunicaciones",
+            "Tecnología Electrónica"
+        ]
+    },
+    {
+        "materia": "Ética, Legislación y Propiedad Intelectual en el Ejercicio Profesional",
+        "codigo": "ING8405",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "Análisis Matemático III"
+        ]
+    },
+    {
+        "materia": "Optativa II",
+        "codigo": "ING4327",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(++)"
+        ]
+    },
+    {
+        "materia": "Electiva III",
+        "codigo": "ING4330",
+        "anio": 5,
+        "cuatrimestre": 10,
+        "correlativas": [
+            "(++)"
+        ]
+    }
+]
