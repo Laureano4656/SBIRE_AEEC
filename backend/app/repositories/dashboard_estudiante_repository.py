@@ -1,9 +1,7 @@
 import asyncpg
 
-from app.schemas.asignacion_encuesta import AsignacionEncuestaResponse
+
 from app.schemas.materia import MateriaListResponse
-from app.schemas.pregunta import PreguntaResponse
-from app.schemas.respuesta import RespuestaItem, RespuestaResponse
 from app.schemas.usuario import UsuarioResponse
 
 
