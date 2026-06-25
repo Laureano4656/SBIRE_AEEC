@@ -12,6 +12,12 @@ class DatosConfiguracion(BaseModel):
     actualizado_por: int
 
 class AHPRequest(BaseModel):
-    nodo_raiz: str
-    jerarquia: dict[str, list[str]]
-    comparaciones_por_nodo: dict[str, list[Comparacion]]
+    nodo_raiz: int
+    jerarquia: Dict[int, List[int]]
+    comparaciones_por_nodo: Dict[int, List[Comparacion]]
+    configuracion: DatosConfiguracion
+
+class AHPResponse(BaseModel):
+    id_configuracion: int
+    pesos_globales: Dict[int, float]  
+    consistencia_matrices: Dict[int, float]
