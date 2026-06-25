@@ -5,8 +5,8 @@ from app.repositories.base import BaseRepository
 
 
 class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
-    def _init_(self, conn: asyncpg.Connection) -> None:
-        super()._init_(model=PesoCriterios, conn=conn)
+    def __init__(self, conn: asyncpg.Connection) -> None:
+        super().__init__(model=PesoCriterios, conn=conn)
 
     async def crear_configuracion(self, config_data) -> int:
         """
