@@ -39,6 +39,33 @@ class RiesgoRepository:
             WHERE carrera_id = $1 AND activo = TRUE
         """, carrera_id)
         return {row['indicador_id']: float(row['peso']) for row in rows}
+    
+    async def obtener_estudiantes_por_importacion(self, importacion_id: int) -> list[dict]:
+        """
+        Busca las asignaciones (notas cargadas) que nacieron a partir de un archivo Excel específico.
+        """
+        # Nota: Ajustá el nombre de la tabla si no se llama 'asignaciones' 
+        # o si la relación con la importación está en otra tabla (ej: 'notas').
+        query = """
+            SELECT estudiante_id, id as asignacion_id
+            FROM asignaciones
+            WHERE importacion_id = $1;
+        """
+        registros = await self.conn.fetch(query, importacion_id)
+        
+        return [dict(row) for row in registros]s
+
+
+    async def obtener_ultimas_asignaciones_por_carrera(self, carrera_id: int, etapa: str) -> list[dict]:
+        """Busca el evento (encuesta o nota) más reciente de cada alumno de una carrera."""
+        query = """
+            SELECT estudiante_id, MAX(id) as asignacion_id
+            FROM asignaciones
+            WHERE carrera_id = $1 AND etapa = $2
+            GROUP BY estudiante_id;
+        """
+        registros = await self.conn.fetch(query, carrera_id, etapa)
+        return [dict(row) for row in registros]
 
     # ==========================================
     # LECTURAS PARA EL CÁLCULO
