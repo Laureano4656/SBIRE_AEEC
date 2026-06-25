@@ -19,25 +19,24 @@ class RiesgoRepository:
     async def obtener_configuracion_activa(self, carrera_id: int, etapa: str) -> asyncpg.Record | None:
         """Busca los umbrales del semáforo específicos para esa carrera y etapa."""
         return await self.conn.fetchrow("""
-            SELECT umbral_amarillo, umbral_rojo, factor_extension
+            SELECT id, umbral_amarillo, umbral_rojo, factor_extension
             FROM configuracion_indicador
             WHERE carrera_id = $1 AND etapa = $2 AND activo = TRUE
             ORDER BY actualizado_en DESC
             LIMIT 1
         """, carrera_id, etapa)
 
-    async def obtener_pesos_ahp(self, carrera_id: int) -> dict[int, float]:
+    async def obtener_pesos_ahp(self, configuracion_id: int) -> dict[int, float]:
         """
         Busca los pesos de cada indicador en la base de datos (Ej: tabla pesos_indicadores).
         Retorna un diccionario {indicador_id: peso_float}.
         """
-        # Nota: Asumiendo que tenés una tabla 'pesos_indicadores' relacional para no hardcodear.
         # Si los pesos son globales (no por carrera), podés quitar la cláusula WHERE.
         rows = await self.conn.fetch("""
             SELECT indicador_id, peso 
             FROM pesos_indicadores 
-            WHERE carrera_id = $1 AND activo = TRUE
-        """, carrera_id)
+            WHERE configuracion_id = $1
+        """, configuracion_id)
         return {row['indicador_id']: float(row['peso']) for row in rows}
     
     async def obtener_estudiantes_por_importacion(self, importacion_id: int) -> list[dict]:

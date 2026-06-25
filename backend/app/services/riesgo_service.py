@@ -134,7 +134,7 @@ class RiesgoService:
         umbral_rojo = float(config_db['umbral_rojo'])
 
         # 3. Obtener los pesos AHP de la base de datos
-        pesos_ahp = await self.repo.obtener_pesos_ahp(carrera_id)
+        pesos_ahp = await self.repo.obtener_pesos_ahp(config_db['id'])
 
         # 4. Procesar respuestas
         respuestas_crudas = await self.repo.obtener_respuestas_para_calculo(asignacion_id)
