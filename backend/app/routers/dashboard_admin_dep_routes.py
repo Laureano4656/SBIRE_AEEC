@@ -62,7 +62,7 @@ async def intervenciones_totales(
     service = DashboardAdminDepService(conn)
     return await service.obtener_intervenciones(carrera_id)
 
-@router.get("/estadisticas/evolucion-score/{anio}", response_model=dict)
+@router.get("/estadisticas/evolucion-score", response_model=dict)
 async def evolucion_mensual_score(
     anio: int,
     carrera_id: int,
@@ -73,7 +73,7 @@ async def evolucion_mensual_score(
 
 
 # --- ENDPOINTS DE ESTUDIANTES ---
-@router.get("/estudiantes/legajo/{legajo}", response_model=GeneralEstudianteDashboardAdminResponse)
+@router.get("/estudiantes/legajo", response_model=GeneralEstudianteDashboardAdminResponse)
 async def estudiante_por_legajo(
     legajo: str,
     carrera_id: int | None = None,
@@ -83,7 +83,7 @@ async def estudiante_por_legajo(
     item = await service.obtener_datos_generales_estudiante(legajo, carrera_id)
     return GeneralEstudianteDashboardAdminResponse.model_validate(item)
 
-@router.get("/estudiantes/{estudiante_id}/historial", response_model=list[EventoCronologicoResponse])
+@router.get("/estudiantes/historial", response_model=list[EventoCronologicoResponse])
 async def historial_alertas(
     estudiante_id: str,
     conn: asyncpg.Connection = Depends(get_conn),
@@ -92,7 +92,7 @@ async def historial_alertas(
     items = await service.obtener_alertas_cronologicas(estudiante_id)
     return [EventoCronologicoResponse.model_validate(item) for item in items]
 
-@router.get("/estudiantes/dni/{dni}", response_model=EstudianteDashboardAdminResponse)
+@router.get("/estudiantes/dni", response_model=EstudianteDashboardAdminResponse)
 async def estudiante_por_dni(
     dni: str,
     conn: asyncpg.Connection = Depends(get_conn),
@@ -101,7 +101,7 @@ async def estudiante_por_dni(
     item = await service.obtener_estudiante_por_dni(dni)
     return EstudianteDashboardAdminResponse.model_validate(item)
 
-@router.get("/estudiantes/carrera/{carrera}", response_model=list[EstudianteDashboardAdminResponse])
+@router.get("/estudiantes/carrera", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_carrera(
     carrera: str,
     conn: asyncpg.Connection = Depends(get_conn),
@@ -110,7 +110,7 @@ async def estudiantes_por_carrera(
     items = await service.obtener_estudiantes_por_carrera(carrera)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
-@router.get("/estudiantes/anio/{anio}", response_model=list[EstudianteDashboardAdminResponse])
+@router.get("/estudiantes/anio", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_anio(
     anio: int,
     carrera_id: int,
@@ -120,7 +120,7 @@ async def estudiantes_por_anio(
     items = await service.obtener_estudiantes_por_anio(anio, carrera_id)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
-@router.get("/estudiantes/riesgo/{nivel_riesgo}", response_model=list[EstudianteDashboardAdminResponse])
+@router.get("/estudiantes/riesgo", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_riesgo(
     nivel_riesgo: str,
     carrera_id: int,
@@ -130,7 +130,7 @@ async def estudiantes_por_riesgo(
     items = await service.obtener_estudiantes_por_riesgo(nivel_riesgo, carrera_id)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
-@router.get("/estudiantes/{estudiante_id}/historial", response_model=list[EventoCronologicoResponse])
+@router.get("/estudiantes/historial", response_model=list[EventoCronologicoResponse])
 async def historial_alertas(
     estudiante_id: str,
     conn: asyncpg.Connection = Depends(get_conn),
@@ -139,7 +139,7 @@ async def historial_alertas(
     items = await service.obtener_alertas_cronologicas(estudiante_id)
     return [EventoCronologicoResponse.model_validate(item) for item in items]
 
-@router.get("/carrera/{carrera_id}/historial", response_model=list[EventoCronologicoResponse])
+@router.get("/carrera/historial", response_model=list[EventoCronologicoResponse])
 async def historial_alertas_generales(
     carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
@@ -156,7 +156,7 @@ async def historial_alertas_generales(
 class RolUpdate(BaseModel):
     new_role: str
 
-@router.patch("/usuarios/{user_id}/rol", response_model=dict)
+@router.patch("/usuarios/rol", response_model=dict)
 async def cambiar_rol_usuario(
     user_id: int,
     body: RolUpdate,
