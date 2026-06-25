@@ -8,16 +8,15 @@ class dashboardAdminRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.conn = conn
 
-    async def students_count(self, anio: int | None = None, carrera_id: int | None = None) -> int:
+    async def students_count(self, carrera_id: int | None = None) -> int:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
             FROM estudiantes
-            WHERE ($1::int IS NULL OR anio_ingreso = $1)
-            AND ($2::int IS NULL OR carrera_id = $2) 
+            WHERE ($1::int IS NULL OR carrera_id = $1) 
             AND activo = TRUE
             """,
-            anio, carrera_id
+            carrera_id
         )
         return row["count"]
     
@@ -59,7 +58,7 @@ class dashboardAdminRepository:
         )
         return row["count"]
     
-    async def count_by_risk(self, carrera_id: int, anio: int):
+    async def count_by_risk(self, carrera_id: int):
         rows = await self.conn.fetch(
             """
             SELECT
@@ -74,10 +73,10 @@ class dashboardAdminRepository:
             FROM score_total s
             INNER JOIN estudiantes e ON s.estudiante_id = e.id
             INNER JOIN carreras c ON e.carrera_id = c.id
-            WHERE e.carrera_id = $1 AND e.anio_ingreso = $2 AND e.activo = TRUE
-            GROUP BY tipo_riesgo, c.nombre, e.anio_ingreso
+            WHERE e.carrera_id = $1 AND e.activo = TRUE
+            GROUP BY tipo_riesgo, e.anio_ingreso
             """,
-            carrera_id, anio
+            carrera_id
         )
         return {row["tipo_riesgo"]: row["count"] for row in rows}
     
@@ -86,19 +85,20 @@ class dashboardAdminRepository:
         rows = await self.conn.fetch(
             """
             SELECT
-                date_part('month', creado_en) AS month,
-                AVG(valor) AS average_score
+                date_part('month', s.creado_en) AS month,
+                AVG(s.valor) AS average_score
             FROM score_total s
             INNER JOIN estudiantes e ON s.estudiante_id = e.id
-            WHERE e.anio_ingreso = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
+            WHERE e.activo = TRUE
+            AND date_part('year', s.creado_en) = $1
+            AND ($2::int IS NULL OR e.carrera_id = $2)
             GROUP BY month
             ORDER BY month
             """,
             anio, carrera_id
         )
 
-
-        return {row["month"]: row["average_score"] for row in rows}
+        return {int(row["month"]): row["average_score"] for row in rows}
     
     
     async def get_student_by_dni(self, dni: str) -> EstudianteDashboardAdminResponse | None:

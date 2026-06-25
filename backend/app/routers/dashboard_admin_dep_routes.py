@@ -21,11 +21,11 @@ router = APIRouter(prefix="/dashboard-admin-dep", tags=["dashboard admin departa
 
 @router.get("/estadisticas/estudiantes", response_model=int)
 async def conteo_estudiantes(
-    anio: int, carrera_id: int,
+    carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> int:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_conteo_estudiantes(anio, carrera_id)
+    return await service.obtener_conteo_estudiantes(carrera_id)
 
 @router.get("/estadisticas/riesgo", response_model=dict)
 async def conteo_por_riesgo(
@@ -34,7 +34,7 @@ async def conteo_por_riesgo(
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> dict[str, int]:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_conteo_por_riesgo(carrera_id, anio)
+    return await service.obtener_conteo_por_riesgo(carrera_id)
 
 
 @router.get("/estadisticas/totales/criticos", response_model=int)
@@ -65,20 +65,22 @@ async def intervenciones_totales(
 @router.get("/estadisticas/evolucion-score/{anio}", response_model=dict)
 async def evolucion_mensual_score(
     anio: int,
+    carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> dict[str, float]:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_evolucion_mensual_score(anio)
+    return await service.obtener_evolucion_mensual_score(anio, carrera_id)
 
 
 # --- ENDPOINTS DE ESTUDIANTES ---
 @router.get("/estudiantes/legajo/{legajo}", response_model=GeneralEstudianteDashboardAdminResponse)
 async def estudiante_por_legajo(
     legajo: str,
+    carrera_id: int | None = None,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> GeneralEstudianteDashboardAdminResponse:
     service = DashboardAdminDepService(conn)
-    item = await service.obtener_datos_generales_estudiante(legajo)
+    item = await service.obtener_datos_generales_estudiante(legajo, carrera_id)
     return GeneralEstudianteDashboardAdminResponse.model_validate(item)
 
 @router.get("/estudiantes/{estudiante_id}/historial", response_model=list[EventoCronologicoResponse])
@@ -111,19 +113,21 @@ async def estudiantes_por_carrera(
 @router.get("/estudiantes/anio/{anio}", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_anio(
     anio: int,
+    carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> list[EstudianteDashboardAdminResponse]:
     service = DashboardAdminDepService(conn)
-    items = await service.obtener_estudiantes_por_anio(anio)
+    items = await service.obtener_estudiantes_por_anio(anio, carrera_id)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
 @router.get("/estudiantes/riesgo/{nivel_riesgo}", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_riesgo(
     nivel_riesgo: str,
+    carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> list[EstudianteDashboardAdminResponse]:
     service = DashboardAdminDepService(conn)
-    items = await service.obtener_estudiantes_por_riesgo(nivel_riesgo)
+    items = await service.obtener_estudiantes_por_riesgo(nivel_riesgo, carrera_id)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
 @router.get("/estudiantes/{estudiante_id}/historial", response_model=list[EventoCronologicoResponse])
@@ -144,6 +148,7 @@ async def historial_alertas_generales(
     items = await service.obtener_alertas_cronologicas_generales(carrera_id)
     return [EventoCronologicoResponse.model_validate(item) for item in items]
 
+#TODO: agregar endpoint para obtener indicadores agrupados por dimension
 
 # --- ENDPOINTS DE ADMINISTRACION DE USUARIOS ---
 
