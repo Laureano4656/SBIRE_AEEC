@@ -1,26 +1,30 @@
 import asyncpg
 from fastapi import HTTPException, status
 
-
 from app.repositories.dashboard_estudiante_repository import dashboardEstudiantesRepository
-from app.schemas.dashboard_estudiante import EncuestaResponse, AsignacionEncuestaResponse
+from app.schemas.materia import (
+    MateriaListResponse,
+)
+from app.schemas.usuario import UsuarioResponse
 
 class DashboardEstudianteService:
     """
-    servicio para los datos del dashboard del estudiante (pantalla principal del alumno).
+    Servicio para los datos analiticos y el dashboard del estudiante.
     """
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.repo = dashboardEstudiantesRepository(conn)
 
-    async def obtener_encuesta_completa(self, encuesta_id: int) -> EncuestaResponse:
-        encuesta = await self.repo.get_survey_with_questions(encuesta_id)
-        if not encuesta:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"encuesta con id {encuesta_id} no encontrada."
-            )
-        return encuesta
+    async def obtener_datos_tutor(self, estudiante_id: int) -> UsuarioResponse | None:
+        return await self.repo.get_datos_tutor(estudiante_id)
 
-    async def obtener_encuestas_asignadas(self, estudiante_id: int) -> list[AsignacionEncuestaResponse]:
-        # devuelve una lista vacia [] si el alumno no tiene encuestas pendientes
-        return await self.repo.get_assigned_surveys(estudiante_id)
+    async def obtener_materias_aprobadas(self, estudiante_id: int) -> int:
+        return await self.repo.materias_aprobadas(estudiante_id)
+
+    async def obtener_materias_totales(self, estudiante_id: int) -> int:
+        return await self.repo.materias_totales(estudiante_id)
+    
+    async def obtener_materias_cursadas(self, estudiante_id: int) -> list[MateriaListResponse]:
+        return await self.repo.listado_materias_cursadas(estudiante_id)
+
+    async def encuestas_sin_responder(self, estudiante_id: int) -> int:
+        return await self.repo.encuestas_sin_responder(estudiante_id)
