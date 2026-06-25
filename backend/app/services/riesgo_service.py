@@ -10,6 +10,89 @@ class RiesgoService:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.repo = RiesgoRepository(conn)
 
+    @staticmethod
+    async def tarea_background_recalcular_por_configuracion(
+        pool: asyncpg.Pool, 
+        carrera_id: int, 
+        etapa: str
+    ):
+        """
+        Tarea masiva. Recalcula el riesgo de TODOS los estudiantes de una carrera y etapa.
+        Se dispara cuando cambian las reglas (pesos AHP o umbrales del semáforo).
+        """
+        
+        try:
+            async with pool.acquire() as conn:
+                repo_riesgo = RiesgoRepository(conn)
+                
+                # Necesitás una query que devuelva la última asignación de cada alumno de esta carrera
+                # Ejemplo: SELECT estudiante_id, MAX(id) as asignacion_id FROM asignaciones WHERE carrera_id = $1 GROUP BY estudiante_id
+                alumnos = await RiesgoRepository.obtener_ultimas_asignaciones_por_carrera(carrera_id, etapa)
+                
+                if not alumnos:
+                    raise HTTPException(status_code=404, detail=f"ℹ️ No hay estudiantes con datos para recalcular en la carrera {carrera_id}.")
+                    return
+                    
+                service = RiesgoService(conn)
+                
+                # Iteramos uno a uno
+                for alumno in alumnos:
+                    try:
+                        await service.calcular_y_guardar_riesgo(
+                            estudiante_id=alumno['estudiante_id'],
+                            asignacion_id=alumno['asignacion_id']
+                        )
+                    except Exception as e:
+                        raise HTTPException(status_code=500, detail=f"❌ Error al recalcular alumno {alumno['estudiante_id']} por nueva config: {str(e)}")
+
+            raise HTTPException(status_code=200, detail=f"✅ Recálculo masivo por reconfiguración de carrera {carrera_id} finalizado.")
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"❌ Error crítico en tarea de reconfiguración: {str(e)}")
+
+
+    @staticmethod
+    async def tarea_background_calcular_riesgo(pool: asyncpg.Pool, estudiante_id: int, asignacion_id: int):
+        """
+        Esta función está diseñada para correr en background.
+        Pide su propia conexión al pool para no chocar con el request principal.
+        """
+        try:
+            # Pedimos una conexión fresca exclusivamente para esta tarea
+            async with pool.acquire() as conn:
+                service = RiesgoService(conn)
+                await service.calcular_y_guardar_riesgo(estudiante_id, asignacion_id)
+                raise HTTPException(status_code=200, detail= f"✅ Background: Riesgo calculado para estudiante {estudiante_id}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"❌ Error en background task (AHP): {str(e)}")
+
+    @staticmethod
+    async def tarea_background_recalcular_masivo(
+        pool: asyncpg.Pool, 
+        estudiantes_afectados: list[dict[str, int]]
+    ):
+        """
+        Procesa una lista masiva de estudiantes.
+        Formato esperado: [{"estudiante_id": 1, "asignacion_id": 10}, ...]
+        """
+
+        # Procesamos de forma secuencial. Al estar en background, no importa si tarda 
+        # 10 segundos, lo vital es no saturar el pool de conexiones con 500 queries a la vez.
+        for item in estudiantes_afectados:
+            try:
+                # Pedimos una conexión por alumno, calculamos y la devolvemos al pool
+                async with pool.acquire() as conn:
+                    service = RiesgoService(conn)
+                    await service.calcular_y_guardar_riesgo(
+                        estudiante_id=item['estudiante_id'], 
+                        asignacion_id=item['asignacion_id']
+                    )
+            except Exception as e:
+                # Si un alumno falla, lo logueamos pero el loop sigue con el próximo
+                raise HTTPException(status_code=500, detail=f"❌ Error calculando riesgo para estudiante {item['estudiante_id']}: {str(e)}")
+        
+        raise HTTPException(status_code=200, detail=f"✅ Cálculo masivo finalizado.")
+
     # ==========================================
     # LÓGICA INTERNA: CÁLCULO Y NORMALIZACIÓN
     # ==========================================
@@ -51,7 +134,7 @@ class RiesgoService:
         umbral_rojo = float(config_db['umbral_rojo'])
 
         # 3. Obtener los pesos AHP de la base de datos
-        pesos_ahp = await self.repo.obtener_pesos_ahp(carrera_id)
+        pesos_ahp = await self.repo.obtener_pesos_ahp(config_db['id'])
 
         # 4. Procesar respuestas
         respuestas_crudas = await self.repo.obtener_respuestas_para_calculo(asignacion_id)

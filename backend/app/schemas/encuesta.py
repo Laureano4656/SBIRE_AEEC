@@ -63,4 +63,34 @@ class MateriaResponse(BaseModel):
     """Representa una materia con su id y nombre."""
     materia_id: int
     materia_nombre: str
-    
+
+class EstadisticaEventoResponse(BaseModel):
+    evento_id: int
+    nombre_evento: str
+    total_asignadas: int
+    total_completadas: int
+
+class RespuestaDetalle(BaseModel):
+    pregunta_id: int
+    texto_pregunta: str
+    materia_nombre: str | None
+    opcion_texto: str | None
+    valor_numerico: float | None
+    valor_texto: str | None
+
+class EncuestaEstudianteDetalle(BaseModel):
+    estudiante_id: int
+    legajo: str
+    nombre_completo: str
+    asignacion_id: int
+    periodo_lectivo: str
+    respuestas: list[RespuestaDetalle] = []
+
+class EncuestaHistoricoResponse(FormularioEncuestaResponse):
+    """
+    Hereda toda la estructura de preguntas_generales y bloques_academicos,
+    sumando los datos del estudiante para la vista de listado histórico.
+    """
+    estudiante_id: int
+    legajo: str
+    nombre_completo: str

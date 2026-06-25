@@ -17,7 +17,14 @@ class CarreraService(CrudService[Carrera]):
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Ya existe una carrera con el código '{codigo.upper()}'.",
             )
-        return await super().crear(**fields)
+
+        async with self.repo.conn.transaction():
+            nueva_carrera = await super().crear(**fields)
+            
+            await self.repo.insertar_paquete_defecto(nueva_carrera_id=nueva_carrera.id)
+            
+            return nueva_carrera
+        
 
     async def desactivar(self, id: int) -> dict[str, str]:
         # Verificar existencia
