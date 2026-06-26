@@ -1,3 +1,4 @@
 [submodule "moodle-docker/moodle"]
 	path = moodle-docker/moodle
 	url = https://github.com/moodle/moodle.git
+	shallow = true

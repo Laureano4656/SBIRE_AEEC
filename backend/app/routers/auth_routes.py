@@ -8,7 +8,10 @@ import logging
 import uuid
 from fastapi import Cookie, Form
 import asyncpg
-from fastapi import APIRouter, Depends,Form, HTTPException, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from urllib.parse import urlencode
+from fastapi import APIRouter, Depends, Query, Response, Request, HTTPException, status
+from pydantic import BaseModel
 
 from app.api.deps import get_conn, get_current_user
 
@@ -16,10 +19,6 @@ from app.services.usuarios_service import UsuarioService
 
 from app.models.usuario import Usuario
 from app.core.config import settings
-from fastapi.responses import RedirectResponse
-from urllib.parse import urlencode
-from fastapi import APIRouter, Query, Response, Request, HTTPException, status
-from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
@@ -50,16 +49,29 @@ async def lti_launch(
         usuario_service = UsuarioService(conn)
         auth_response = await usuario_service.upsert_desde_lti(id_token)
 
-        redirect_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={auth_response.access_token}"
-        return RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+        frontend_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={auth_response.access_token}"
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head><title>Redirigiendo...</title></head>
+<body>
+<script>
+if (window.top !== window.self) {{
+    window.top.location.href = "{frontend_url}";
+}} else {{
+    window.location.href = "{frontend_url}";
+}}
+</script>
+</body>
+</html>"""
+        return HTMLResponse(content=html_content, status_code=200)
 
     except HTTPException as e:
         raise e
     except Exception as e:
-        print(f"Error crítico en LTI Launch handling: {e}")
+        logger.error(f"Error crítico en LTI Launch handling: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error procesando autenticación interna."
+            detail=f"Error procesando autenticación interna: {e}"
         )
 
 
