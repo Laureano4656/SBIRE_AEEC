@@ -103,11 +103,11 @@ async def estudiante_por_dni(
 
 @router.get("/estudiantes/carrera", response_model=list[EstudianteDashboardAdminResponse])
 async def estudiantes_por_carrera(
-    carrera: str,
+    carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> list[EstudianteDashboardAdminResponse]:
     service = DashboardAdminDepService(conn)
-    items = await service.obtener_estudiantes_por_carrera(carrera)
+    items = await service.obtener_estudiantes_por_carrera(carrera_id)
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
 @router.get("/estudiantes/anio", response_model=list[EstudianteDashboardAdminResponse])

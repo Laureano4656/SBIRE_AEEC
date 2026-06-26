@@ -48,9 +48,9 @@ export const getHistorialAlertasGenerales = async (carrera_id: string) => {
     return response.data
 }
 
-export const getEstudiantesPorCarrera = async (carrera: string) => {
-    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estudiantes/carrera/`,
-        { params: { carrera } }
+export const getEstudiantesPorCarrera = async (carrera_id: number) => {
+    const response = await axiosInstance.get<EstudianteDashboardAdminResponse[]>(`${PREFIX}/estudiantes/carrera`,
+        { params: { carrera_id } }
     );
     return response.data
 }

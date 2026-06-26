@@ -22,7 +22,7 @@ export const adminDepKeys = {
     totalAlertasNuevas: ['totalAlertasNuevas'] as const,
     totalIntervenciones: ['totalIntervenciones'] as const,
     evolucionScore: (anio: number, carrera_id: number) => ['evolucionScore', anio, carrera_id] as const,
-    estudiantesPorCarrera: (carrera: string) => ['estudiantesPorCarrera', carrera] as const,
+    estudiantesPorCarrera: (carrera_id: number) => ['estudiantesPorCarrera', carrera_id] as const,
     estudiantePorDni: (dni: string) => ['estudiantePorDni', dni] as const,
     estudiantePorAnio: (anio: number) => ['estudiantePorAnio', anio] as const,
     estudiantePorRiesgo: (riesgo: string) => ['estudiantePorRiesgo', riesgo] as const,
@@ -72,10 +72,10 @@ export const useEvolucionScore = (anio: number, carrera_id?: number) => {
     })
 }
 
-export const useEstudiantesPorCarrera = (carrera: string) => {
+export const useEstudiantesPorCarrera = (carrera_id: number) => {
     return useQuery({
-        queryKey: adminDepKeys.estudiantesPorCarrera(carrera),
-        queryFn: () => getEstudiantesPorCarrera(carrera)
+        queryKey: adminDepKeys.estudiantesPorCarrera(carrera_id),
+        queryFn: () => getEstudiantesPorCarrera(carrera_id)
     })
 }
 

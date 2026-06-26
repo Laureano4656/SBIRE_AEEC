@@ -147,7 +147,7 @@ class dashboardAdminRepository:
         return EstudianteDashboardAdminResponse(**dict(row)) if row else None
 
     async def get_students_by_career(
-        self, carrera: str
+        self, carrera_id: int
     ) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
@@ -173,9 +173,9 @@ class dashboardAdminRepository:
                 FROM alertas
                 ORDER BY estudiante_id, generada_en DESC
             ) a ON e.id = a.estudiante_id
-            WHERE c.nombre = $1 AND e.activo = TRUE
+            WHERE e.carrera_id = $1 AND e.activo = TRUE
             """,
-            carrera,
+            carrera_id,
         )
 
         return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]

@@ -45,8 +45,8 @@ class DashboardAdminDepService:
             )
         return estudiante
 
-    async def obtener_estudiantes_por_carrera(self, carrera: str) -> list[EstudianteDashboardAdminResponse]:
-        return await self.repo.get_students_by_career(carrera)
+    async def obtener_estudiantes_por_carrera(self, carrera_id: int) -> list[EstudianteDashboardAdminResponse]:
+        return await self.repo.get_students_by_career(carrera_id)
 
     async def obtener_estudiantes_por_anio(self, anio: int, carrera_id: int | None = None) -> list[EstudianteDashboardAdminResponse]:
         return await self.repo.get_students_by_year(anio, carrera_id)

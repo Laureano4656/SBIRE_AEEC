@@ -17,20 +17,13 @@ import { AuthProvider } from "./contexts/AuthProvider.tsx";
 
 export default function App() {
   // Shared Global State for exact real-time response feeling
-  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
+  const [students] = useState<Student[]>(INITIAL_STUDENTS);
   const [surveys] = useState<Survey[]>(INITIAL_SURVEYS);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     navigate("/");
   };
-
-  const handleUpdateStudent = (updatedStudent: Student) => {
-    setStudents((prev) =>
-      prev.map((s) => (s.id === updatedStudent.id ? updatedStudent : s)),
-    );
-  };
-
-  const navigate = useNavigate();
 
   return (
     <AuthProvider>
@@ -38,15 +31,8 @@ export default function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
 
         <Route
-          path="/admin"
-          element={
-            <AdminPanel
-              onLogout={handleLogout}
-              onUpdateStudent={handleUpdateStudent}
-              students={students}
-              surveys={surveys}
-            />
-          }
+          path="/admin/*"
+          element={<AdminPanel onLogout={handleLogout} surveys={surveys} />}
         />
 
         <Route
@@ -57,7 +43,7 @@ export default function App() {
         />
 
         <Route
-          path="/student"
+          path="/student/*"
           element={<StudentPanel onLogout={handleLogout} />}
         />
 
