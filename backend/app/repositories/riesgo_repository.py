@@ -52,7 +52,7 @@ class RiesgoRepository:
         """
         registros = await self.conn.fetch(query, importacion_id)
         
-        return [dict(row) for row in registros]s
+        return [dict(row) for row in registros]
 
 
     async def obtener_ultimas_asignaciones_por_carrera(self, carrera_id: int, etapa: str) -> list[dict]:

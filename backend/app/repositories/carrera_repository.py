@@ -144,7 +144,7 @@ class CarreraRepository(CrudRepository[Carrera]):
 
         # PASO A: Insertar Dimensiones Padre
         query_dim = """
-            INSERT INTO indicador (nombre, dimension_id, activo, carrera_id) 
+            INSERT INTO indicador (nombre, dimension, activo, carrera_id) 
             VALUES ($1, NULL, TRUE, $2) RETURNING id
         """
         for id_viejo, nombre in dimensiones_data:
@@ -153,7 +153,7 @@ class CarreraRepository(CrudRepository[Carrera]):
 
         # PASO B: Insertar Indicadores Hijo (Subcriterios)
         query_hijo = """
-            INSERT INTO indicador (nombre, dimension_id, activo, carrera_id) 
+            INSERT INTO indicador (nombre, dimension, activo, carrera_id) 
             VALUES ($1, $2, TRUE, $3) RETURNING id
         """
         for id_viejo, nombre, id_padre_viejo in sub_indicadores_data:
