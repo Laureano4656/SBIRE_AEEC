@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { getEncuesta, getMetricasEncuestas, getMetricasEncuestasCicloActual } from '../../api/encuestas'
+import { getEncuesta, getMetricasEncuestas, getMetricasEncuestasCicloActual, getRespuestasUltimoAnio } from '../../api/encuestas'
 
 export const encuestasKeys = {
     all: ['encuestas'] as const,
     encuesta: (asignacion_id: number) => ['encuestas', asignacion_id] as const,
     metricas: (carrera_id: number) => ['metricas-encuestas', carrera_id] as const,
     metricasCicloActual: (carrera_id: number) => ['metricas-encuestas-ciclo-actual', carrera_id] as const,
+    respuestasUltimoAnio: (carrera_id: number, evento_id: number) => ['respuestas-ultimo-anio', carrera_id, evento_id] as const
 }
 
 export const useEncuesta = (asignacion_id: number) => {
@@ -29,5 +30,12 @@ export const useMetricasEncuestasCicloActual = (carrera_id: number | null | unde
         enabled: !!carrera_id,
         queryKey: encuestasKeys.metricasCicloActual(carrera_id!),
         queryFn: () => getMetricasEncuestasCicloActual(carrera_id!)
+    })
+}
+export const useRespuestasUltimoAnio = (carrera_id: number | null | undefined, evento_id: number | null | undefined) => {
+    return useQuery({
+        enabled: !!carrera_id && !!evento_id,
+        queryKey: encuestasKeys.respuestasUltimoAnio(carrera_id!, evento_id!),
+        queryFn: () => getRespuestasUltimoAnio(carrera_id!, evento_id!)
     })
 }

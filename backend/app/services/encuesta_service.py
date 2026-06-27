@@ -128,6 +128,10 @@ class EncuestaService:
         dicc_opciones: dict,
         dicc_respuestas: dict,
     ) -> PreguntaParaEncuesta:
+        print("pregunta", p.id)
+        print("materia_id", materia_id)
+        print("respuestas previas", dicc_respuestas)
+        print("respuesta previa", dicc_respuestas.get((p.id, materia_id)))
         return PreguntaParaEncuesta(
             **p.model_dump(),
             opciones=dicc_opciones.get(p.id, []),
@@ -216,7 +220,6 @@ class EncuestaService:
         for p in preguntas_crudas:
             if isinstance(p.configuracion_riesgo, str):
                 p.configuracion_riesgo = json.loads(p.configuracion_riesgo)
-
         pregunta_ids = [p.id for p in preguntas_crudas]
         dicc_opciones = self._agrupar_opciones(
             await self.repo.get_opciones(pregunta_ids), pregunta_ids

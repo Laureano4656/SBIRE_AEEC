@@ -181,7 +181,6 @@ class dashboardAdminRepository:
             """,
             carrera_id,
         )
-
         return [EstudianteDashboardAdminResponse(**dict(row)) for row in rows]
 
     async def get_students_by_year(
