@@ -11,6 +11,8 @@ interface MisEstudiantesViewProps {
   onFilterRiskChange: (value: "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO") => void;
   filteredStudents: EstudianteDashboardAdminResponse[] | undefined;
   apiStudents: EstudianteDashboardAdminResponse[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
   onSelectStudent: (dni: string) => void;
 }
 
@@ -24,6 +26,8 @@ export default function MisEstudiantesView({
   onFilterRiskChange,
   filteredStudents,
   apiStudents,
+  isLoading,
+  isError,
   onSelectStudent,
 }: MisEstudiantesViewProps) {
   const getAlertPillByRisk = (estadoAlerta: string | null) => {
@@ -127,67 +131,118 @@ export default function MisEstudiantesView({
 
       <div className="xl:col-span-3 bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-center border-collapse text-xs">
-            <thead>
-              <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
-                <th className="p-3 pl-5 border-b border-brand-outline-variant">
-                  ESTUDIANTE / DNI
-                </th>
-                <th className="p-3 border-b border-brand-outline-variant text-center">
-                  ÍNDICE RISK
-                </th>
-                <th className="p-3 border-b border-brand-outline-variant text-center">
-                  ESTADO ALERTA
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-outline-variant">
-              {filteredStudents?.map((s) => (
-                <tr key={s.dni} className="hover:bg-[#f8f9fa] transition-all">
-                  <td className="p-3 pl-5">
-                    <div
-                      className="font-bold text-brand-primary hover:underline cursor-pointer"
-                      onClick={() => onSelectStudent(s.dni)}
-                    >
-                      {s.apellido}, {s.nombre}
-                    </div>
-                    <div className="text-[10px] text-brand-outline font-semibold">
-                      DNI: {s.dni} | {s.carrera}
-                    </div>
-                  </td>
-                  <td className="p-3 text-center">
-                    <span
-                      className={`font-black text-xs ${
-                        s.indice_riesgo >= 7.5
-                          ? "text-[#ba1a1a]"
-                          : s.indice_riesgo >= 4.0
-                            ? "text-amber-600"
-                            : "text-[#006e6e]"
-                      }`}
-                    >
-                      {s.indice_riesgo.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="p-3 text-center">
-                    {getAlertPillByRisk(s.estado_alerta)}
-                  </td>
+          {isError ? (
+            <div className="p-8 text-center">
+              <p className="text-brand-error font-bold text-sm">
+                Error al cargar los estudiantes.
+              </p>
+              <p className="text-brand-outline text-xs mt-1">
+                Intente nuevamente más tarde.
+              </p>
+            </div>
+          ) : isLoading ? (
+            <table className="w-full text-center border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                  <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                    ESTUDIANTE / DNI
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    ÍNDICE RISK
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    ESTADO ALERTA
+                  </th>
                 </tr>
-              ))}
-              {filteredStudents?.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="p-8 text-center text-brand-outline font-medium">
-                    No se encontraron estudiantes que coincidan con los filtros de búsqueda.
-                  </td>
+              </thead>
+              <tbody className="divide-y divide-brand-outline-variant">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <tr key={i}>
+                    <td className="p-3 pl-5">
+                      <div className="h-4 w-40 bg-gray-200 rounded animate-pulse mb-1" />
+                      <div className="h-3 w-52 bg-gray-200 rounded animate-pulse" />
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="h-4 w-12 bg-gray-200 rounded animate-pulse mx-auto" />
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="h-5 w-20 bg-gray-200 rounded-full animate-pulse mx-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full text-center border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
+                  <th className="p-3 pl-5 border-b border-brand-outline-variant">
+                    ESTUDIANTE / DNI
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    ÍNDICE RISK
+                  </th>
+                  <th className="p-3 border-b border-brand-outline-variant text-center">
+                    ESTADO ALERTA
+                  </th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-brand-outline-variant">
+                {filteredStudents?.map((s) => (
+                  <tr key={s.dni} className="hover:bg-[#f8f9fa] transition-all">
+                    <td className="p-3 pl-5">
+                      <div
+                        className="font-bold text-brand-primary hover:underline cursor-pointer"
+                        onClick={() => onSelectStudent(s.dni)}
+                      >
+                        {s.apellido}, {s.nombre}
+                      </div>
+                      <div className="text-[10px] text-brand-outline font-semibold">
+                        DNI: {s.dni} | {s.carrera}
+                      </div>
+                    </td>
+                    <td className="p-3 text-center">
+                      {s.indice_riesgo !== null ? (
+                        <span
+                          className={`font-black text-xs ${
+                            s.indice_riesgo >= 7.5
+                              ? "text-[#ba1a1a]"
+                              : s.indice_riesgo >= 4.0
+                                ? "text-amber-600"
+                                : "text-[#006e6e]"
+                          }`}
+                        >
+                          {s.indice_riesgo.toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="text-brand-outline font-medium">—</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {getAlertPillByRisk(s.estado_alerta)}
+                    </td>
+                  </tr>
+                ))}
+                {filteredStudents?.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="p-8 text-center text-brand-outline font-medium">
+                      No se encontraron estudiantes que coincidan con los filtros de búsqueda.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="p-4 bg-[#f8f9fa] border-t border-brand-outline-variant flex justify-between items-center text-xs text-[#43474f]">
           <span className="font-semibold">
-            Mostrando {filteredStudents?.length} de{" "}
-            {apiStudents?.length} estudiantes asignados
+            {isLoading
+              ? "Cargando estudiantes..."
+              : isError
+                ? "—"
+                : `Mostrando ${filteredStudents?.length ?? 0} de ${apiStudents?.length ?? 0} estudiantes asignados`
+            }
           </span>
           <div className="flex gap-1">
             <button className="px-2.5 py-1 border border-brand-outline-variant rounded bg-white font-bold opacity-50 cursor-not-allowed">

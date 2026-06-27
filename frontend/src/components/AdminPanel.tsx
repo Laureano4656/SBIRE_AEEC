@@ -1,9 +1,16 @@
 import { useMemo } from "react";
-import { Route, Routes, useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
+import {
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import type { Survey, Student } from "../types/types.ts";
-import AdminStudentView from "./AdminStudentView.tsx";
-import AHPConfigPanel from "./AHPConfigPanel.tsx";
-import ReportesPanel from "./ReportesPanel.tsx";
+import AdminStudentView from "./admin/AdminStudentView.tsx";
+import AHPConfigPanel from "./config/AHPConfigPanel.tsx";
+import ReportesPanel from "./reportes/ReportesPanel.tsx";
 import Sidebar from "./layout/Sidebar.tsx";
 import TopBar from "./layout/TopBar.tsx";
 import PanelView from "./panel/PanelView.tsx";
@@ -25,16 +32,15 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
   const navigate = useNavigate();
 
   const carreraId = useAuth().user?.carrera_id ?? 1;
-  const dashboardAnio = 2019;
 
-  const {
-    data: apiStudents,
-  } = useEstudiantesPorCarrera(carreraId);
+  const { data: apiStudents, isLoading, isError } = useEstudiantesPorCarrera(carreraId);
 
   const searchQuery = searchParams.get("q") ?? "";
   const filterYear = searchParams.get("year") ?? "Todos";
   const filterCareer = searchParams.get("career") ?? "Todas";
-  const filterRisk = (searchParams.get("risk") as "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO") ?? "TODOS";
+  const filterRisk =
+    (searchParams.get("risk") as "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO") ??
+    "TODOS";
 
   const studentsForChildren: Student[] = useMemo(
     () => apiStudents?.map(mapToStudent) ?? [],
@@ -48,8 +54,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
         const matchesSearch =
           fullName.includes(searchQuery.toLowerCase()) ||
           s.dni.includes(searchQuery);
-        const matchesYear =
-          filterYear === "Todos" || s.etapa === filterYear;
+        const matchesYear = filterYear === "Todos" || s.etapa === filterYear;
         const matchesCareer =
           filterCareer === "Todas" ||
           s.carrera.toLowerCase().includes(filterCareer.toLowerCase());
@@ -79,21 +84,22 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
   };
 
   const handleSearchChange = (value: string) => {
-    navigate(`/admin/estudiantes${value ? `?q=${encodeURIComponent(value)}` : ""}`);
+    navigate(
+      `/admin/estudiantes${value ? `?q=${encodeURIComponent(value)}` : ""}`,
+    );
   };
 
-  const title =
-    dni
-      ? "Expediente del Estudiante"
-      : pathname === "/admin" || pathname === "/admin/panel"
-        ? "Panel General de Control"
-        : pathname.startsWith("/admin/estudiantes")
-          ? "Seguimiento de Alertas Estudiantiles"
-          : pathname.startsWith("/admin/encuestas")
-            ? "Gestión de Relevamientos"
-            : pathname.startsWith("/admin/reportes")
-              ? "Diagnósticos e Históricos"
-              : "Configuración del Entorno";
+  const title = dni
+    ? "Expediente del Estudiante"
+    : pathname === "/admin" || pathname === "/admin/panel"
+      ? "Panel General de Control"
+      : pathname.startsWith("/admin/estudiantes")
+        ? "Seguimiento de Alertas Estudiantiles"
+        : pathname.startsWith("/admin/encuestas")
+          ? "Gestión de Relevamientos"
+          : pathname.startsWith("/admin/reportes")
+            ? "Diagnósticos e Históricos"
+            : "Configuración del Entorno";
 
   return (
     <div className="min-h-screen flex text-[#191c1d] bg-[#f8f9fa]">
@@ -113,10 +119,11 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               element={
                 <PanelView
                   carreraId={carreraId}
-                  dashboardAnio={dashboardAnio}
                   students={studentsForChildren}
                   onSelectStudent={(id) => navigate(`/admin/estudiantes/${id}`)}
-                  onViewAllCriticos={() => navigate("/admin/estudiantes?risk=CR%C3%8DTICO")}
+                  onViewAllCriticos={() =>
+                    navigate("/admin/estudiantes?risk=CR%C3%8DTICO")
+                  }
                 />
               }
             />
@@ -125,10 +132,11 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               element={
                 <PanelView
                   carreraId={carreraId}
-                  dashboardAnio={dashboardAnio}
                   students={studentsForChildren}
                   onSelectStudent={(id) => navigate(`/admin/estudiantes/${id}`)}
-                  onViewAllCriticos={() => navigate("/admin/estudiantes?risk=CR%C3%8DTICO")}
+                  onViewAllCriticos={() =>
+                    navigate("/admin/estudiantes?risk=CR%C3%8DTICO")
+                  }
                 />
               }
             />
@@ -145,6 +153,8 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
                   onFilterRiskChange={(v) => updateFilters({ risk: v })}
                   filteredStudents={filteredStudents}
                   apiStudents={apiStudents}
+                  isLoading={isLoading}
+                  isError={isError}
                   onSelectStudent={(id) => navigate(`/admin/estudiantes/${id}`)}
                 />
               }
@@ -166,10 +176,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
               path="reportes"
               element={<ReportesPanel students={studentsForChildren} />}
             />
-            <Route
-              path="configuracion"
-              element={<AHPConfigPanel />}
-            />
+            <Route path="configuracion" element={<AHPConfigPanel />} />
           </Routes>
         </main>
       </div>

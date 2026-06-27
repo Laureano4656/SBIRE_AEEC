@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Survey } from "../../types/types.ts";
-import SurveyEditor from "../SurveyEditor.tsx";
-import SurveyResponsesModal from "../SurveyResponsesModal.tsx";
+import SurveyEditor from "./SurveyEditor.tsx";
+import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
 
 interface EncuestasViewProps {
   initialSurveys: Survey[];

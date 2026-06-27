@@ -3,10 +3,8 @@ from fastapi import HTTPException, status
 
 from app.repositories.dashboard_tutor import dashboardTutorRepository
 
-from app.schemas.dashboard_admin_dep import (
-    EstudianteDashboardResponse,
-    GeneralEstudianteDashboardAdminResponse
-)
+from app.models.estudiante_dashboard import EstudianteDashboardResponse
+from app.schemas.dashboard_admin_dep import GeneralEstudianteDashboardAdminResponse
 
 class DashboardTutorService:
     """

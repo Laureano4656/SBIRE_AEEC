@@ -11,7 +11,7 @@ import AdminPanel from "./components/AdminPanel.tsx";
 import PrincipalAdminPanel from "./components/PrincipalAdminPanel.tsx";
 import StudentPanel from "./components/StudentPanel.tsx";
 import TeacherPanel from "./components/DocentePanel.tsx";
-import TutorPanel from "./components/TutorPanel.tsx";
+import TutorPanel from "./components/tutor/TutorPanel.tsx";
 import AuthCallback from "./components/AuthCallback.tsx";
 import { AuthProvider } from "./contexts/AuthProvider.tsx";
 
@@ -52,7 +52,7 @@ export default function App() {
           element={<TeacherPanel onLogout={handleLogout} />}
         />
 
-        <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
+        <Route path="/tutor/*" element={<TutorPanel onLogout={handleLogout} />} />
       </Routes>
     </AuthProvider>
   );

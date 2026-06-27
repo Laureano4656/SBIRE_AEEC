@@ -9,9 +9,9 @@ class EstudianteDashboardAdminResponse(BaseModel):
     carrera: str
     etapa: str
     porcentaje_carrera: float
-    indice_riesgo: float
+    indice_riesgo: float | None
     estado_alerta: str | None
-    ultima_fecha_recalculo: datetime
+    ultima_fecha_recalculo: datetime | None
     
 class GeneralEstudianteDashboardAdminResponse(BaseModel):
     nombre: str
@@ -20,7 +20,7 @@ class GeneralEstudianteDashboardAdminResponse(BaseModel):
     carrera: str
     materias_aprobadas: int
     materias_totales: int
-    score_riesgo: float
+    score_riesgo: float | None
     
 class EventoCronologicoResponse(BaseModel):
     tipo: str

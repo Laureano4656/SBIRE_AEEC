@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Student, SubjectProgress } from "../types/types.ts";
-import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../data.ts";
+import type { Student, SubjectProgress } from "../../types/types.ts";
+import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../../data.ts";
 
 interface AdminStudentViewProps {
   student: Student;

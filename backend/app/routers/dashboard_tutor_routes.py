@@ -3,10 +3,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.api.deps import get_conn
-from app.schemas.dashboard_admin_dep import (
-    EstudianteDashboardResponse,
-    GeneralEstudianteDashboardAdminResponse
-)
+from app.models.estudiante_dashboard import EstudianteDashboardResponse
+from app.schemas.dashboard_admin_dep import GeneralEstudianteDashboardAdminResponse
 
 from app.services.dashboard_tutor_service import DashboardTutorService
 
