@@ -2,12 +2,12 @@ import { useState } from "react";
 import type { Survey } from "../types/types.ts";
 
 interface SurveyResponsesModalProps {
-  survey: Survey;
+  //survey: Survey;
   onClose: () => void;
 }
 
 export default function SurveyResponsesModal({
-  survey,
+
   onClose,
 }: SurveyResponsesModalProps) {
   const { questions, responses } = survey;

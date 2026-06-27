@@ -33,3 +33,16 @@ export const responderEncuesta = async ({
     );
     return response.data;
 };
+
+export const getMetricasEncuestas = async (carrera_id: number) => {
+    const response = await axiosInstance.get(
+        `${PREFIX}/dashboard/carreras/${carrera_id}/metricas-eventos`
+    );
+    return response.data;
+}
+export const getMetricasEncuestasCicloActual = async (carrera_id: number) => {
+    const response = await axiosInstance.get(
+        `${PREFIX}/dashboard/carreras/${carrera_id}/metricas-eventos/ciclo-actual`
+    );
+    return response.data;
+}

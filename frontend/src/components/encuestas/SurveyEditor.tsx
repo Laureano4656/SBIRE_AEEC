@@ -6,9 +6,9 @@ import type {
 } from "../types/types.ts";
 
 type SurveyEditorProps = {
-  onSave: (survey: Survey) => void;
+  //onSave: (survey: Survey) => void;
   onCancel: () => void;
-  initialSurvey?: Survey;
+  //initialSurvey?: Survey;
 };
 
 const TIPO_PREGUNTA_LABEL: Record<TipoPreguntaEncuesta, string> = {
@@ -19,9 +19,9 @@ const TIPO_PREGUNTA_LABEL: Record<TipoPreguntaEncuesta, string> = {
 };
 
 export default function SurveyEditor({
-  onSave,
+  //onSave,
   onCancel,
-  initialSurvey,
+  //initialSurvey,
 }: SurveyEditorProps) {
   const esEdicion = Boolean(initialSurvey);
   const [paso, setPaso] = useState<"datos" | "preguntas">("datos");
@@ -128,12 +128,12 @@ export default function SurveyEditor({
         prev.map((q) =>
           q.id === editandoId
             ? {
-                ...q,
-                texto: formTexto.trim(),
-                tipo: formTipo,
-                opciones: opcionesLimpias,
-                obligatoria: formObligatoria,
-              }
+              ...q,
+              texto: formTexto.trim(),
+              tipo: formTipo,
+              opciones: opcionesLimpias,
+              obligatoria: formObligatoria,
+            }
             : q,
         ),
       );
@@ -192,20 +192,18 @@ export default function SurveyEditor({
           </h2>
           <div className="flex gap-1 text-[10px] font-bold uppercase tracking-wider">
             <span
-              className={`px-2 py-1 rounded ${
-                paso === "datos"
+              className={`px-2 py-1 rounded ${paso === "datos"
                   ? "bg-brand-primary text-white"
                   : "bg-[#edeeef] text-[#43474f]"
-              }`}
+                }`}
             >
               1. Datos
             </span>
             <span
-              className={`px-2 py-1 rounded ${
-                paso === "preguntas"
+              className={`px-2 py-1 rounded ${paso === "preguntas"
                   ? "bg-brand-primary text-white"
                   : "bg-[#edeeef] text-[#43474f]"
-              }`}
+                }`}
             >
               2. Preguntas
             </span>

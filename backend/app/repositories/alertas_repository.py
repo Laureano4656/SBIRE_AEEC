@@ -57,4 +57,26 @@ class AlertasRepository(CrudRepository[AlertaResponse]):
         """
         rows = await self.conn.fetch(query, carrera_id)
         return [AlertaResponse(**row) for row in rows]
+
+    async def get_alertas_por_estudiante(self, estudiante_id: int) -> list[AlertaResponse]:
+        query = """
+            SELECT a.*
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.id = $1
+            ORDER BY a.generada_en DESC
+        """
+        rows = await self.conn.fetch(query, estudiante_id)
+        return [AlertaResponse(**row) for row in rows]
+
+    async def get_alertas_pendientes_por_estudiante(self, estudiante_id: int) -> list[AlertaResponse]:
+        query = """
+            SELECT a.*
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            WHERE e.id = $1 AND a.estado IN ('nueva', 'en_revision')
+            ORDER BY a.generada_en DESC
+        """
+        rows = await self.conn.fetch(query, estudiante_id)
+        return [AlertaResponse(**row) for row in rows]
     

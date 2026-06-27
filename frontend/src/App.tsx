@@ -13,12 +13,16 @@ import StudentPanel from "./components/StudentPanel.tsx";
 import TeacherPanel from "./components/DocentePanel.tsx";
 import TutorPanel from "./components/tutor/TutorPanel.tsx";
 import AuthCallback from "./components/AuthCallback.tsx";
-import { AuthProvider } from "./contexts/AuthProvider.tsx";
+
+
+
 
 export default function App() {
   // Shared Global State for exact real-time response feeling
   const [students] = useState<Student[]>(INITIAL_STUDENTS);
-  const [surveys] = useState<Survey[]>(INITIAL_SURVEYS);
+  //const [surveys] = useState<Survey[]>(INITIAL_SURVEYS);
+
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,34 +30,40 @@ export default function App() {
   };
 
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/auth/callback" element={<AuthCallback />} />
 
-        <Route
-          path="/admin/*"
-          element={<AdminPanel onLogout={handleLogout} surveys={surveys} />}
-        />
+    <Routes>
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
-        <Route
-          path="/superadmin"
-          element={
-            <PrincipalAdminPanel onLogout={handleLogout} students={students} />
-          }
-        />
+      <Route
+        path="/admin/*"
+        element={<AdminPanel onLogout={handleLogout} />}
+      />
 
-        <Route
-          path="/student/*"
-          element={<StudentPanel onLogout={handleLogout} />}
-        />
+      <Route
+        path="/superadmin"
+        element={
+          <PrincipalAdminPanel onLogout={handleLogout} students={students} />
+        }
+      />
 
-        <Route
-          path="/teacher"
-          element={<TeacherPanel onLogout={handleLogout} />}
-        />
+      <Route
+        path="/student/*"
+        element={<StudentPanel onLogout={handleLogout} />}
+      />
 
+      <Route
+        path="/teacher"
+        element={<TeacherPanel onLogout={handleLogout} />}
+      />
+
+      <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
+    </Routes>
+
+<<<<<<< HEAD
         <Route path="/tutor/*" element={<TutorPanel onLogout={handleLogout} />} />
       </Routes>
     </AuthProvider>
+=======
+>>>>>>> c7120f0bff24e6485c666f144759fdb3d71f7855
   );
 }

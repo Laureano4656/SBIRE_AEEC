@@ -4,31 +4,44 @@ from app.schemas.encuesta import AsignacionEncuestaResponse
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 import asyncpg
 
-from app.schemas.encuesta import EstadisticaEventoResponse, OpcionEncuestaResponse, PreguntaParaEncuesta, RespuestaItemSubmit, RespuestaPrevia, MateriaResponse
+from app.schemas.encuesta import (
+    EstadisticaEventoResponse,
+    OpcionEncuestaResponse,
+    PreguntaParaEncuesta,
+    RespuestaItemSubmit,
+    RespuestaPrevia,
+    MateriaResponse,
+)
 from app.schemas.pregunta import PreguntaResponse
-    
+
 
 class EncuestasRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
         self.conn = conn
-    
 
-    async def _obtener_materias_alumno(self, estudiante_id: int, estado: str) -> list[MateriaResponse]:
+    async def _obtener_materias_alumno(
+        self, estudiante_id: int, estado: str
+    ) -> list[MateriaResponse]:
         """
-        Busca materias en las que el estudiante ya tiene una inscripción activa 
+        Busca materias en las que el estudiante ya tiene una inscripción activa
         con un estado específico ('cursando' o 'aprobada falta final').
         """
         rows = await self.conn.fetch(
-                """
+            """
                 SELECT m.id as materia_id, m.nombre as materia_nombre
                 FROM cursadas c
                 JOIN materias m ON c.materia_id = m.id
                 WHERE c.estudiante_id = $1 
                 AND c.estado = $2::public.enum_estado_cursada
-            """, estudiante_id, estado)
+            """,
+            estudiante_id,
+            estado,
+        )
         return [MateriaResponse(**row) for row in rows]
-    
-    async def _obtener_materias_disponibles(self, estudiante_id: int) -> list[MateriaResponse]:
+
+    async def _obtener_materias_disponibles(
+        self, estudiante_id: int
+    ) -> list[MateriaResponse]:
         """
         Cruza al estudiante con su plan de estudios, filtrando las materias
         que ya aprobó/está cursando, asegurando que cumpla con las CORRELATIVAS,
@@ -68,19 +81,21 @@ class EncuestasRepository:
                     )
               )
         """
-        
+
         # 3. Le pasamos el estudiante_id ($1) y el cuatrimestre_actual ($2) a asyncpg
         filas = await self.conn.fetch(query, estudiante_id, cuatrimestre_actual)
-        
+
         return [MateriaResponse(**dict(row)) for row in filas]
-    
-    async def guardar_respuestas(self, asignacion_id: int, respuestas: list[RespuestaItemSubmit]) -> None:
+
+    async def guardar_respuestas(
+        self, asignacion_id: int, respuestas: list[RespuestaItemSubmit]
+    ) -> None:
         """Guarda el array de respuestas de forma transaccional."""
         async with self.conn.transaction():
             # 1. Marcar la asignación como completada
             await self.conn.execute(
                 "UPDATE asignacion_encuesta SET completado = true WHERE id = $1",
-                asignacion_id
+                asignacion_id,
             )
 
             # 2. Insertar respuestas (sin calcular riesgo aún)
@@ -92,17 +107,19 @@ class EncuestasRepository:
             valores = [
                 (
                     asignacion_id,
-                    r['pregunta_id'],
-                    r.get('materia_id'),
-                    r.get('opcion_seleccionada_id'),
-                    r.get('valor_numerico'),
-                    r.get('valor_texto')
+                    r["pregunta_id"],
+                    r.get("materia_id"),
+                    r.get("opcion_seleccionada_id"),
+                    r.get("valor_numerico"),
+                    r.get("valor_texto"),
                 )
                 for r in respuestas
             ]
             await self.conn.executemany(query_insert, valores)
-            
-    async def get_asignacion(self, asignacion_id: int) -> AsignacionEncuestaResponse | None:
+
+    async def get_asignacion(
+        self, asignacion_id: int
+    ) -> AsignacionEncuestaResponse | None:
         row = await self.conn.fetchrow(
             """
             SELECT 
@@ -112,11 +129,13 @@ class EncuestasRepository:
             periodo_lectivo,
             completado
             FROM asignacion_encuesta WHERE id = $1 AND completado=false AND borrador = false""",
-            asignacion_id
+            asignacion_id,
         )
         return AsignacionEncuestaResponse(**row) if row else None
 
-    async def get_preguntas(self, evento: int, carrera_id: int | None) -> list[PreguntaResponse]:
+    async def get_preguntas(
+        self, evento: int, carrera_id: int | None
+    ) -> list[PreguntaResponse]:
         rows = await self.conn.fetch(
             """
             SELECT pregunta.id, indicador_id, carrera_id, texto_pregunta, pregunta.evento_id as evento_id,
@@ -126,7 +145,8 @@ class EncuestasRepository:
             WHERE pregunta.activa = TRUE AND pregunta.evento_id = $1
               AND (carrera_id = $2 OR carrera_id IS NULL)
             """,
-            evento, carrera_id
+            evento,
+            carrera_id,
         )
         return [PreguntaResponse(**r) for r in rows]
 
@@ -137,40 +157,46 @@ class EncuestasRepository:
             FROM evento_disparador
             WHERE id = $1
             """,
-            evento
+            evento,
         )
         return val
 
-    async def get_opciones(self, pregunta_ids: list[int]) -> list[OpcionEncuestaResponse]:
+    async def get_opciones(
+        self, pregunta_ids: list[int]
+    ) -> list[OpcionEncuestaResponse]:
         rows = await self.conn.fetch(
             "SELECT id, pregunta_id, texto_opcion FROM opcion_pregunta WHERE pregunta_id = ANY($1::int[]) ORDER BY orden_visual ASC",
-            pregunta_ids
+            pregunta_ids,
         )
         return [OpcionEncuestaResponse(**r) for r in rows]
 
     async def get_respuestas_previas(self, asignacion_id: int) -> list[RespuestaPrevia]:
         rows = await self.conn.fetch(
             "SELECT pregunta_id, materia_id, opcion_seleccionada_id, valor_numerico, valor_texto FROM respuesta_estudiante WHERE asignacion_id = $1",
-            asignacion_id
+            asignacion_id,
         )
         return [RespuestaPrevia(**r) for r in rows]
 
     async def get_carrera_estudiante(self, estudiante_id: int) -> int | None:
-        row = await self.conn.fetchrow("SELECT carrera_id FROM estudiantes WHERE id = $1", estudiante_id)
-        return row['carrera_id'] if row else None
+        row = await self.conn.fetchrow(
+            "SELECT carrera_id FROM estudiantes WHERE id = $1", estudiante_id
+        )
+        return row["carrera_id"] if row else None
 
     async def get_materias_cursando(self, estudiante_id: int) -> list[dict]:
-        return await self._obtener_materias_alumno(estudiante_id, 'cursando')
+        return await self._obtener_materias_alumno(estudiante_id, "cursando")
 
     async def get_materias_con_final(self, estudiante_id: int) -> list[dict]:
-        return await self._obtener_materias_alumno(estudiante_id, 'aprobada falta final')
+        return await self._obtener_materias_alumno(
+            estudiante_id, "aprobada falta final"
+        )
 
     async def get_materias_disponibles(self, estudiante_id: int) -> list[dict]:
         return await self._obtener_materias_disponibles(estudiante_id)
 
     async def publicar_asignacion(self, asignacion_id: int) -> bool:
         """Cambia el campo borrador a false para que sea visible por los estudiantes."""
-        
+
         query = """
             UPDATE asignacion_encuesta 
             SET borrador = false 
@@ -198,7 +224,9 @@ class EncuestasRepository:
         """
         return await self.conn.fetch(query)
 
-    async def get_detalles_encuestas_ultimo_anio(self, carrera_id: int, evento_id: int, anio_actual: str) -> list[asyncpg.Record]:
+    async def get_detalles_encuestas_ultimo_anio(
+        self, carrera_id: int, evento_id: int, anio_actual: str
+    ) -> list[asyncpg.Record]:
         """
         Trae el volcado completo de estudiantes de una carrera con sus respectivas preguntas,
         materias asociadas (si aplica), opciones elegidas y valores ingresados para un año específico.
@@ -229,7 +257,9 @@ class EncuestasRepository:
         """
         return await self.conn.fetch(query, carrera_id, evento_id, anio_actual)
 
-    async def get_encuestas_agrupadas_por_evento_y_carrera(self, carrera_id: int) -> list[asyncpg.Record]:
+    async def get_encuestas_agrupadas_por_evento_y_carrera(
+        self, carrera_id: int
+    ) -> list[asyncpg.Record]:
         """
         Trae métricas de encuestas (asignadas vs completadas) agrupadas por evento,
         pero filtrando únicamente las asignaciones de los estudiantes de una carrera específica.
@@ -254,7 +284,38 @@ class EncuestasRepository:
         """
         return await self.conn.fetch(query, carrera_id)
 
-    async def get_asignaciones_completadas_detalles(self, carrera_id: int, evento_id: int, periodo_lectivo: str) -> list[asyncpg.Record]:
+    async def get_encuestas_agrupadas_por_evento_y_carrera_cicloLectivoActual(
+        self, carrera_id: int
+    ) -> list[asyncpg.Record]:
+        """
+        Trae métricas de encuestas (asignadas vs completadas) agrupadas por evento,
+        pero filtrando únicamente las asignaciones de los estudiantes de una carrera específica.
+        Solo considera el ciclo lectivo actual. El ciclo lectivo esta cargado como 20261 (2026 primer cuatrimestre).
+        """
+        query = """
+            SELECT 
+                ed.id as evento_id,
+                ed.nombre as nombre_evento,
+                COUNT(ae.id)::int as total_asignadas,
+                COUNT(CASE WHEN ae.completado = TRUE THEN 1 END)::int as total_completadas
+            FROM evento_disparador ed
+            -- Usamos una subconsulta en el JOIN para garantizar que los eventos con 0 asignaciones 
+            -- para esta carrera sigan apareciendo en la lista final.
+            LEFT JOIN (
+                SELECT a.id, a.evento_id, a.completado,a.fecha_asignacion
+                FROM asignacion_encuesta a
+                JOIN estudiantes e ON a.estudiante_id = e.id
+                WHERE e.carrera_id = $1
+            ) ae ON ae.evento_id = ed.id
+            WHERE ae.fecha_asignacion >= date_trunc('year', current_date) -- Filtra solo asignaciones del ciclo lectivo actual
+            GROUP BY ed.id, ed.nombre
+            ORDER BY ed.id ASC;
+        """
+        return await self.conn.fetch(query, carrera_id)
+
+    async def get_asignaciones_completadas_detalles(
+        self, carrera_id: int, evento_id: int, periodo_lectivo: str
+    ) -> list[asyncpg.Record]:
         """Trae los datos base de los estudiantes que completaron la encuesta."""
         query = """
             SELECT 
@@ -272,7 +333,9 @@ class EncuestasRepository:
         """
         return await self.conn.fetch(query, carrera_id, evento_id, periodo_lectivo)
 
-    async def get_respuestas_previas_bulk(self, asignacion_ids: list[int]) -> list[asyncpg.Record]:
+    async def get_respuestas_previas_bulk(
+        self, asignacion_ids: list[int]
+    ) -> list[asyncpg.Record]:
         """Trae de una sola vez todas las respuestas de un lote de asignaciones."""
         query = """
             SELECT asignacion_id, pregunta_id, materia_id, opcion_seleccionada_id, valor_numerico, valor_texto
