@@ -194,7 +194,7 @@ CREATE FUNCTION public.actualizar_estado_alerta_en_intervencion() RETURNS trigge
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    UPDATE alerta
+    UPDATE alertas
     SET estado = 'intervenida'
     WHERE id = NEW.alerta_id
       AND estado IN ('nueva', 'en_revision');

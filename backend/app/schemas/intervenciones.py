@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 class IntervencionCreate(BaseModel):
@@ -5,7 +7,7 @@ class IntervencionCreate(BaseModel):
     tutor_id: int
     tipo: str
     resultado: str
-    fecha: str
+    fecha: date
     descripcion: str | None = None
     
     class Config:
@@ -17,7 +19,7 @@ class IntervencionResponse(BaseModel):
     tutor_id: int
     tipo: str
     resultado: str
-    fecha: str
+    fecha: date
     descripcion: str | None = None
     
     class Config:
