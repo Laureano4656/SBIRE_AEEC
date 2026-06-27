@@ -31,7 +31,7 @@ class EntrevistaPlanificadaRepository(CrudRepository[EntrevistaPlanificadaRespon
             intervencion_id=entrevista.intervencion_id
         )
     
-    async def reschedule_interview(self, entrevista_id: int, nueva_fecha: datetime) -> EntrevistaPlanificadaResponse:
+    async def reschedule_interview(self, entrevista_id: int, nueva_fecha: datetime.date) -> EntrevistaPlanificadaResponse:
         return await self.update(entrevista_id, fecha_propuesta=nueva_fecha)
     
     async def cancel_interview(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:

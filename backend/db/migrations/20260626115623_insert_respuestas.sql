@@ -166,7 +166,7 @@ BEGIN
     SELECT id INTO p_familia_vive FROM pregunta WHERE texto_pregunta ILIKE '%familia vive en Mar del Plata%' LIMIT 1;
     SELECT id INTO p_familia_oriunda FROM pregunta WHERE texto_pregunta ILIKE '%familia es oriunda%' LIMIT 1;
     SELECT id INTO p_horas_viaje FROM pregunta WHERE texto_pregunta ILIKE '%horas de viaje%' LIMIT 1;
-    SELECT id INTO p_comunicacion FROM pregunta WHERE texto_pregunta ILIKE '%comunicás con ellos%' LIMIT 1;
+    SELECT id INTO p_comunicacion FROM pregunta WHERE texto_pregunta ILIKE '%comunicas con ellos%' LIMIT 1;
     SELECT id INTO p_tipo_institucion FROM pregunta WHERE texto_pregunta ILIKE '%tipo de institución%' LIMIT 1;
     SELECT id INTO p_secundario_tiempo FROM pregunta WHERE texto_pregunta ILIKE '%secundario en tiempo%' LIMIT 1;
     SELECT id INTO p_primera_opcion FROM pregunta WHERE texto_pregunta ILIKE '%primera op%' LIMIT 1;
@@ -224,7 +224,7 @@ BEGIN
     SELECT id INTO p_espacio_estudio    FROM pregunta WHERE texto_pregunta ILIKE '%espacio en tu casa adecuado%' LIMIT 1;
     SELECT id INTO p_tiempo_viaje       FROM pregunta WHERE texto_pregunta ILIKE '%tiempo aproximado de la facultad%' LIMIT 1;
     SELECT id INTO p_obstaculo_traslado FROM pregunta WHERE texto_pregunta ILIKE '%obstáculo%' LIMIT 1;
-    SELECT id INTO p_ganas_estudiar     FROM pregunta WHERE texto_pregunta ILIKE '%ganas de estudiar%' LIMIT 1;
+    SELECT id INTO p_ganas_estudiar     FROM pregunta WHERE texto_pregunta ILIKE '%menos ganas de continuar la carrera%' LIMIT 1;
     SELECT id INTO p_interes_contenidos FROM pregunta WHERE texto_pregunta ILIKE '%interesado te sentiste%' LIMIT 1;
     SELECT id INTO p_conoce_espacios    FROM pregunta WHERE texto_pregunta ILIKE '%espacios que la facultad brinda%' LIMIT 1;
 

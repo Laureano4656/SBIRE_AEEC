@@ -153,7 +153,7 @@ class EncuestasRepository:
     async def get_evento_disparador(self, evento: int):
         val = await self.conn.fetchval(
             """
-            SELECT nombre
+            SELECT periodicidad
             FROM evento_disparador
             WHERE id = $1
             """,
@@ -290,12 +290,13 @@ class EncuestasRepository:
         """
         Trae métricas de encuestas (asignadas vs completadas) agrupadas por evento,
         pero filtrando únicamente las asignaciones de los estudiantes de una carrera específica.
-        Solo considera el ciclo lectivo actual. El ciclo lectivo esta cargado como 20261 (2026 primer cuatrimestre).
+        Solo considera el ciclo lectivo actual.
         """
         query = """
             SELECT 
                 ed.id as evento_id,
                 ed.nombre as nombre_evento,
+                ed.periodicidad as periodicidad_evento,
                 COUNT(ae.id)::int as total_asignadas,
                 COUNT(CASE WHEN ae.completado = TRUE THEN 1 END)::int as total_completadas
             FROM evento_disparador ed
@@ -329,7 +330,7 @@ class EncuestasRepository:
             WHERE e.carrera_id = $1 
               AND ae.evento_id = $2 
               AND ae.periodo_lectivo LIKE $3 || '%'
-              AND ae.completado = TRUE -------------------------- CHECKEAR 
+              AND ae.completado = TRUE -------------------------- CHECKEAR COMPLETADO
         """
         return await self.conn.fetch(query, carrera_id, evento_id, periodo_lectivo)
 
