@@ -51,13 +51,6 @@ class dashboardEstudiantesRepository:
             INNER JOIN estudiantes e ON e.carrera_id = pe.carrera_id
             WHERE pe.activo = TRUE
             AND e.id = $1
-            AND pe.anio_vigencia = (
-                SELECT MAX(anio_vigencia)
-                FROM plan_estudios
-                WHERE carrera_id = e.carrera_id
-                AND anio_vigencia <= e.anio_ingreso
-                AND activo = TRUE
-            )
             """,
             estudiante_id,
         )
@@ -91,7 +84,7 @@ class dashboardEstudiantesRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS total
-            FROM asignacion_encuestas a
+            FROM asignacion_encuesta a
             WHERE a.estudiante_id = $1
             AND a.completado = FALSE
             """,
