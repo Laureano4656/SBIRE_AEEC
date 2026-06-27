@@ -3,6 +3,10 @@ from app.schemas.dashboard_admin_dep import GeneralEstudianteDashboardAdminRespo
 import asyncpg
 import datetime
 
+from app.schemas.alertas import AlertaResponse
+from app.schemas.dashboard_tutor import IntervencionesTutorResponse
+from app.schemas.entrevista_planificada import EntrevistaPlanificadaResponse
+
 
 class dashboardTutorRepository:
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -39,7 +43,7 @@ class dashboardTutorRepository:
         )
         return [EstudianteDashboardResponse(**dict(row)) for row in rows]
 
-    async def general_data_by_student(self, legajo: str, carrera_id: int) -> GeneralEstudianteDashboardAdminResponse | None:
+    async def general_data_by_student(self, estudiante_id: int) -> GeneralEstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow("""
             SELECT
                 e.nombre,
@@ -75,14 +79,45 @@ class dashboardTutorRepository:
                 WHERE pe.activo = TRUE
                 GROUP BY pe.carrera_id
             ) totales ON totales.carrera_id = e.carrera_id
-            WHERE e.legajo = $1 AND e.carrera_id = $2
-        """, legajo, carrera_id)
+            WHERE e.id = $1 
+        """, estudiante_id)
         return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     
-    async def get_entrevistas_planificadas(self, tutor_id: int) -> int:
+    async def get_numero_entrevistas_planificadas(self, tutor_id: int) -> int:
         row = await self.conn.fetchrow("""
             SELECT COUNT(*) AS entrevistas_planificadas
-            FROM entrevistas
-            WHERE tutor_id = $1 AND estado = 'planificada'
+            FROM entrevista_planificada
+            WHERE tutor_id = $1 AND estado = 'pendiente'
         """, tutor_id)
         return row['entrevistas_planificadas'] if row else 0
+
+    async def get_entrevistas(self, tutor_id:int) -> list[EntrevistaPlanificadaResponse]:
+        rows = await self.conn.fetch("""
+            SELECT *
+            FROM entrevista_planificada
+            WHERE tutor_id = $1
+        """, tutor_id)
+        return [EntrevistaPlanificadaResponse(**dict(row)) for row in rows]
+    
+    async def get_intervenciones_por_tutor(self, tutor_id: int) -> list[IntervencionesTutorResponse]:
+        rows = await self.conn.fetch("""
+            SELECT i.*,
+            a.estudiante_id
+            FROM intervenciones i
+            INNER JOIN alertas a ON i.alerta_id = a.id
+            WHERE i.tutor_id = $1
+        """, tutor_id)
+        return [IntervencionesTutorResponse(**dict(row)) for row in rows]
+    
+    async def get_alertas_sin_atender_por_carrera(self, carrera_id: int) -> list[AlertaResponse]:
+            query = """
+                SELECT a.*
+                FROM alertas a
+                INNER JOIN estudiantes e ON a.estudiante_id = e.id
+                WHERE e.carrera_id = $1 AND a.estado IN ('nueva', 'en_revision')
+                ORDER BY a.generada_en DESC
+            """
+            rows = await self.conn.fetch(query, carrera_id)
+            return [AlertaResponse(**row) for row in rows]
+    
+    
