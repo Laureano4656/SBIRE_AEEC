@@ -28,3 +28,11 @@ async def obtener_datos_generales_estudiante(
 ):
     service = DashboardTutorService(conn)
     return await service.obtener_datos_generales_estudiante(legajo, carrera_id)
+
+@router.get("/tutor/entrevistas/planificadas", response_model=int)
+async def obtener_entrevistas_planificadas(
+    tutor_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+):
+    service = DashboardTutorService(conn)
+    return await service.obtener_entrevistas_planificadas(tutor_id)
