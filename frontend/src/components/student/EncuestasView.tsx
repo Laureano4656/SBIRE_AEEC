@@ -97,17 +97,18 @@ export default function EncuestasView({
           Mis Encuestas y Relevamientos
         </h3>
         <p className="text-slate-500 font-medium text-sm mt-1 leading-normal">
-          Responde las encuestas planificadas por el cuerpo de tutores.
-          Tus respuestas nos permiten modelar de forma proactiva tu
-          trayecto formativo, evitar la inactividad y brindarte apoyo
-          continuo.
+          Responde las encuestas planificadas por el cuerpo de tutores. Tus
+          respuestas nos permiten modelar de forma proactiva tu trayecto
+          formativo, evitar la inactividad y brindarte apoyo continuo.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
-            <span className="material-symbols-outlined text-2xl">pending_actions</span>
+            <span className="material-symbols-outlined text-2xl">
+              pending_actions
+            </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
@@ -121,7 +122,9 @@ export default function EncuestasView({
 
         <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-            <span className="material-symbols-outlined text-2xl">check_circle</span>
+            <span className="material-symbols-outlined text-2xl">
+              check_circle
+            </span>
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
@@ -215,7 +218,9 @@ export default function EncuestasView({
                       onClick={() => setSelectedSurveyToFill(ps)}
                       className="bg-brand-primary text-white hover:opacity-90 font-bold text-xs py-2 px-4 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-base">rate_review</span>
+                      <span className="material-symbols-outlined text-base">
+                        rate_review
+                      </span>
                       Completar Formulario
                     </button>
                   </div>
@@ -225,15 +230,17 @@ export default function EncuestasView({
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
               <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-4xl">emoji_events</span>
+                <span className="material-symbols-outlined text-4xl">
+                  emoji_events
+                </span>
               </div>
               <h4 className="font-bold text-slate-800 text-lg">
                 ¡Excelente trabajo académico!
               </h4>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                No posees encuestas de trayectorias pendientes por este
-                ciclo estudiantil. Haz completado el 100% de los
-                cuestionarios requeridos por tus tutores.
+                No posees encuestas de trayectorias pendientes por este ciclo
+                estudiantil. Haz completado el 100% de los cuestionarios
+                requeridos por tus tutores.
               </p>
               <button
                 onClick={() => setActiveSurveyTab("completadas")}
@@ -256,11 +263,15 @@ export default function EncuestasView({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[10px] font-black">done</span>
+                        <span className="material-symbols-outlined text-[10px] font-black">
+                          done
+                        </span>
                         completada
                       </span>
                       <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">schedule</span>
+                        <span className="material-symbols-outlined text-sm">
+                          schedule
+                        </span>
                         Enviado: {cs.completedAt}
                       </span>
                     </div>
@@ -279,7 +290,9 @@ export default function EncuestasView({
                       onClick={() => setSelectedSurveyToInspect(cs)}
                       className="border border-slate-200 hover:bg-slate-50 text-brand-primary font-bold text-xs py-2 px-4 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-base">visibility</span>
+                      <span className="material-symbols-outlined text-base">
+                        visibility
+                      </span>
                       Ver Mis Respuestas
                     </button>
                   </div>
@@ -288,8 +301,8 @@ export default function EncuestasView({
             </div>
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500">
-              No hay registros archivados. Complete los cuestionarios
-              activos para visualizar su historial.
+              No hay registros archivados. Complete los cuestionarios activos
+              para visualizar su historial.
             </div>
           )}
         </div>
@@ -308,8 +321,13 @@ export default function EncuestasView({
                 <span className="text-[10px] font-extrabold text-brand-primary uppercase bg-[#eef2ff] px-2.5 py-1 rounded-lg">
                   {selectedSurveyToFill.category}
                 </span>
-                <h2 id="survey-fill-title" className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight">
-                  <span className="material-symbols-outlined text-2xl text-brand-secondary">ballot</span>
+                <h2
+                  id="survey-fill-title"
+                  className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight"
+                >
+                  <span className="material-symbols-outlined text-2xl text-brand-secondary">
+                    ballot
+                  </span>
                   {selectedSurveyToFill.title}
                 </h2>
               </div>
@@ -322,25 +340,43 @@ export default function EncuestasView({
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="space-y-6 text-xs text-slate-600 font-semibold">
+            <form
+              onSubmit={handleFormSubmit}
+              className="space-y-6 text-xs text-slate-600 font-semibold"
+            >
               <div className="max-h-[380px] overflow-y-auto pr-2 space-y-5">
                 {selectedSurveyToFill.questions.map((q, index) => (
                   <div key={q.id} className="space-y-2.5 pt-1">
                     {q.type === "text" ? (
-                      <label htmlFor={q.id} className="text-slate-800 font-bold block leading-relaxed">
+                      <label
+                        htmlFor={q.id}
+                        className="text-slate-800 font-bold block leading-relaxed"
+                      >
                         {index + 1}. {q.question}
                       </label>
                     ) : (
-                      <p id={`${q.id}-label`} className="text-slate-800 font-bold block leading-relaxed">
+                      <p
+                        id={`${q.id}-label`}
+                        className="text-slate-800 font-bold block leading-relaxed"
+                      >
                         {index + 1}. {q.question}
                         {!q.value && (
-                          <span className="text-red-500 ml-1" aria-label="obligatorio">*</span>
+                          <span
+                            className="text-red-500 ml-1"
+                            aria-label="obligatorio"
+                          >
+                            *
+                          </span>
                         )}
                       </p>
                     )}
 
                     {q.type === "select" && q.options && (
-                      <div role="group" aria-labelledby={`${q.id}-label`} className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                      <div
+                        role="group"
+                        aria-labelledby={`${q.id}-label`}
+                        className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1"
+                      >
                         {q.options.map((opt) => (
                           <button
                             type="button"
@@ -363,7 +399,9 @@ export default function EncuestasView({
                       <textarea
                         id={q.id}
                         value={q.value}
-                        onChange={(e) => handleSurveyOptionChange(q.id, e.target.value)}
+                        onChange={(e) =>
+                          handleSurveyOptionChange(q.id, e.target.value)
+                        }
                         rows={3}
                         placeholder="Por favor, relate cualquier otra consideración para tu tutor aquí..."
                         className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-slate-800 bg-slate-50 focus:outline-none transition-all"
@@ -404,11 +442,19 @@ export default function EncuestasView({
             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
               <div>
                 <span className="text-[10px] font-extrabold text-emerald-700 uppercase bg-emerald-50 px-2.5 py-1 rounded-lg flex items-center gap-1.5 w-max">
-                  <span className="material-symbols-outlined text-[10px] font-black">done</span>
-                  Respuestas Archivadas • Enviada el {selectedSurveyToInspect.completedAt}
+                  <span className="material-symbols-outlined text-[10px] font-black">
+                    done
+                  </span>
+                  Respuestas Archivadas • Enviada el{" "}
+                  {selectedSurveyToInspect.completedAt}
                 </span>
-                <h2 id="survey-inspect-title" className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight">
-                  <span className="material-symbols-outlined text-2xl text-emerald-600">assignment_turned_in</span>
+                <h2
+                  id="survey-inspect-title"
+                  className="text-lg font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight"
+                >
+                  <span className="material-symbols-outlined text-2xl text-emerald-600">
+                    assignment_turned_in
+                  </span>
                   {selectedSurveyToInspect.title}
                 </h2>
               </div>
@@ -423,7 +469,10 @@ export default function EncuestasView({
 
             <div className="space-y-6 text-xs text-slate-600 font-semibold max-h-[380px] overflow-y-auto pr-2">
               {selectedSurveyToInspect.questions.map((q, index) => (
-                <div key={q.id} className="space-y-2 border-b border-dashed border-slate-100 pb-4 last:border-none last:pb-0">
+                <div
+                  key={q.id}
+                  className="space-y-2 border-b border-dashed border-slate-100 pb-4 last:border-none last:pb-0"
+                >
                   <p className="text-slate-800 font-bold block leading-relaxed">
                     {index + 1}. {q.question}
                   </p>
@@ -449,7 +498,10 @@ export default function EncuestasView({
                     </div>
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 font-medium leading-relaxed italic">
-                      "{q.value || "No se ingresaron comentarios adicionales para esta pregunta."}"
+                      "
+                      {q.value ||
+                        "No se ingresaron comentarios adicionales para esta pregunta."}
+                      "
                     </div>
                   )}
                 </div>
@@ -458,7 +510,9 @@ export default function EncuestasView({
 
             <div className="flex justify-between items-center pt-4 border-t border-slate-100">
               <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">shield</span>
+                <span className="material-symbols-outlined text-xs">
+                  shield
+                </span>
                 Registro Oficial Cifrado
               </span>
               <button

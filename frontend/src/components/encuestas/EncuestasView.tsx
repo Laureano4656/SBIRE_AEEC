@@ -1,25 +1,20 @@
 import { useMemo, useState } from "react";
 import type { Survey } from "../../types/types.ts";
-<<<<<<< HEAD
-import SurveyEditor from "./SurveyEditor.tsx";
-import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
-=======
-import SurveyEditor from "../SurveyEditor.tsx";
-import SurveyResponsesModal from "../SurveyResponsesModal.tsx";
+import SurveyEditor from "../encuestas/SurveyEditor.tsx";
+import SurveyResponsesModal from "../encuestas/SurveyResponsesModal.tsx";
 import type { EstadisticasEventos } from "../../types/encuestas.ts";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
->>>>>>> c7120f0bff24e6485c666f144759fdb3d71f7855
-
-
 
 export default function EncuestasView() {
   const { user } = useAuth();
 
-  const { data: asignationsByEvent, isLoading } = useMetricasEncuestasCicloActual(user?.carrera_id);
+  const { data: asignationsByEvent, isLoading } =
+    useMetricasEncuestasCicloActual(user?.carrera_id);
 
   const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [editingSurvey, setEditingSurvey] = useState<EstadisticasEventos | null>(null);
+  const [editingSurvey, setEditingSurvey] =
+    useState<EstadisticasEventos | null>(null);
   const [viewingResponsesSurvey, setViewingResponsesSurvey] =
     useState<EstadisticasEventos | null>(null);
 
@@ -42,7 +37,10 @@ export default function EncuestasView() {
   const tasaDeRespuestaPromedio = useMemo(() => {
     let totalAsignadas = 0;
     let totalCompletadas = 0;
-    console.log("Calculating tasaDeRespuestaPromedio with asignationsByEvent:", asignationsByEvent); // Debugging line
+    console.log(
+      "Calculating tasaDeRespuestaPromedio with asignationsByEvent:",
+      asignationsByEvent,
+    ); // Debugging line
     if (!asignationsByEvent || asignationsByEvent.length === 0) return 0;
     for (const survey of asignationsByEvent) {
       totalAsignadas += survey.total_asignadas;
@@ -59,8 +57,8 @@ export default function EncuestasView() {
             Gestión de Encuestas
           </h3>
           <p className="text-xs text-[#43474f] mt-1">
-            Administración de cuestionarios destinados a medir y mapear
-            las alertas contextuales externas.
+            Administración de cuestionarios destinados a medir y mapear las
+            alertas contextuales externas.
           </p>
         </div>
         <button
@@ -118,7 +116,10 @@ export default function EncuestasView() {
             </thead>
             <tbody className="divide-y divide-brand-outline-variant">
               {asignationsByEvent?.map((sur) => (
-                <tr key={sur.evento_id} className="hover:bg-[#f8f9fa] transition-colors">
+                <tr
+                  key={sur.evento_id}
+                  className="hover:bg-[#f8f9fa] transition-colors"
+                >
                   <td className="p-4 pl-5">
                     <div
                       className="font-extrabold text-brand-primary text-sm hover:underline cursor-pointer"
@@ -155,7 +156,6 @@ export default function EncuestasView() {
                   </td> */}
                   <td className="p-4 text-center">
                     <div className="flex justify-center items-center gap-2">
-
                       <>
                         <button
                           onClick={() => setViewingResponsesSurvey(sur)}
@@ -163,10 +163,7 @@ export default function EncuestasView() {
                         >
                           Ver Respuestas ({sur.total_completadas})
                         </button>
-
                       </>
-
-
                     </div>
                     <div className="flex justify-center items-center gap-2">
                       Asignadas: {sur.total_asignadas}
