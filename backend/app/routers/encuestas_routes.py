@@ -11,6 +11,7 @@ from app.schemas.encuesta import (
 )
 from app.services.encuesta_service import EncuestaService
 from app.services.riesgo_service import RiesgoService
+from app.core.database import get_pool
 
 router = APIRouter(prefix="/encuestas", tags=["encuestas"])
 
@@ -32,27 +33,28 @@ async def obtener_formulario_dinamico(
 
 @router.post("/pendientes/{asignacion_id}/submit", status_code=status.HTTP_200_OK)
 async def enviar_respuestas(
-    request: Request,  # <-- Para sacar el pool de conexiones global
     asignacion_id: int,
     body: EncuestaSubmit,
     background_tasks: BackgroundTasks,
     conn: asyncpg.Connection = Depends(get_conn),
+    pool: asyncpg.Pool = Depends(get_pool),
 ) -> dict[str, str]:
 
     encuesta_service = EncuestaService(conn)
 
+    asignacion = await service.repo.get_asignacion(asignacion_id)
+    if not asignacion:
+        raise HTTPException(
+            status_code=404, detail="Asignación no encontrada o ya completada."
+        )
+
     # 1. Guardamos la encuesta de forma síncrona
     await encuesta_service.guardar_respuestas(asignacion_id, body.respuestas)
 
-    # 2. Encolamos el motor AHP llamando al método estático del servicio
-    # Le pasamos el pool global de la app en lugar de la conexión del request
-    pool = request.app.state.pool
-
     background_tasks.add_task(
         RiesgoService.tarea_background_calcular_riesgo,
-        pool,
-        body.estudiante_id,
-        asignacion_id,
+        pool=pool,
+        estudiante_id=asignacion.estudiante_id,
     )
 
     return {

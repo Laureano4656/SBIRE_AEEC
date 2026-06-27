@@ -28,3 +28,11 @@ async def obtener_semaforo_estudiante(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+        
+@router.get("/general/{carrera_id}", response_model=list[SemaforoResponse])
+async def obtener_semaforo(
+    carrera_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+) -> list[SemaforoResponse]:
+    service = RiesgoService(conn)
+    return await service.armar_semaforo_estudiantes(carrera_id)

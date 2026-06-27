@@ -117,28 +117,30 @@ class dashboardAdminRepository:
     ) -> EstudianteDashboardAdminResponse | None:
         row = await self.conn.fetchrow(
             """
-            SELECT 
+            SELECT
                 e.nombre,
                 e.apellido,
                 e.dni,
                 c.nombre AS carrera,
-                e.etapa AS etapa,
+                e.etapa,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
-            INNER JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM score_total
-                ORDER BY estudiante_id, creado_en DESC
-            ) s ON e.id = s.estudiante_id
-            LEFT JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM alertas
-                ORDER BY estudiante_id, generada_en DESC
-            ) a ON e.id = a.estudiante_id
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            LEFT JOIN alertas a ON e.id = a.estudiante_id
+                AND a.generada_en = (
+                    SELECT MAX(generada_en) 
+                    FROM alertas 
+                    WHERE estudiante_id = e.id
+                )
             WHERE dni = $1 AND e.activo = TRUE
             """,
             dni,
@@ -151,28 +153,30 @@ class dashboardAdminRepository:
     ) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
-            SELECT 
+            SELECT
                 e.nombre,
                 e.apellido,
                 e.dni,
                 c.nombre AS carrera,
-                e.etapa AS etapa,
+                e.etapa,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
-            INNER JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM score_total
-                ORDER BY estudiante_id, creado_en DESC
-            ) s ON e.id = s.estudiante_id
-            LEFT JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM alertas
-                ORDER BY estudiante_id, generada_en DESC
-            ) a ON e.id = a.estudiante_id
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            LEFT JOIN alertas a ON e.id = a.estudiante_id
+                AND a.generada_en = (
+                    SELECT MAX(generada_en) 
+                    FROM alertas 
+                    WHERE estudiante_id = e.id
+                )
             WHERE e.carrera_id = $1 AND e.activo = TRUE
             """,
             carrera_id,
@@ -185,28 +189,30 @@ class dashboardAdminRepository:
     ) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
-            SELECT 
+            SELECT
                 e.nombre,
                 e.apellido,
                 e.dni,
                 c.nombre AS carrera,
-                e.etapa AS etapa,
+                e.etapa,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
-            INNER JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM score_total
-                ORDER BY estudiante_id, creado_en DESC
-            ) s ON e.id = s.estudiante_id
-            LEFT JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM alertas
-                ORDER BY estudiante_id, generada_en DESC
-            ) a ON e.id = a.estudiante_id
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            LEFT JOIN alertas a ON e.id = a.estudiante_id
+                AND a.generada_en = (
+                    SELECT MAX(generada_en) 
+                    FROM alertas 
+                    WHERE estudiante_id = e.id
+                )
             WHERE e.anio_ingreso = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
             """,
             anio,
@@ -220,28 +226,30 @@ class dashboardAdminRepository:
     ) -> list[EstudianteDashboardAdminResponse]:
         rows = await self.conn.fetch(
             """
-                SELECT 
+            SELECT
                 e.nombre,
                 e.apellido,
                 e.dni,
                 c.nombre AS carrera,
-                e.etapa AS etapa,
+                e.etapa,
                 e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
             FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
-            INNER JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM score_total
-                ORDER BY estudiante_id, creado_en DESC
-            ) s ON e.id = s.estudiante_id
-            LEFT JOIN (
-                SELECT DISTINCT ON (estudiante_id) *
-                FROM alertas
-                ORDER BY estudiante_id, generada_en DESC
-            ) a ON e.id = a.estudiante_id
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            LEFT JOIN alertas a ON e.id = a.estudiante_id
+                AND a.generada_en = (
+                    SELECT MAX(generada_en) 
+                    FROM alertas 
+                    WHERE estudiante_id = e.id
+                )
             WHERE 
                 CASE
                     WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) THEN 'rojo'

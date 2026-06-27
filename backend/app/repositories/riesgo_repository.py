@@ -28,16 +28,16 @@ class RiesgoRepository:
 
     async def obtener_pesos_ahp(self, configuracion_id: int) -> dict[int, float]:
         """
-        Busca los pesos de cada indicador en la base de datos (Ej: tabla pesos_indicadores).
+        Busca los pesos de cada indicador en la base de datos (Ej: tabla peso_indicadores).
         Retorna un diccionario {indicador_id: peso_float}.
         """
         # Si los pesos son globales (no por carrera), podés quitar la cláusula WHERE.
         rows = await self.conn.fetch("""
-            SELECT indicador_id, peso 
-            FROM pesos_indicadores 
-            WHERE configuracion_id = $1
+            SELECT id_indicador, peso_global
+            FROM peso_indicadores 
+            WHERE id_configuracion = $1
         """, configuracion_id)
-        return {row['indicador_id']: float(row['peso']) for row in rows}
+        return {row['id_indicador']: float(row['peso_global']) for row in rows}
     
     async def obtener_estudiantes_por_importacion(self, importacion_id: int) -> list[dict]:
         """
@@ -47,7 +47,7 @@ class RiesgoRepository:
         # o si la relación con la importación está en otra tabla (ej: 'notas').
         query = """
             SELECT estudiante_id, id as asignacion_id
-            FROM asignaciones
+            FROM asignacion_encuesta
             WHERE importacion_id = $1;
         """
         registros = await self.conn.fetch(query, importacion_id)
@@ -139,3 +139,51 @@ class RiesgoRepository:
             LEFT JOIN indicador dim ON ind.dimension = dim.id
             WHERE sr.score_total_id = $1
         """, score_total_id)
+
+    async def obtener_ultimas_asignaciones_por_estudiante(self, estudiante_id: int) -> list[asyncpg.Record]:
+        """
+        Busca todos los eventos que existan para un estudiante en particular
+        y se queda únicamente con la asignación más reciente de cada uno.
+        """
+        query = """
+            SELECT DISTINCT ON (evento_id)
+                id as asignacion_id,
+                evento_id,
+                estudiante_id
+            FROM asignacion_encuesta
+            WHERE estudiante_id = $1
+              AND completado = TRUE
+            ORDER BY evento_id, fecha_asignacion DESC;
+        """
+        
+        return await self.conn.fetch(query, estudiante_id)
+
+    async def obtener_respuestas_para_calculo_bulk(self, asignacion_ids: list[int]) -> list[asyncpg.Record]:
+        """
+        Trae de un solo golpe todas las respuestas asociadas a un lote de asignaciones,
+        incluyendo la configuración de riesgo de las preguntas y los valores manuales de las opciones.
+        """
+        query = """
+            SELECT 
+                p.indicador_id,
+                p.tipo_pregunta,
+                p.configuracion_riesgo,
+                op.valor_riesgo_manual,
+                re.valor_numerico
+            FROM respuesta_estudiante re
+            JOIN pregunta p ON re.pregunta_id = p.id
+            LEFT JOIN opcion_pregunta op ON re.opcion_seleccionada_id = op.id
+            WHERE re.asignacion_id = ANY($1::int[])
+        """
+        return await self.conn.fetch(query, asignacion_ids)
+
+    async def obtener_estudiantes_por_carrera(self, carrera_id: int) -> list[asyncpg.Record]:
+        """
+        Trae únicamente los IDs de todos los estudiantes inscritos en una carrera.
+        """
+        query = """
+            SELECT id as estudiante_id
+            FROM estudiantes
+            WHERE carrera_id = $1;
+        """
+        return await self.conn.fetch(query, carrera_id)
