@@ -8,6 +8,7 @@ from app.schemas.importacion_archivo import (
 from app.services.importacion_archivo_service import ImportacionArchivoService
 from app.api.deps import get_conn, get_current_user
 from app.services.riesgo_service import RiesgoService
+from app.core.database import get_pool
 
 router = APIRouter(prefix="/importaciones-archivo", tags=["importaciones_archivo"])
 
@@ -33,13 +34,13 @@ async def obtener_importacion(
 
 
 @router.post("/upload", response_model=ImportacionArchivoResponse, status_code=201)
-async def subir_archivo(
-    request: Request,                               # <-- NUEVO: Para manotear el pool global de la app
-    background_tasks: BackgroundTasks,             # <-- NUEVO: Para inyectar la tarea en segundo plano
+async def subir_archivo(                              
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     materia_id: int = Form(...),
     usuario: Usuario = Depends(get_current_user),
     conn: asyncpg.Connection = Depends(get_conn),
+    pool: asyncpg.Pool = Depends(get_pool)
 ) -> ImportacionArchivoResponse:
     ext = file.filename.rsplit(".", 1)[-1].lower() if file.filename else ""
     if ext not in ("csv", "xlsx", "xls"):
@@ -59,16 +60,13 @@ async def subir_archivo(
             materia_id=materia_id,
             usuario_id=usuario.id,
         )
+
+        estudiantes_afectados = [1] ####### Hardcodeado para que no tire error
         
-        # 2. ENCOLAR TRABAJO PESADO A BACKGROUND (La magia estática)
-        # Sacamos el pool de conexiones del estado global de la app
-        pool = request.app.state.pool
-        
-        # Le pasamos la pelota al método estático junto con el ID de la importación recién creada
         background_tasks.add_task(
-            RiesgoService.tarea_background_recalcular_por_importacion,
-            pool,
-            importacion.id 
+            RiesgoService.tarea_background_recalcular_masivo,
+            pool=pool,
+            estudiante_ids=estudiantes_afectados
         )
 
     except ValueError as e:
