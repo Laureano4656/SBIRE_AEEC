@@ -81,3 +81,10 @@ class dashboardTutorRepository:
         """, legajo, carrera_id)
         return GeneralEstudianteDashboardAdminResponse(**dict(row)) if row else None
     
+    async def get_entrevistas_planificadas(self, tutor_id: int) -> int:
+        row = await self.conn.fetchrow("""
+            SELECT COUNT(*) AS entrevistas_planificadas
+            FROM entrevistas
+            WHERE tutor_id = $1 AND estado = 'planificada'
+        """, tutor_id)
+        return row['entrevistas_planificadas'] if row else 0

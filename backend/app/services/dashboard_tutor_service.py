@@ -19,4 +19,7 @@ class DashboardTutorService:
     async def obtener_datos_generales_estudiante(self, legajo: str, carrera_id: int) -> GeneralEstudianteDashboardAdminResponse | None:
         return await self.repo.general_data_by_student(legajo, carrera_id)
     
+    async def obtener_entrevistas_planificadas(self, tutor_id: int) -> int:
+        return await self.repo.get_entrevistas_planificadas(tutor_id)
+    
     
