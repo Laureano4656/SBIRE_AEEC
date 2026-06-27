@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
 class AlertaCreate(BaseModel):
     estudiante_id: int
-    score_id: int
-    asignacion_id: int
+    score_id: int | None
+    asignacion_id: int | None
     tipo_desercion: str
     nivel_riesgo: str
     origen: str
@@ -20,8 +20,8 @@ class AlertaCreate(BaseModel):
 class AlertaResponse(BaseModel):
     id: int
     estudiante_id: int
-    score_id: int
-    asignacion_id: int
+    score_id: int | None
+    asignacion_id: int | None
     tipo_desercion: str
     nivel_riesgo: str
     origen: str
@@ -32,3 +32,6 @@ class AlertaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AlertaUpdateEstado(BaseModel):
+    estado: str = Field(..., description="Estado válido: 'nueva', 'en_revision', 'resuelta', etc.")
