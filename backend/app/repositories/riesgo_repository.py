@@ -84,7 +84,7 @@ class RiesgoRepository:
     # ==========================================
     # ESCRITURAS TRANSACCIONALES
     # ==========================================
-    async def guardar_scores_ahp(self, estudiante_id: int, score_total: float, detalles: list[dict[str, Any]]) -> int:
+    async def guardar_scores_ahp(self, estudiante_id: int, score_total: float, detalles: list[dict[str, Any]]) -> tuple[int, list[dict[str, Any]]]:
         async with self.conn.transaction():
             id_score_total = await self.conn.fetchval("""
                 INSERT INTO score_total (estudiante_id, valor, creado_en)
@@ -96,9 +96,13 @@ class RiesgoRepository:
                 INSERT INTO score_riesgo 
                 (estudiante_id, score, nivel, calculado_en, score_total_id, factor_aplicado, score_ponderado, id_indicador)
                 VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
+                RETURNING id
             """
-            valores_detalle = [
-                (
+            
+            # Cambiamos executemany por un loop con fetchval para capturar los IDs
+            for d in detalles:
+                id_riesgo = await self.conn.fetchval(
+                    query_detalle,
                     estudiante_id, 
                     d["score"], 
                     d["nivel"], 
@@ -107,11 +111,11 @@ class RiesgoRepository:
                     d["score_ponderado"], 
                     d["id_indicador"]
                 )
-                for d in detalles
-            ]
-            await self.conn.executemany(query_detalle, valores_detalle)
+                # Le inyectamos el ID recién creado al diccionario del detalle
+                d["id_score_riesgo"] = id_riesgo 
             
-            return id_score_total
+            # Retornamos ambas cosas
+            return id_score_total, detalles
 
     # ==========================================
     # LECTURAS PARA EL GET DEL FRONTEND
