@@ -5,6 +5,9 @@ from fastapi import HTTPException
 
 from app.repositories.riesgo_repository import RiesgoRepository
 from app.schemas.semaforo_schemas import SemaforoResponse, DetalleIndicadorSemaforo
+from app.schemas.alertas import AlertaCreate
+from app.services.alertas_service import AlertasService
+from datetime import datetime
 
 class RiesgoService:
     def __init__(self, conn: asyncpg.Connection) -> None:
@@ -196,7 +199,38 @@ class RiesgoService:
         if suma_pesos_utilizados > 0:
             score_total_acumulado = score_total_acumulado / suma_pesos_utilizados
 
-        return await self.repo.guardar_scores_ahp(estudiante_id, score_total_acumulado, detalles_insert)
+        score_total_id, detalles_guardados = await self.repo.guardar_scores_ahp(
+            estudiante_id, score_total_acumulado, detalles_insert
+        )
+
+        estado_general = self._determinar_nivel_riesgo(score_total_acumulado, umbral_amarillo, umbral_rojo)
+        
+        if estado_general == 'alto' or estado_general == "critico":
+            alertas_service = AlertasService(self.repo.conn)
+            anio_actual = datetime.now().year
+            
+            # Buscamos cuáles fueron los indicadores específicos que le dieron Rojo (o Crítico)
+            peores_indicadores = [d for d in detalles_guardados if (d["nivel"] == 'alto' or d["nivel"] == 'critico')]
+            
+            for indicador in peores_indicadores:
+                try:
+                    nueva_alerta = AlertaCreate(
+                        estudiante_id=estudiante_id,
+                        score_id=indicador["id_score_riesgo"], 
+                        asignacion_id=None,
+                        tipo_desercion=etapa,
+                        nivel_riesgo=indicador["nivel"],
+                        origen="score_riesgo",
+                        anio_cursada=anio_actual
+                    )
+                    await alertas_service.crear_alerta(nueva_alerta)
+                except Exception as e:
+                    # Atrapamos el error para que, si falla la alerta, el cálculo AHP no se rompa
+                    print(f"Error al crear alerta para estudiante {estudiante_id}: {str(e)}")
+
+        return score_total_id
+
+        return resultado
 
     # ==========================================
     # LÓGICA DE EXPOSICIÓN: GET DEL SEMÁFORO

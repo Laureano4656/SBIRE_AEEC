@@ -9,10 +9,7 @@ class AlertaCreate(BaseModel):
     tipo_desercion: str
     nivel_riesgo: str
     origen: str
-    estado: str
     anio_cursada: int
-    generada_en: datetime
-    fecha_cierre: datetime | None = None
     
     class Config:
         from_attributes = True
