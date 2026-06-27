@@ -13,3 +13,11 @@ async def obtener_semaforo(
 ) -> SemaforoResponse:
     service = RiesgoService(conn)
     return await service.armar_semaforo_estudiante(estudiante_id)
+
+@router.get("/general/{carrera_id}", response_model=list[SemaforoResponse])
+async def obtener_semaforo(
+    carrera_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+) -> list[SemaforoResponse]:
+    service = RiesgoService(conn)
+    return await service.armar_semaforo_estudiantes(carrera_id)

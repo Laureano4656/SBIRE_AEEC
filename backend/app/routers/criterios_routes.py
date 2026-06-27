@@ -1,13 +1,20 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, BackgroundTasks
 import asyncpg
 from app.api.deps import get_conn
 from app.models.configuracion import AHPRequest, AHPResponse
 from app.services.peso_criterios_services import PesoCriteriosServices
+from app.services.riesgo_service import RiesgoService
+from app.core.database import get_pool
 
 router = APIRouter(prefix="/calcular_ahp", tags=["calcular_ahp"])
 
 @router.post("/", response_model=AHPResponse, status_code=status.HTTP_201_CREATED)
-async def calcular_ahp(datos: AHPRequest, conn: asyncpg.Connection = Depends(get_conn)):
+async def calcular_ahp(
+    datos: AHPRequest, 
+    background_tasks: BackgroundTasks,
+    conn: asyncpg.Connection = Depends(get_conn),
+    pool: asyncpg.Pool = Depends(get_pool)
+):
 
     service = PesoCriteriosServices(conn)
 
@@ -22,6 +29,14 @@ async def calcular_ahp(datos: AHPRequest, conn: asyncpg.Connection = Depends(get
     id_configuracion = await service.guardar_resultados_ahp(
         config_data=datos.configuracion, 
         pesos_globales=pesos_finales
+    )
+
+    # Recálculo de los semáforos para todos los estudiantes de esa carrera
+    background_tasks.add_task(
+        RiesgoService.tarea_background_recalcular_por_configuracion,
+        pool=pool,
+        carrera_id=datos.configuracion.carrera_id,
+        etapa=datos.configuracion.etapa
     )
 
     # 3. Retornar el diccionario (FastAPI se encarga de validarlo contra AHPResponse)
