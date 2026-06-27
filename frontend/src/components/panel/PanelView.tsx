@@ -13,7 +13,6 @@ import {
 
 interface PanelViewProps {
   carreraId: number;
-  dashboardAnio: number;
   students: Student[];
   onSelectStudent: (id: string) => void;
   onViewAllCriticos: () => void;
@@ -21,7 +20,6 @@ interface PanelViewProps {
 
 export default function PanelView({
   carreraId,
-  dashboardAnio,
   students,
   onSelectStudent,
   onViewAllCriticos,
@@ -35,7 +33,7 @@ export default function PanelView({
     data: totalEstudiantes,
     isLoading: loadingTotal,
     isError: errorTotal,
-  } = useConteoEstudiantes(dashboardAnio, carreraId);
+  } = useConteoEstudiantes(carreraId);
   const {
     data: totalCriticos,
     isLoading: loadingCriticos,
@@ -55,7 +53,7 @@ export default function PanelView({
     data: conteoPorRiesgo,
     isLoading: loadingRiesgo,
     isError: errorRiesgo,
-  } = useConteoPorRiesgo(dashboardAnio, carreraId);
+  } = useConteoPorRiesgo(carreraId);
 
   const donutRojo = conteoPorRiesgo?.rojo ?? 0;
   const donutAmarillo = conteoPorRiesgo?.amarillo ?? 0;
@@ -73,14 +71,24 @@ export default function PanelView({
     isError: errorHistorial,
   } = useHistorialAlertas(historialStudentId);
 
-  const {
-    data: historialAlertasGenerales = [],
-  } = useHistorialAlertasGenerales(carreraId.toString());
+  const { data: historialAlertasGenerales = [] } = useHistorialAlertasGenerales(
+    carreraId.toString(),
+  );
 
   const monthLabels = [
     "",
-    "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
-    "JUL", "AGO", "SEP", "OCT", "NOV", "DIC",
+    "ENE",
+    "FEB",
+    "MAR",
+    "ABR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AGO",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DIC",
   ];
 
   const buildEvolucionChart = () => {
@@ -90,7 +98,8 @@ export default function PanelView({
       .map(([m, s]) => ({ month: parseInt(m), score: s as number }))
       .sort((a, b) => a.month - b.month);
     const n = data.length;
-    const w = 540, h = 140;
+    const w = 540,
+      h = 140;
     const pts = data.map((d, i) => ({
       x: n > 1 ? (i / (n - 1)) * w : w / 2,
       y: h - (Math.min(Math.max(d.score, 0), 10) / 10) * h,
@@ -217,15 +226,54 @@ export default function PanelView({
           ) : (
             <>
               <div className="flex-1 flex flex-col justify-center items-center relative py-4">
-                <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#edeeef" strokeWidth="3" />
-                  <circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#ba1a1a" strokeWidth="3.2" strokeDasharray={`${donutRojo} 100`} strokeDashoffset="0" />
-                  <circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#d97706" strokeWidth="3.2" strokeDasharray={`${donutAmarillo} 100`} strokeDashoffset={`-${donutRojo}`} />
-                  <circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#006a6a" strokeWidth="3.2" strokeDasharray={`${donutVerde} 100`} strokeDashoffset={`-${donutRojo + donutAmarillo}`} />
+                <svg
+                  className="w-40 h-40 transform -rotate-90"
+                  viewBox="0 0 36 36"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="transparent"
+                    r="15.915"
+                    stroke="#edeeef"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="transparent"
+                    r="15.915"
+                    stroke="#ba1a1a"
+                    strokeWidth="3.2"
+                    strokeDasharray={`${donutRojo} 100`}
+                    strokeDashoffset="0"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="transparent"
+                    r="15.915"
+                    stroke="#d97706"
+                    strokeWidth="3.2"
+                    strokeDasharray={`${donutAmarillo} 100`}
+                    strokeDashoffset={`-${donutRojo}`}
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="transparent"
+                    r="15.915"
+                    stroke="#006a6a"
+                    strokeWidth="3.2"
+                    strokeDasharray={`${donutVerde} 100`}
+                    strokeDashoffset={`-${donutRojo + donutAmarillo}`}
+                  />
                 </svg>
                 <div className="absolute inset-x-0 top-18 flex flex-col items-center justify-center">
                   <span className="text-2xl font-black text-brand-primary">
-                    {loadingTotal ? "—" : (totalEstudiantes?.toLocaleString() ?? "—")}
+                    {loadingTotal
+                      ? "—"
+                      : (totalEstudiantes?.toLocaleString() ?? "—")}
                   </span>
                   <span className="text-[9px] text-brand-outline font-bold uppercase">
                     Población Activa
@@ -235,15 +283,21 @@ export default function PanelView({
               <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-3 gap-2 text-center">
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-[#006a6a] mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-brand-primary">{donutVerde}% Seguro</p>
+                  <p className="text-[10px] font-bold text-brand-primary">
+                    {donutVerde}% Seguro
+                  </p>
                 </div>
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-brand-primary">{donutAmarillo}% Medio</p>
+                  <p className="text-[10px] font-bold text-brand-primary">
+                    {donutAmarillo}% Medio
+                  </p>
                 </div>
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] mx-auto mb-1" />
-                  <p className="text-[10px] font-bold text-[#ba1a1a]">{donutRojo}% Crítico</p>
+                  <p className="text-[10px] font-bold text-[#ba1a1a]">
+                    {donutRojo}% Crítico
+                  </p>
                 </div>
               </div>
             </>
@@ -253,7 +307,9 @@ export default function PanelView({
         <div className="lg:col-span-2 bg-white border border-brand-outline-variant rounded p-6 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
-              <span className="material-symbols-outlined text-lg">trending_up</span>
+              <span className="material-symbols-outlined text-lg">
+                trending_up
+              </span>
               Evolución de Alertas por Cohorte
             </h4>
             <div className="flex gap-1.5">
@@ -289,18 +345,63 @@ export default function PanelView({
 
             return (
               <div className="relative flex-1 bg-[#f8f9fa] border border-brand-outline-variant rounded p-2 h-44 flex items-center justify-center">
-                <svg className="w-full h-full" viewBox="0 0 540 140" preserveAspectRatio="none">
+                <svg
+                  className="w-full h-full"
+                  viewBox="0 0 540 140"
+                  preserveAspectRatio="none"
+                >
                   <defs>
                     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#001e40" stopOpacity="0.15" />
-                      <stop offset="100%" stopColor="#001e40" stopOpacity="0.0" />
+                      <stop
+                        offset="0%"
+                        stopColor="#001e40"
+                        stopOpacity="0.15"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#001e40"
+                        stopOpacity="0.0"
+                      />
                     </linearGradient>
                   </defs>
-                  <line x1="0" y1="35" x2="540" y2="35" stroke="#c3c6d1" strokeWidth="0.5" strokeDasharray="4 4" />
-                  <line x1="0" y1="70" x2="540" y2="70" stroke="#c3c6d1" strokeWidth="0.5" strokeDasharray="4 4" />
-                  <line x1="0" y1="105" x2="540" y2="105" stroke="#c3c6d1" strokeWidth="0.5" strokeDasharray="4 4" />
-                  {chart.areaPath && <path d={chart.areaPath} fill="url(#areaGrad)" />}
-                  {chart.linePath && <path d={chart.linePath} fill="none" stroke="#001e40" strokeWidth="2.5" />}
+                  <line
+                    x1="0"
+                    y1="35"
+                    x2="540"
+                    y2="35"
+                    stroke="#c3c6d1"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 4"
+                  />
+                  <line
+                    x1="0"
+                    y1="70"
+                    x2="540"
+                    y2="70"
+                    stroke="#c3c6d1"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 4"
+                  />
+                  <line
+                    x1="0"
+                    y1="105"
+                    x2="540"
+                    y2="105"
+                    stroke="#c3c6d1"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 4"
+                  />
+                  {chart.areaPath && (
+                    <path d={chart.areaPath} fill="url(#areaGrad)" />
+                  )}
+                  {chart.linePath && (
+                    <path
+                      d={chart.linePath}
+                      fill="none"
+                      stroke="#001e40"
+                      strokeWidth="2.5"
+                    />
+                  )}
                   {chart.pts.map((p, i) => (
                     <circle key={i} cx={p.x} cy={p.y} r="3.5" fill="#001e40" />
                   ))}
@@ -378,7 +479,10 @@ export default function PanelView({
               ))}
               {criticalStudents.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-brand-outline font-medium">
+                  <td
+                    colSpan={5}
+                    className="p-8 text-center text-brand-outline font-medium"
+                  >
                     No hay alertas críticas activas.
                   </td>
                 </tr>
@@ -395,8 +499,11 @@ export default function PanelView({
             <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
               <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
                 <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1">
-                  <span className="material-symbols-outlined text-lg">timeline</span>
-                  Historial de Alertas — {selected?.lastNames}, {selected?.firstNames}
+                  <span className="material-symbols-outlined text-lg">
+                    timeline
+                  </span>
+                  Historial de Alertas — {selected?.lastNames},{" "}
+                  {selected?.firstNames}
                 </h4>
                 <button
                   onClick={() => setHistorialStudentId(null)}
@@ -409,11 +516,16 @@ export default function PanelView({
                 {loadingHistorial ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-12 bg-gray-100 rounded animate-pulse"
+                      />
                     ))}
                   </div>
                 ) : errorHistorial ? (
-                  <p className="text-center text-brand-outline text-xs py-4">Sin datos</p>
+                  <p className="text-center text-brand-outline text-xs py-4">
+                    Sin datos
+                  </p>
                 ) : historialAlertasGenerales.length === 0 ? (
                   <p className="text-center text-brand-outline text-xs py-4">
                     No hay eventos registrados para esta carrera.
@@ -422,14 +534,22 @@ export default function PanelView({
                   <ul className="space-y-3">
                     {historialAlertas.map((evt, i) => (
                       <li key={i} className="flex items-start gap-3 text-xs">
-                        <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${evt.tipo === "alerta" ? "bg-[#ba1a1a]" : "bg-[#006a6a]"}`} />
+                        <span
+                          className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${evt.tipo === "alerta" ? "bg-[#ba1a1a]" : "bg-[#006a6a]"}`}
+                        />
                         <div className="flex-1">
-                          <span className="font-bold text-brand-primary capitalize">{evt.descripcion}</span>
+                          <span className="font-bold text-brand-primary capitalize">
+                            {evt.descripcion}
+                          </span>
                           <span className="text-brand-outline ml-2">
-                            {evt.fecha ? new Date(evt.fecha).toLocaleDateString("es-AR") : "-"}
+                            {evt.fecha
+                              ? new Date(evt.fecha).toLocaleDateString("es-AR")
+                              : "-"}
                           </span>
                         </div>
-                        <span className="text-[10px] uppercase font-bold text-brand-outline">{evt.tipo}</span>
+                        <span className="text-[10px] uppercase font-bold text-brand-outline">
+                          {evt.tipo}
+                        </span>
                       </li>
                     ))}
                   </ul>

@@ -31,10 +31,15 @@ class dashboardAdminRepository:
         row = await self.conn.fetchrow(
             """
             SELECT COUNT(*) AS count
-            FROM score_total 
-            INNER JOIN estudiantes e ON score_total.estudiante_id = e.id
-            WHERE valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id = 1) 
-            AND (e.carrera_id = $1)
+            FROM estudiantes e
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            WHERE s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) 
+            AND e.carrera_id = $1 AND e.activo = TRUE
             """,
             carrera_id,
         )
@@ -75,14 +80,20 @@ class dashboardAdminRepository:
             SELECT
                 e.anio_ingreso, 
                 CASE
-                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1) THEN 'rojo'
-                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1) THEN 'amarillo'
+                    WHEN s.valor IS NULL THEN 'verde'
+                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'rojo'
+                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'amarillo'
                     ELSE 'verde'
                 END AS tipo_riesgo,
                 COUNT(*) AS count
-            FROM score_total s
-            INNER JOIN estudiantes e ON s.estudiante_id = e.id
+            FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
             WHERE e.carrera_id = $1 AND e.activo = TRUE
             GROUP BY tipo_riesgo, e.anio_ingreso
             """,

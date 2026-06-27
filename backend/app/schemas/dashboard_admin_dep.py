@@ -22,7 +22,7 @@ class GeneralEstudianteDashboardAdminResponse(BaseModel):
     carrera: str
     materias_aprobadas: int
     materias_totales: int
-    score_riesgo: float
+    score_riesgo: float | None
 
 
 class EventoCronologicoResponse(BaseModel):

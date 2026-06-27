@@ -476,7 +476,7 @@ CREATE TABLE public.estudiantes (
     anio_ingreso integer NOT NULL,
     etapa public.enum_etapa_estudiante DEFAULT 'temprana'::public.enum_etapa_estudiante,
     porcentaje_carrera double precision DEFAULT 0.0,
-    activo boolean NOT NULL,
+    activo boolean NOT NULL DEFAULT true,
     moodle_id character varying(255)
 );
 

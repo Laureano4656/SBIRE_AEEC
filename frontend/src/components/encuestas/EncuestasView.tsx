@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import type { Survey } from "../../types/types.ts";
+<<<<<<< HEAD
+import SurveyEditor from "./SurveyEditor.tsx";
+import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
+=======
 import SurveyEditor from "../SurveyEditor.tsx";
 import SurveyResponsesModal from "../SurveyResponsesModal.tsx";
 import type { EstadisticasEventos } from "../../types/encuestas.ts";
 import { useAuth } from "../../hooks/useAuth.ts";
 import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
+>>>>>>> c7120f0bff24e6485c666f144759fdb3d71f7855
 
 
 

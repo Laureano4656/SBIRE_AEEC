@@ -30,7 +30,6 @@ async def conteo_estudiantes(
 @router.get("/estadisticas/riesgo", response_model=dict)
 async def conteo_por_riesgo(
     carrera_id: int,
-    anio: int,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> dict[str, int]:
     service = DashboardAdminDepService(conn)
@@ -108,6 +107,14 @@ async def estudiantes_por_carrera(
 ) -> list[EstudianteDashboardAdminResponse]:
     service = DashboardAdminDepService(conn)
     items = await service.obtener_estudiantes_por_carrera(carrera_id)
+    print(f"[DEBUG] GET /estudiantes/carrera?carrera_id={carrera_id} -> {len(items)} estudiantes")
+    if len(items) == 0:
+        total_estudiantes = await conn.fetchval("SELECT COUNT(*) FROM estudiantes WHERE carrera_id = $1", carrera_id)
+        activos = await conn.fetchval("SELECT COUNT(*) FROM estudiantes WHERE carrera_id = $1 AND activo = TRUE", carrera_id)
+        total_carrera = await conn.fetchval("SELECT COUNT(*) FROM carreras WHERE id = $1", carrera_id)
+        print(f"[DEBUG]   total estudiantes carrera_id={carrera_id}: {total_estudiantes}")
+        print(f"[DEBUG]   activos carrera_id={carrera_id}: {activos}")
+        print(f"[DEBUG]   carrera existe id={carrera_id}: {total_carrera}")
     return [EstudianteDashboardAdminResponse.model_validate(item) for item in items]
 
 @router.get("/estudiantes/anio", response_model=list[EstudianteDashboardAdminResponse])

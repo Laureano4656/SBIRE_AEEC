@@ -3,10 +3,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.api.deps import get_conn
-from app.schemas.dashboard_admin_dep import (
-    EstudianteDashboardResponse,
-    GeneralEstudianteDashboardAdminResponse
-)
+from app.models.estudiante_dashboard import EstudianteDashboardResponse
+from app.schemas.dashboard_admin_dep import GeneralEstudianteDashboardAdminResponse
 
 from app.services.dashboard_tutor_service import DashboardTutorService
 
@@ -30,3 +28,11 @@ async def obtener_datos_generales_estudiante(
 ):
     service = DashboardTutorService(conn)
     return await service.obtener_datos_generales_estudiante(legajo, carrera_id)
+
+@router.get("/tutor/entrevistas/planificadas", response_model=int)
+async def obtener_entrevistas_planificadas(
+    tutor_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+):
+    service = DashboardTutorService(conn)
+    return await service.obtener_entrevistas_planificadas(tutor_id)
