@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, FastAPI
 from contextlib import asynccontextmanager
 
 from app.api.deps import get_current_user
+from app.routers.alertas_routes import router as alertas_router
 from app.routers.asignaciones_encuestas_routes import router as asignaciones_encuestas_router
 from app.routers.asistencias_routes import router as asistencias_router
 from app.routers.carreras_routes import router as carreras_router
@@ -134,6 +135,7 @@ protected_router.include_router(plan_estudios_router)
 protected_router.include_router(estudiantes_router)
 protected_router.include_router(importacion_archivo_router)
 protected_router.include_router(criterios_router)
+protected_router.include_router(alertas_router)
 
 app.include_router(protected_router, prefix=API_PREFIX)
 
