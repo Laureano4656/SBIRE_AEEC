@@ -128,10 +128,10 @@ class EncuestaService:
         dicc_opciones: dict,
         dicc_respuestas: dict,
     ) -> PreguntaParaEncuesta:
-        print("pregunta", p.id)
-        print("materia_id", materia_id)
-        print("respuestas previas", dicc_respuestas)
-        print("respuesta previa", dicc_respuestas.get((p.id, materia_id)))
+        #print("pregunta", p.id)
+        #print("materia_id", materia_id)
+        #print("respuestas previas", dicc_respuestas)
+        #print("respuesta previa", dicc_respuestas.get((p.id, materia_id)))
         return PreguntaParaEncuesta(
             **p.model_dump(),
             opciones=dicc_opciones.get(p.id, []),
@@ -229,9 +229,12 @@ class EncuestaService:
         asignacion_ids = [a["asignacion_id"] for a in asignaciones]
         respuestas_bulk = await self.repo.get_respuestas_previas_bulk(asignacion_ids)
 
-        # Estructura: {asignacion_id: {(pregunta_id, materia_id): RespuestaPrevia}}
         dicc_respuestas_por_asignacion = {asig_id: {} for asig_id in asignacion_ids}
+        
         for r in respuestas_bulk:
+            if r["pregunta_id"] is None:
+                continue
+                
             dicc_respuestas_por_asignacion[r["asignacion_id"]][
                 (r["pregunta_id"], r["materia_id"])
             ] = RespuestaPrevia(**dict(r))

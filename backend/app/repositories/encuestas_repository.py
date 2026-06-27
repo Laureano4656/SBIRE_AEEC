@@ -330,7 +330,7 @@ class EncuestasRepository:
             WHERE e.carrera_id = $1 
               AND ae.evento_id = $2 
               AND ae.periodo_lectivo LIKE $3 || '%'
-              AND ae.completado = TRUE -------------------------- CHECKEAR 
+              AND ae.completado = TRUE -------------------------- CHECKEAR COMPLETADO
         """
         return await self.conn.fetch(query, carrera_id, evento_id, periodo_lectivo)
 
