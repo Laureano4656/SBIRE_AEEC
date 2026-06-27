@@ -140,7 +140,8 @@ CREATE TYPE public.nivel_riesgo_enum AS ENUM (
 
 CREATE TYPE public.origen_alerta_enum AS ENUM (
     'score_riesgo',
-    'omision_encuesta'
+    'omision_encuesta',
+    'carrera_extendida'
 );
 
 
@@ -500,7 +501,8 @@ ALTER TABLE public.estudiantes ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
 
 CREATE TABLE public.evento_disparador (
     id integer NOT NULL,
-    nombre character varying(100) NOT NULL
+    nombre character varying(100) NOT NULL,
+    periodicidad public.enum_periodicidad DEFAULT 'unica_vez'::public.enum_periodicidad
 );
 
 
@@ -554,7 +556,8 @@ CREATE TABLE public.indicador (
     id integer NOT NULL,
     nombre character varying(150) NOT NULL,
     dimension integer,
-    activo boolean DEFAULT true
+    activo boolean DEFAULT true,
+    carrera_id integer NOT NULL
 );
 
 
@@ -800,7 +803,7 @@ ALTER TABLE public.plan_materia ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY
 CREATE TABLE public.pregunta (
     id integer NOT NULL,
     indicador_id integer,
-    carrera_id integer,
+    carrera_id integer NOT NULL,
     texto_pregunta text NOT NULL,
     tipo_pregunta public.enum_tipo_pregunta NOT NULL,
     configuracion_riesgo jsonb,
@@ -1497,6 +1500,14 @@ ALTER TABLE ONLY public.score_riesgo
 
 
 --
+-- Name: indicador fk_indicador_carrera; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.indicador
+    ADD CONSTRAINT fk_indicador_carrera FOREIGN KEY (carrera_id) REFERENCES public.carreras(id) ON DELETE CASCADE;
+
+
+--
 -- Name: intervenciones fk_intervencion_alerta; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1702,4 +1713,10 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260624221247'),
     ('20260624230347'),
     ('20260625000000'),
-    ('20260625013510');
+    ('20260625013510'),
+    ('20260625182109'),
+    ('20260626114649'),
+    ('20260626115623'),
+    ('20260626125225'),
+    ('20260626225339'),
+    ('20260627154515');

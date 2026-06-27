@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Survey } from "../../types/types.ts";
 import SurveyEditor from "../SurveyEditor.tsx";
 import SurveyResponsesModal from "../SurveyResponsesModal.tsx";
+import type { EstadisticasEventos } from "../../types/encuestas.ts";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
 
-interface EncuestasViewProps {
-  initialSurveys: Survey[];
-}
 
-export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
-  const [localSurveys, setLocalSurveys] = useState<Survey[]>(initialSurveys);
+
+export default function EncuestasView() {
+  const { user } = useAuth();
+  console.log("User from useAuth:", user); // Debugging line
+  const { data: initialSurveys, isLoading } = useMetricasEncuestasCicloActual(user?.carrera_id);
+  const [localSurveys, setLocalSurveys] = useState<EstadisticasEventos[]>(initialSurveys);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [editingSurvey, setEditingSurvey] = useState<Survey | null>(null);
+  const [editingSurvey, setEditingSurvey] = useState<EstadisticasEventos | null>(null);
   const [viewingResponsesSurvey, setViewingResponsesSurvey] =
-    useState<Survey | null>(null);
+    useState<EstadisticasEventos | null>(null);
 
-  const handleSaveSurvey = (survey: Survey) => {
+  const handleSaveSurvey = (survey: EstadisticasEventos) => {
     setLocalSurveys((prev) => {
-      const yaExiste = prev.some((s) => s.id === survey.id);
+      const yaExiste = prev.some((s) => s.evento_id === survey.evento_id);
       return yaExiste
-        ? prev.map((s) => (s.id === survey.id ? survey : s))
+        ? prev.map((s) => (s.evento_id === survey.evento_id ? survey : s))
         : [survey, ...prev];
     });
     setShowSurveyModal(false);
@@ -29,6 +33,18 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
     setShowSurveyModal(false);
     setEditingSurvey(null);
   };
+
+  const tasaDeRespuestaPromedio = useMemo(() => {
+    let totalAsignadas = 0;
+    let totalCompletadas = 0;
+    console.log("Calculating tasaDeRespuestaPromedio with localSurveys:", localSurveys); // Debugging line
+    if (!initialSurveys || initialSurveys.length === 0) return 0;
+    for (const survey of initialSurveys) {
+      totalAsignadas += survey.total_asignadas;
+      totalCompletadas += survey.total_completadas;
+    }
+    return totalAsignadas > 0 ? (totalCompletadas / totalAsignadas) * 100 : 0;
+  }, [initialSurveys, isLoading]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -60,7 +76,7 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
               Tasa de Respuesta Prom.
             </span>
             <span className="text-3xl font-black text-brand-primary mt-1 block">
-              68.4%
+              {tasaDeRespuestaPromedio.toFixed(1)}%
             </span>
           </div>
           <span className="material-symbols-outlined text-brand-primary bg-brand-primary-container/10 p-3 rounded-full text-2xl">
@@ -75,7 +91,7 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
             Listado de Relevamientos
           </h4>
           <span className="text-[10px] text-brand-outline font-bold">
-            Total: {localSurveys.length} cuestionarios
+            Total: {localSurveys?.length} cuestionarios
           </span>
         </div>
 
@@ -89,69 +105,63 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
                 <th className="p-3 border-b border-brand-outline-variant text-center">
                   Tipo
                 </th>
-                <th className="p-3 border-b border-brand-outline-variant text-center">
-                  Estado
-                </th>
-                <th className="p-3 border-b border-brand-outline-variant text-center">
-                  Fecha Creación
-                </th>
+
                 <th className="p-3 border-b border-brand-outline-variant text-center">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-outline-variant">
-              {localSurveys.map((sur) => (
-                <tr key={sur.id} className="hover:bg-[#f8f9fa] transition-colors">
+              {localSurveys?.map((sur) => (
+                <tr key={sur.evento_id} className="hover:bg-[#f8f9fa] transition-colors">
                   <td className="p-4 pl-5">
                     <div
                       className="font-extrabold text-brand-primary text-sm hover:underline cursor-pointer"
                       onClick={() => setEditingSurvey(sur)}
                     >
-                      {sur.title}
+                      {sur.nombre_evento}
                     </div>
-                    <div className="text-[11px] text-[#43474f] font-medium mt-0.5">
+                    {/* <div className="text-[11px] text-[#43474f] font-medium mt-0.5">
                       {sur.description}
                     </div>
                     <div className="text-[10px] text-brand-outline font-bold mt-1">
                       {sur.questions?.length ?? 0} pregunta(s)
-                    </div>
+                    </div> */}
                   </td>
-                  <td className="p-4 text-center">
+                  {/* <td className="p-4 text-center">
                     <span className="bg-[#edeeef] text-brand-primary px-2 py-0.5 rounded text-[10px] font-bold">
                       {sur.type}
                     </span>
-                  </td>
-                  <td className="p-4 text-center">
+                  </td> */}
+                  {/* <td className="p-4 text-center">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${
-                        sur.status === "Activa"
-                          ? "bg-[#e2f3f5] text-[#006e6e]"
-                          : sur.status === "Borrador"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-red-150 text-brand-error"
-                      }`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
+                        ? "bg-[#e2f3f5] text-[#006e6e]"
+                        : sur.status === "Borrador"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-red-150 text-brand-error"
+                        }`}
                     >
                       {sur.status}
                     </span>
-                  </td>
-                  <td className="p-4 text-center font-medium text-brand-outline">
+                  </td> */}
+                  {/* <td className="p-4 text-center font-medium text-brand-outline">
                     {sur.creationDate}
-                  </td>
+                  </td> */}
                   <td className="p-4 text-center">
-                    <div className="flex justify-center items-center gap-2">
+                    {/* <div className="flex justify-center items-center gap-2">
                       {sur.status === "Activa" && (
                         <>
                           <button
                             onClick={() => setViewingResponsesSurvey(sur)}
                             className="text-brand-secondary hover:underline font-bold"
                           >
-                            Ver Respuestas ({sur.responsesCount})
+                            Ver Respuestas ({sur.total_completadas})
                           </button>
                           <button
                             onClick={() => {
                               const updated = localSurveys.map((s) =>
-                                s.id === sur.id
+                                s.evento_id === sur.evento_id
                                   ? { ...s, status: "Finalizada" as const }
                                   : s,
                               );
@@ -163,26 +173,10 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
                           </button>
                         </>
                       )}
-                      {sur.status === "Borrador" && (
-                        <button
-                          onClick={() => {
-                            const updated = localSurveys.map((s) =>
-                              s.id === sur.id
-                                ? { ...s, status: "Activa" as const }
-                                : s,
-                            );
-                            setLocalSurveys(updated);
-                          }}
-                          className="text-brand-primary hover:underline font-bold"
-                        >
-                          Activar
-                        </button>
-                      )}
-                      {sur.status === "Finalizada" && (
-                        <span className="text-brand-outline font-medium italic">
-                          Terminada
-                        </span>
-                      )}
+               
+                    </div> */}
+                    <div className="flex justify-center items-center gap-2">
+                      Asignadas: {sur.total_asignadas} | Completadas: {sur.total_completadas}
                     </div>
                   </td>
                 </tr>
@@ -194,16 +188,16 @@ export default function EncuestasView({ initialSurveys }: EncuestasViewProps) {
 
       {(showSurveyModal || editingSurvey) && (
         <SurveyEditor
-          key={editingSurvey?.id ?? "new"}
-          initialSurvey={editingSurvey ?? undefined}
-          onSave={handleSaveSurvey}
+          key={editingSurvey?.evento_id ?? "new"}
+          //initialSurvey={editingSurvey ?? undefined}
+          //onSave={handleSaveSurvey}
           onCancel={handleCancelSurveyEditor}
         />
       )}
 
       {viewingResponsesSurvey && (
         <SurveyResponsesModal
-          survey={viewingResponsesSurvey}
+          //survey={viewingResponsesSurvey}
           onClose={() => setViewingResponsesSurvey(null)}
         />
       )}

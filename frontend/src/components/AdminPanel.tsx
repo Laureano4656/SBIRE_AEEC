@@ -14,11 +14,10 @@ import { useEstudiantesPorCarrera } from "../hooks/queries/useAdminDepQueries.ts
 import { mapToStudent, getRiskLevel } from "../utils/studentMapping.ts";
 
 interface AdminPanelProps {
-  surveys: Survey[];
   onLogout: () => void;
 }
 
-export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
+export default function AdminPanel({ onLogout }: AdminPanelProps) {
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { dni } = useParams<{ dni: string }>();
@@ -160,7 +159,7 @@ export default function AdminPanel({ surveys, onLogout }: AdminPanelProps) {
             />
             <Route
               path="encuestas"
-              element={<EncuestasView initialSurveys={surveys} />}
+              element={<EncuestasView />}
             />
             <Route
               path="reportes"
