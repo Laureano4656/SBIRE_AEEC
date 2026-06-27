@@ -1,4 +1,5 @@
 import { axiosInstance } from '../libs/axios';
+import type { EstadisticasEventos, RespuestasHistoricas } from '../types/encuestas';
 
 const PREFIX = '/encuestas';
 
@@ -41,8 +42,14 @@ export const getMetricasEncuestas = async (carrera_id: number) => {
     return response.data;
 }
 export const getMetricasEncuestasCicloActual = async (carrera_id: number) => {
-    const response = await axiosInstance.get(
+    const response = await axiosInstance.get<EstadisticasEventos[]>(
         `${PREFIX}/dashboard/carreras/${carrera_id}/metricas-eventos/ciclo-actual`
+    );
+    return response.data;
+}
+export const getRespuestasUltimoAnio = async (carrera_id: number, evento_id: number) => {
+    const response = await axiosInstance.get<RespuestasHistoricas[]>(
+        `${PREFIX}/dashboard/carreras/${carrera_id}/eventos/${evento_id}/ultimo-anio`
     );
     return response.data;
 }

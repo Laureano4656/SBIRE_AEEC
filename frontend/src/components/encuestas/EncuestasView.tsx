@@ -15,24 +15,24 @@ import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuesta
 
 export default function EncuestasView() {
   const { user } = useAuth();
-  console.log("User from useAuth:", user); // Debugging line
-  const { data: initialSurveys, isLoading } = useMetricasEncuestasCicloActual(user?.carrera_id);
-  const [localSurveys, setLocalSurveys] = useState<EstadisticasEventos[]>(initialSurveys);
+
+  const { data: asignationsByEvent, isLoading } = useMetricasEncuestasCicloActual(user?.carrera_id);
+
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [editingSurvey, setEditingSurvey] = useState<EstadisticasEventos | null>(null);
   const [viewingResponsesSurvey, setViewingResponsesSurvey] =
     useState<EstadisticasEventos | null>(null);
 
-  const handleSaveSurvey = (survey: EstadisticasEventos) => {
-    setLocalSurveys((prev) => {
-      const yaExiste = prev.some((s) => s.evento_id === survey.evento_id);
-      return yaExiste
-        ? prev.map((s) => (s.evento_id === survey.evento_id ? survey : s))
-        : [survey, ...prev];
-    });
-    setShowSurveyModal(false);
-    setEditingSurvey(null);
-  };
+  // const handleSaveSurvey = (survey: EstadisticasEventos) => {
+  //   setasignationsByEvent((prev) => {
+  //     const yaExiste = prev.some((s) => s.evento_id === survey.evento_id);
+  //     return yaExiste
+  //       ? prev.map((s) => (s.evento_id === survey.evento_id ? survey : s))
+  //       : [survey, ...prev];
+  //   });
+  //   setShowSurveyModal(false);
+  //   setEditingSurvey(null);
+  // };
 
   const handleCancelSurveyEditor = () => {
     setShowSurveyModal(false);
@@ -42,14 +42,14 @@ export default function EncuestasView() {
   const tasaDeRespuestaPromedio = useMemo(() => {
     let totalAsignadas = 0;
     let totalCompletadas = 0;
-    console.log("Calculating tasaDeRespuestaPromedio with localSurveys:", localSurveys); // Debugging line
-    if (!initialSurveys || initialSurveys.length === 0) return 0;
-    for (const survey of initialSurveys) {
+    console.log("Calculating tasaDeRespuestaPromedio with asignationsByEvent:", asignationsByEvent); // Debugging line
+    if (!asignationsByEvent || asignationsByEvent.length === 0) return 0;
+    for (const survey of asignationsByEvent) {
       totalAsignadas += survey.total_asignadas;
       totalCompletadas += survey.total_completadas;
     }
     return totalAsignadas > 0 ? (totalCompletadas / totalAsignadas) * 100 : 0;
-  }, [initialSurveys, isLoading]);
+  }, [asignationsByEvent, isLoading]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -96,7 +96,7 @@ export default function EncuestasView() {
             Listado de Relevamientos
           </h4>
           <span className="text-[10px] text-brand-outline font-bold">
-            Total: {localSurveys?.length} cuestionarios
+            Total: {asignationsByEvent?.length} cuestionarios
           </span>
         </div>
 
@@ -117,7 +117,7 @@ export default function EncuestasView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-outline-variant">
-              {localSurveys?.map((sur) => (
+              {asignationsByEvent?.map((sur) => (
                 <tr key={sur.evento_id} className="hover:bg-[#f8f9fa] transition-colors">
                   <td className="p-4 pl-5">
                     <div
@@ -133,14 +133,14 @@ export default function EncuestasView() {
                       {sur.questions?.length ?? 0} pregunta(s)
                     </div> */}
                   </td>
-                  {/* <td className="p-4 text-center">
+                  <td className="p-4 text-center">
                     <span className="bg-[#edeeef] text-brand-primary px-2 py-0.5 rounded text-[10px] font-bold">
-                      {sur.type}
+                      {sur.periodicidad_evento}
                     </span>
-                  </td> */}
+                  </td>
                   {/* <td className="p-4 text-center">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"
+                      className={`px-2 py-0.5 rounded text-[10px] font-black inline-block ${sur.status === "Activa"`
                         ? "bg-[#e2f3f5] text-[#006e6e]"
                         : sur.status === "Borrador"
                           ? "bg-amber-100 text-amber-800"
@@ -154,34 +154,22 @@ export default function EncuestasView() {
                     {sur.creationDate}
                   </td> */}
                   <td className="p-4 text-center">
-                    {/* <div className="flex justify-center items-center gap-2">
-                      {sur.status === "Activa" && (
-                        <>
-                          <button
-                            onClick={() => setViewingResponsesSurvey(sur)}
-                            className="text-brand-secondary hover:underline font-bold"
-                          >
-                            Ver Respuestas ({sur.total_completadas})
-                          </button>
-                          <button
-                            onClick={() => {
-                              const updated = localSurveys.map((s) =>
-                                s.evento_id === sur.evento_id
-                                  ? { ...s, status: "Finalizada" as const }
-                                  : s,
-                              );
-                              setLocalSurveys(updated);
-                            }}
-                            className="text-brand-error hover:underline font-bold"
-                          >
-                            Finalizar
-                          </button>
-                        </>
-                      )}
-               
-                    </div> */}
                     <div className="flex justify-center items-center gap-2">
-                      Asignadas: {sur.total_asignadas} | Completadas: {sur.total_completadas}
+
+                      <>
+                        <button
+                          onClick={() => setViewingResponsesSurvey(sur)}
+                          className="text-brand-secondary hover:underline font-bold"
+                        >
+                          Ver Respuestas ({sur.total_completadas})
+                        </button>
+
+                      </>
+
+
+                    </div>
+                    <div className="flex justify-center items-center gap-2">
+                      Asignadas: {sur.total_asignadas}
                     </div>
                   </td>
                 </tr>
@@ -202,7 +190,8 @@ export default function EncuestasView() {
 
       {viewingResponsesSurvey && (
         <SurveyResponsesModal
-          //survey={viewingResponsesSurvey}
+          survey={viewingResponsesSurvey}
+          carreraId={user?.carrera_id!}
           onClose={() => setViewingResponsesSurvey(null)}
         />
       )}

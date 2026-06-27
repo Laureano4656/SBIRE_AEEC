@@ -1,24 +1,47 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Survey } from "../types/types.ts";
+import { useRespuestasUltimoAnio } from "../hooks/queries/useEncuestasQueries.ts";
+import type { EstadisticasEventos } from "../types/encuestas.ts";
 
 interface SurveyResponsesModalProps {
-  //survey: Survey;
   onClose: () => void;
+  survey: EstadisticasEventos;
+  carreraId: number;
 }
 
 export default function SurveyResponsesModal({
-
   onClose,
+  survey,
+  carreraId
 }: SurveyResponsesModalProps) {
-  const { questions, responses } = survey;
+  const { data: responses, isLoading } = useRespuestasUltimoAnio(survey.evento_id, carreraId);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredResponses =
     responses?.filter((r) =>
-      r.studentName.toLowerCase().includes(searchQuery.toLowerCase()),
+      r.nombre_completo.toLowerCase().includes(searchQuery.toLowerCase()),
     ) ?? [];
-
+  console.log(responses)
   const hasResponses = responses && responses.length > 0;
+
+  const questions = useMemo(() => {
+    if (!responses || responses.length === 0) return [];
+    // tengo que juntar bloques academicos y generales
+    const allQuestions = [
+      ...responses[0].preguntas_generales,
+      ...responses[0].bloques_academicos.flatMap((b) => b.preguntas),
+    ];
+    return allQuestions.map((q) => ({
+      id: q.id,
+      texto: q.texto_pregunta,
+      tipo: q.tipo_pregunta,
+    }));
+  }, [responses]);
+
+  const tasaDeRespuesta = useMemo(() => {
+    if (!responses || responses.length === 0) return 0;
+    return (responses.length / survey.total_asignadas) * 100;
+  }, [responses, survey.total_asignadas, isLoading]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#191c1d]/60 backdrop-blur-xs animate-fade-in">
@@ -28,11 +51,9 @@ export default function SurveyResponsesModal({
           <div>
             <h2 className="text-base font-bold text-brand-primary flex items-center gap-1.5">
               <span className="material-symbols-outlined text-xl">ballot</span>
-              {survey.title}
+              {survey.nombre_evento}
             </h2>
-            <p className="text-xs text-[#43474f] mt-0.5">
-              {survey.description}
-            </p>
+
           </div>
           <button
             onClick={onClose}
@@ -48,13 +69,13 @@ export default function SurveyResponsesModal({
           <span className="font-semibold text-[#43474f]">
             Total respuestas:{" "}
             <span className="font-black text-brand-primary">
-              {survey.responsesCount}
+              {survey.total_completadas}
             </span>
           </span>
           <span className="font-semibold text-[#43474f]">
             Tasa de respuesta:{" "}
             <span className="font-black text-brand-primary">
-              {survey.responseRate}%
+              {tasaDeRespuesta.toFixed(2)}%
             </span>
           </span>
           <div className="relative ml-auto">
@@ -135,19 +156,19 @@ export default function SurveyResponsesModal({
 
                 {filteredResponses.map((resp) => (
                   <div
-                    key={resp.id}
+                    key={resp.asignacion_id}
                     className="border border-brand-outline-variant rounded overflow-hidden"
                   >
                     <div className="bg-[#f8f9fa] px-4 py-2 border-b border-brand-outline-variant flex justify-between items-center">
                       <span className="text-xs font-extrabold text-brand-primary">
-                        {resp.studentName}
+                        {resp.nombre_completo}
                       </span>
                       <span className="text-[10px] text-brand-outline font-semibold">
-                        {resp.submittedAt}
+                        {resp.asignacion_id} - {resp.periodo_lectivo}
                       </span>
                     </div>
                     <div className="divide-y divide-brand-outline-variant">
-                      {resp.answers.map((ans, idx) => {
+                      {questions.map((ans, idx) => {
                         const question = questions?.find(
                           (q) => q.id === ans.questionId,
                         );
