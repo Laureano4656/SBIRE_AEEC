@@ -50,3 +50,80 @@ class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
             VALUES ($1, $2, $3);
         """
         await self.conn.execute(query, id_configuracion, id_indicador, peso_global)
+
+    async def get_arbol_dimensiones_preguntas(self, carrera_id: int) -> list[dict]:
+        """
+        Trae la estructura completa de Dimensiones -> Indicadores -> Preguntas
+        para una carrera específica en una sola consulta a la base de datos.
+        """
+        
+        # Usamos LEFT JOIN para que si una dimensión no tiene indicadores, 
+        # o un indicador no tiene preguntas, igual se devuelvan en la lista vacíos.
+        query = """
+            SELECT 
+                d.id AS dimension_id,
+                d.nombre AS dimension_nombre,
+                
+                i.id AS indicador_id,
+                i.nombre AS indicador_nombre,
+                
+                p.id AS pregunta_id,
+                p.texto_pregunta AS texto_pregunta,
+                p.tipo_pregunta AS tipo_pregunta
+                
+            FROM indicador d
+            -- Unimos los subcriterios (indicadores) a su criterio padre (dimensión)
+            LEFT JOIN indicador i ON i.dimension = d.id AND i.carrera_id = $1
+            -- Unimos las preguntas a su indicador correspondiente
+            LEFT JOIN pregunta p ON p.indicador_id = i.id
+            
+            -- Filtramos para traer solo las Dimensiones (padres) de esta carrera
+            WHERE d.dimension IS NULL 
+              AND d.carrera_id = $1
+              
+            ORDER BY d.id, i.id, p.id;
+        """
+        
+        filas = await self.conn.fetch(query, carrera_id)
+        
+        # 2. Agrupación rápida en memoria usando Diccionarios
+        dicc_dimensiones = {}
+        
+        for r in filas:
+            dim_id = r["dimension_id"]
+            ind_id = r["indicador_id"]
+            preg_id = r["pregunta_id"]
+            
+            # A. Armamos la Dimensión si no existe en el diccionario
+            if dim_id not in dicc_dimensiones:
+                dicc_dimensiones[dim_id] = {
+                    "id": dim_id,
+                    "nombre": r["dimension_nombre"],
+                    "indicadores": {}
+                }
+                
+            # B. Si la fila trajo un Indicador válido, lo metemos en su Dimensión
+            if ind_id is not None:
+                if ind_id not in dicc_dimensiones[dim_id]["indicadores"]:
+                    dicc_dimensiones[dim_id]["indicadores"][ind_id] = {
+                        "id": ind_id,
+                        "nombre": r["indicador_nombre"],
+                        "preguntas": []
+                    }
+                    
+                # C. Si la fila trajo una Pregunta válida, la metemos en la lista de su Indicador
+                if preg_id is not None:
+                    dicc_dimensiones[dim_id]["indicadores"][ind_id]["preguntas"].append({
+                        "id": preg_id,
+                        "texto_pregunta": r["texto_pregunta"],
+                        "tipo_pregunta": r["tipo_pregunta"]
+                    })
+                    
+        # 3. Limpieza final: convertimos los diccionarios de indicadores en listas limpias
+        resultado = []
+        for dim in dicc_dimensiones.values():
+            # Pasamos los indicadores de diccionario a una lista clásica de JSON
+            dim["indicadores"] = list(dim["indicadores"].values())
+            resultado.append(dim)
+            
+        return resultado

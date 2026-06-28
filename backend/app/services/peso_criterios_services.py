@@ -5,7 +5,7 @@ import numpy as np
 
 from app.models.comparacion import Comparacion
 from app.repositories.peso_criterios_repository import PesoCriteriosRepository
-from app.models.configuracion import DatosConfiguracion
+from app.models.configuracion import DatosConfiguracion, PreguntaResponse, IndicadorResponse, DimensionResponse
 
 
 class PesoCriteriosServices:
@@ -83,4 +83,7 @@ class PesoCriteriosServices:
                 )
                 
             return id_configuracion
+
+    async def obtener_listado_indicadores_preguntas(self, carrera_id: int) -> list[DimensionResponse]:
+        return await self.repo.get_arbol_dimensiones_preguntas(carrera_id)
     
