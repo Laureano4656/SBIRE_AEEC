@@ -21,3 +21,18 @@ class AHPResponse(BaseModel):
     id_configuracion: int
     pesos_globales: Dict[int, float]  
     consistencia_matrices: Dict[int, float]
+
+class PreguntaResponse(BaseModel):
+    id: int
+    texto_pregunta: str
+    tipo_pregunta: str
+
+class IndicadorResponse(BaseModel):
+    id: int
+    nombre: str
+    preguntas: list[PreguntaResponse] = []
+
+class DimensionResponse(BaseModel):
+    id: int
+    nombre: str
+    indicadores: list[IndicadorResponse] = []
