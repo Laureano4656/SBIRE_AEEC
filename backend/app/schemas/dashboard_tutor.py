@@ -11,5 +11,7 @@ class IntervencionesTutorResponse(BaseModel):
     descripcion: str | None = None
     creado_en: datetime
     estudiante_id: int
+    estudiante_nombre: str
+    estudiante_apellido: str
     class Config:
         from_attributes = True

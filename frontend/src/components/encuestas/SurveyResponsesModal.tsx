@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Survey } from "../types/types.ts";
-import { useRespuestasUltimoAnio } from "../hooks/queries/useEncuestasQueries.ts";
-import type { EstadisticasEventos } from "../types/encuestas.ts";
+import { useRespuestasUltimoAnio } from "../../hooks/queries/useEncuestasQueries.ts";
+import type { EstadisticasEventos } from "../../types/encuestas.ts";
 
 interface SurveyResponsesModalProps {
   onClose: () => void;
@@ -12,16 +12,19 @@ interface SurveyResponsesModalProps {
 export default function SurveyResponsesModal({
   onClose,
   survey,
-  carreraId
+  carreraId,
 }: SurveyResponsesModalProps) {
-  const { data: responses, isLoading } = useRespuestasUltimoAnio(survey.evento_id, carreraId);
+  const { data: responses, isLoading } = useRespuestasUltimoAnio(
+    survey.evento_id,
+    carreraId,
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredResponses =
     responses?.filter((r) =>
       r.nombre_completo.toLowerCase().includes(searchQuery.toLowerCase()),
     ) ?? [];
-  console.log(responses)
+  console.log(responses);
   const hasResponses = responses && responses.length > 0;
 
   const questions = useMemo(() => {
@@ -53,7 +56,6 @@ export default function SurveyResponsesModal({
               <span className="material-symbols-outlined text-xl">ballot</span>
               {survey.nombre_evento}
             </h2>
-
           </div>
           <button
             onClick={onClose}
@@ -132,9 +134,11 @@ export default function SurveyResponsesModal({
               {/* Individual responses */}
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-brand-primary uppercase tracking-wider">
-                  Respuestas individuales ({searchQuery
+                  Respuestas individuales (
+                  {searchQuery
                     ? `${filteredResponses.length} de ${responses.length}`
-                    : responses.length})
+                    : responses.length}
+                  )
                 </h4>
 
                 {filteredResponses.length === 0 && responses.length > 0 && (

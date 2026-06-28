@@ -1,38 +1,104 @@
 import { useState, useMemo } from "react";
-import type { Alerta } from "./types";
-import { severityBadge, estadoAlertaBadge, getFilteredAlertas } from "./helpers";
+import type { AlertaTutorResponse } from "../../types/admin_dep.ts";
 
 interface AlertasViewProps {
-  alertas: Alerta[];
-  onMarcarEnRevision: (id: string) => void;
-  onResolver: (id: string) => void;
-  onAbrirEntrevista: (studentId: string) => void;
-  onVerEstudiante: (studentId: string) => void;
+  alertas: AlertaTutorResponse[];
+  isLoading?: boolean;
+  isError?: boolean;
+  onAtender: (alerta_id: number, estudiante_id: number) => void;
+  onCambiarEstado: (alerta_id: number, estado: string) => void;
 }
+
+const nivelRiesgoLabel: Record<string, string> = {
+  bajo: "BAJA",
+  medio: "MEDIA",
+  alto: "ALTA",
+  critico: "CRÍTICO",
+};
+
+type Severidad = "TODAS" | "ALTA" | "MEDIA" | "BAJA" | "CRÍTICO";
+
+const severityBadge = (severidad: string) => {
+  switch (severidad) {
+    case "ALTA":
+    case "CRÍTICO":
+      return (
+        <span className="bg-[#ffdad6] text-[#93000a] px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+          <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full animate-pulse" />
+          {severidad}
+        </span>
+      );
+    case "MEDIA":
+      return (
+        <span className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+          MEDIA
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-[#e2f3f5] text-[#006e6e] px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+          <span className="w-1.5 h-1.5 bg-[#006a6a] rounded-full" />
+          BAJA
+        </span>
+      );
+  }
+};
+
+const estadoAlertaBadge = (estado: string) => {
+  switch (estado) {
+    case "nueva":
+      return (
+        <span className="bg-[#ffdad6] text-[#93000a] px-2 py-0.5 rounded text-[10px] font-bold">
+          Nueva
+        </span>
+      );
+    case "en_revision":
+      return (
+        <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">
+          En Revisión
+        </span>
+      );
+    case "intervenida":
+      return (
+        <span className="bg-[#eef2ff] text-brand-primary px-2 py-0.5 rounded text-[10px] font-bold">
+          Intervenida
+        </span>
+      );
+    case "resuelta":
+      return (
+        <span className="bg-[#e2f3f5] text-[#006e6e] px-2 py-0.5 rounded text-[10px] font-bold">
+          Resuelta
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-[#f3f4f5] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
+          {estado}
+        </span>
+      );
+  }
+};
 
 export default function AlertasView({
   alertas,
-  onMarcarEnRevision,
-  onResolver,
-  onAbrirEntrevista,
-  onVerEstudiante,
+  isLoading,
+  isError,
+  onAtender,
+  onCambiarEstado,
 }: AlertasViewProps) {
-  const [filterSeveridad, setFilterSeveridad] = useState<
-    "TODAS" | "ALTA" | "MEDIA" | "BAJA"
-  >("TODAS");
+  const [filterSeveridad, setFilterSeveridad] = useState<Severidad>("TODAS");
 
   const filteredAlertas = useMemo(
-    () => getFilteredAlertas(alertas, filterSeveridad),
+    () => alertas.filter(
+      (a) => filterSeveridad === "TODAS" || nivelRiesgoLabel[a.nivel_riesgo] === filterSeveridad,
+    ),
     [alertas, filterSeveridad],
   );
 
-  const alertasNuevas = alertas.filter((a) => a.estado === "NUEVA").length;
-  const alertasEnRevision = alertas.filter(
-    (a) => a.estado === "EN_REVISION",
-  ).length;
-  const alertasResueltas = alertas.filter(
-    (a) => a.estado === "RESUELTA",
-  ).length;
+  const alertasNuevas = alertas.filter((a) => a.estado === "nueva").length;
+  const alertasEnRevision = alertas.filter((a) => a.estado === "en_revision").length;
+  const alertasResueltas = alertas.filter((a) => a.estado === "resuelta").length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -61,7 +127,7 @@ export default function AlertasView({
         </div>
         <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
-            RESUELTAS
+            INTERVENIDAS / RESUELTAS
           </span>
           <span className="text-3xl font-black text-[#006a6a] mt-1 block">
             {alertasResueltas}
@@ -77,13 +143,13 @@ export default function AlertasView({
           Severidad:
         </span>
         <div className="flex border border-brand-outline-variant rounded overflow-hidden">
-          {(["TODAS", "ALTA", "MEDIA", "BAJA"] as const).map((sev) => (
+          {(["TODAS", "CRÍTICO", "ALTA", "MEDIA", "BAJA"] as Severidad[]).map((sev) => (
             <button
               key={sev}
               onClick={() => setFilterSeveridad(sev)}
               className={`px-3 py-1.5 font-bold cursor-pointer border-l first:border-l-0 border-brand-outline-variant transition-colors ${
                 filterSeveridad === sev
-                  ? sev === "ALTA"
+                  ? sev === "CRÍTICO" || sev === "ALTA"
                     ? "bg-[#ffdad6] text-[#ba1a1a]"
                     : sev === "MEDIA"
                       ? "bg-amber-100 text-amber-800"
@@ -99,6 +165,24 @@ export default function AlertasView({
         </div>
       </div>
 
+      {isLoading && (
+        <div className="bg-white border border-brand-outline-variant rounded shadow-xs p-12 text-center">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto" />
+            <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto" />
+          </div>
+        </div>
+      )}
+
+      {isError && (
+        <div className="bg-white border border-brand-outline-variant rounded shadow-xs p-12 text-center">
+          <p className="text-xs text-brand-error font-semibold">
+            Error al cargar las alertas.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !isError && (
       <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-brand-outline-variant bg-[#f8f9fa] flex justify-between items-center">
           <h4 className="font-bold text-brand-primary text-sm flex items-center gap-1.5">
@@ -121,68 +205,60 @@ export default function AlertasView({
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm text-brand-primary">
-                    {a.studentName}
+                    {a.estudiante_apellido}, {a.estudiante_nombre}
                   </span>
-                  {severityBadge(a.severidad)}
+                  {severityBadge(nivelRiesgoLabel[a.nivel_riesgo] ?? a.nivel_riesgo)}
                   {estadoAlertaBadge(a.estado)}
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#f3f4f5] text-[#43474f]">
-                    {a.tipo}
+                    {a.tipo_desercion}
                   </span>
                 </div>
                 <p className="text-[11px] text-brand-outline font-semibold flex items-center gap-1">
                   <span className="material-symbols-outlined text-sm">
                     calendar_today
                   </span>
-                  {a.fecha}
+                  {new Date(a.generada_en).toLocaleDateString("es-AR")}
                 </p>
                 <p className="text-xs text-[#43474f] leading-relaxed max-w-lg">
-                  {a.descripcion}
+                  {a.origen === "score_riesgo"
+                    ? "Alerta generada por cálculo de score de riesgo."
+                    : a.origen === "omision_encuesta"
+                      ? "Alerta generada por omisión de encuesta."
+                      : a.origen === "carrera_extendida"
+                        ? "Alerta generada por carrera extendida."
+                        : `Origen: ${a.origen}`}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2 self-start">
-                {a.estado === "NUEVA" && (
+                {a.estado === "nueva" && (
                   <button
-                    onClick={() => onMarcarEnRevision(a.id)}
+                    onClick={() => onCambiarEstado(a.id, "en_revision")}
                     className="text-[10px] font-bold text-amber-800 border border-amber-300 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded transition-all whitespace-nowrap"
                   >
                     Marcar en Revisión
                   </button>
                 )}
-                {a.estado !== "RESUELTA" && (
+                {a.estado === "en_revision" && (
                   <button
-                    onClick={() => onResolver(a.id)}
+                    onClick={() => onAtender(a.id, a.estudiante_id)}
                     className="text-[10px] font-bold text-[#006a6a] border border-[#006a6a]/30 bg-[#e2f3f5] hover:bg-[#c8eeee] px-3 py-1.5 rounded transition-all whitespace-nowrap"
                   >
-                    Resolver
+                    Atender
                   </button>
                 )}
-                <button
-                  onClick={() => onAbrirEntrevista(a.studentId)}
-                  className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-3 py-1.5 rounded transition-all whitespace-nowrap flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-xs">
-                    event_note
-                  </span>
-                  Agendar Entrevista
-                </button>
-                <button
-                  onClick={() => onVerEstudiante(a.studentId)}
-                  className="text-[10px] font-bold text-[#43474f] border border-brand-outline-variant bg-[#f3f4f5] hover:bg-[#edeeef] px-3 py-1.5 rounded transition-all whitespace-nowrap"
-                >
-                  Ver Estudiante
-                </button>
               </div>
             </div>
           ))}
 
-          {filteredAlertas.length === 0 && (
-            <div className="p-12 text-center text-brand-outline font-medium text-xs">
-              No hay alertas que coincidan con el filtro seleccionado.
-            </div>
-          )}
+            {filteredAlertas.length === 0 && (
+              <div className="p-12 text-center text-brand-outline font-medium text-xs">
+                No hay alertas sin atender.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

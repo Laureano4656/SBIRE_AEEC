@@ -24,6 +24,8 @@ class EntrevistaPlanificadaResponse(BaseModel):
     estado: str
     intervencion_id : int
     creado_en: datetime
+    estudiante_nombre: str | None = None
+    estudiante_apellido: str | None = None
     
     class Config:
         from_attributes = True

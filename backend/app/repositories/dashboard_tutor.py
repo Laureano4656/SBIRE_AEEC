@@ -95,25 +95,29 @@ class dashboardTutorRepository:
 
     async def get_entrevistas(self, tutor_id:int) -> list[EntrevistaPlanificadaResponse]:
         rows = await self.conn.fetch("""
-            SELECT *
-            FROM entrevista_planificada
-            WHERE tutor_id = $1
+            SELECT ep.*, e.nombre AS estudiante_nombre, e.apellido AS estudiante_apellido
+            FROM entrevista_planificada ep
+            INNER JOIN estudiantes e ON ep.estudiante_id = e.id
+            WHERE ep.tutor_id = $1
         """, tutor_id)
         return [EntrevistaPlanificadaResponse(**dict(row)) for row in rows]
     
     async def get_intervenciones_por_tutor(self, tutor_id: int) -> list[IntervencionesTutorResponse]:
         rows = await self.conn.fetch("""
             SELECT i.*,
-            a.estudiante_id
+            a.estudiante_id,
+            e.nombre AS estudiante_nombre,
+            e.apellido AS estudiante_apellido
             FROM intervenciones i
             INNER JOIN alertas a ON i.alerta_id = a.id
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
             WHERE i.tutor_id = $1
         """, tutor_id)
         return [IntervencionesTutorResponse(**dict(row)) for row in rows]
     
     async def get_alertas_sin_atender_por_carrera(self, carrera_id: int) -> list[AlertaResponse]:
             query = """
-                SELECT a.*
+                SELECT a.*, e.nombre AS estudiante_nombre, e.apellido AS estudiante_apellido
                 FROM alertas a
                 INNER JOIN estudiantes e ON a.estudiante_id = e.id
                 WHERE e.carrera_id = $1 AND a.estado IN ('nueva', 'en_revision')
