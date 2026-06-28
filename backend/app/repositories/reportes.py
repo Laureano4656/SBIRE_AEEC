@@ -37,5 +37,5 @@ class ReportesRepository:
                     WHERE estudiante_id = e.id
                 )
             WHERE e.carrera_id = $1
-        """, carrera_id
+        """
         return await self.conn.fetch(query, carrera_id)
