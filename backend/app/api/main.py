@@ -139,6 +139,7 @@ protected_router.include_router(estudiantes_router)
 protected_router.include_router(importacion_archivo_router)
 protected_router.include_router(criterios_router)
 protected_router.include_router(alertas_router)
+protected_router.include_router(reportes_router)
 
 app.include_router(protected_router, prefix=API_PREFIX)
 
