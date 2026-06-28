@@ -7,7 +7,7 @@ export const getTutorEstudiantes = async (
   tutor_id: number,
 ): Promise<EstudianteDashboardResponse[]> => {
   const response = await axiosInstance.get<EstudianteDashboardResponse[]>(
-    `${PREFIX}/tutor/estudiantes`,
+    `${PREFIX}/tutor/estudiantes  `,
     { params: { tutor_id } },
   );
   return response.data;

@@ -30,3 +30,6 @@ class IntervencionRepository(CrudRepository[IntervencionResponse]):
             intervencion_id,
             resultado=resultado,
             descripcion=descripcion)
+
+    async def get_by_id(self, intervencion_id: int) -> int:
+        return await super().get_by_id(intervencion_id)

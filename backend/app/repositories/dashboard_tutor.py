@@ -13,31 +13,33 @@ class dashboardTutorRepository:
         self.conn = conn
     
     async def get_students_by_tutor(self, tutor_id: int) -> list[EstudianteDashboardResponse]:
-        # Implementar la lógica para obtener los estudiantes asignados a un tutor
         rows = await self.conn.fetch(
             """
-            SELECT DISTINCT ON (e.id)
+            SELECT
                 e.nombre,
                 e.apellido,
                 e.dni,
                 c.nombre AS carrera,
-                e.porcentaje_carrera AS porcentaje_carrera,
+                e.porcentaje_carrera,
                 s.valor AS indice_riesgo,
                 a.estado AS estado_alerta,
                 s.creado_en AS ultima_fecha_recalculo
-            FROM intervenciones i
-            INNER JOIN alertas a ON i.alerta_id = a.id
-            INNER JOIN estudiantes e ON a.estudiante_id = e.id
+            FROM estudiantes e
             INNER JOIN carreras c ON e.carrera_id = c.id
-            LEFT JOIN score_total s on e.id = s.estudiante_id
-            and s.creado_en = (
-		        SELECT MAX(creado_en) 
-		        FROM score_total 
-		        WHERE estudiante_id = e.id
-		    )  
-            WHERE i.tutor_id = $1
-            AND a.estado IN ('en_revision', 'intervenida')
-            ORDER BY e.id, i.creado_en desc;
+            LEFT JOIN score_total s ON e.id = s.estudiante_id
+                AND s.creado_en = (
+                    SELECT MAX(creado_en) 
+                    FROM score_total 
+                    WHERE estudiante_id = e.id
+                )
+            LEFT JOIN alertas a ON e.id = a.estudiante_id
+                AND a.generada_en = (
+                    SELECT MAX(generada_en) 
+                    FROM alertas 
+                    WHERE estudiante_id = e.id
+                )
+            WHERE e.carrera_id = (SELECT carrera_id FROM usuarios WHERE id = $1)
+              AND e.activo = TRUE
             """,
             tutor_id
         )

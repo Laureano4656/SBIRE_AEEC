@@ -19,8 +19,7 @@ class IntervencionService(CrudService[Intervencion]):
 
     # mantenemos el actualizar custom
     async def actualizar_resultado(self, intervencion_id: int, resultado: str, descripcion: str) -> IntervencionResponse:
-        # usamos el get_by_id que heredaste del crudservice base para validar
-        intervencion = await self.get_by_id(intervencion_id)
+        intervencion = await self.repo.get_by_id(intervencion_id)
         if not intervencion:
             raise HTTPException(status_code=404, detail=f"intervencion con id {intervencion_id} no encontrada")
             
