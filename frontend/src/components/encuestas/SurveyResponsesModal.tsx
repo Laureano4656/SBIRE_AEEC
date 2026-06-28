@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import type { Survey } from "../types/types.ts";
-import { useRespuestasUltimoAnio } from "../hooks/queries/useEncuestasQueries.ts";
-import type { EstadisticasEventos } from "../types/encuestas.ts";
+import { useRespuestasUltimoAnio } from "../../hooks/queries/useEncuestasQueries.ts";
+import type { EstadisticasEventos } from "../../types/encuestas.ts";
 
 interface SurveyResponsesModalProps {
   onClose: () => void;
@@ -14,30 +13,62 @@ export default function SurveyResponsesModal({
   survey,
   carreraId
 }: SurveyResponsesModalProps) {
-  const { data: responses, isLoading } = useRespuestasUltimoAnio(survey.evento_id, carreraId);
+  const { data: responses, isLoading } = useRespuestasUltimoAnio(carreraId, survey.evento_id);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredResponses =
     responses?.filter((r) =>
       r.nombre_completo.toLowerCase().includes(searchQuery.toLowerCase()),
     ) ?? [];
-  console.log(responses)
   const hasResponses = responses && responses.length > 0;
 
   const questions = useMemo(() => {
     if (!responses || responses.length === 0) return [];
-    // tengo que juntar bloques academicos y generales
-    const allQuestions = [
-      ...responses[0].preguntas_generales,
-      ...responses[0].bloques_academicos.flatMap((b) => b.preguntas),
-    ];
-    return allQuestions.map((q) => ({
+    const generales = responses[0].preguntas_generales.map((q) => ({
+      key: `g-${q.id}`,
       id: q.id,
       texto: q.texto_pregunta,
       tipo: q.tipo_pregunta,
     }));
+    const bloques = responses[0].bloques_academicos.flatMap((b) =>
+      b.preguntas.map((q) => ({
+        key: `b-${b.materia_id}-${q.id}`,
+        id: q.id,
+        texto: q.texto_pregunta.replace("{MATERIA}", b.materia_nombre),
+        tipo: q.tipo_pregunta,
+        materia_id: b.materia_id,
+        materia_nombre: b.materia_nombre,
+      })),
+    );
+    return [...generales, ...bloques];
   }, [responses]);
 
+  const responsesByQuestion = useMemo(() => {
+    if (!responses || responses.length === 0) return {};
+    const result: Record<string, string[]> = {};
+    for (const response of responses) {
+      const allAnswers = [
+        ...response.preguntas_generales.map((q) => ({
+          questionKey: `g-${q.id}`,
+          answer: q.respuesta_previa?.valor_texto ?? q.opciones.find((o) => o.id === q.respuesta_previa?.opcion_seleccionada_id)?.texto_opcion ?? q.respuesta_previa?.valor_numerico?.toString() ?? "",
+        })),
+        ...response.bloques_academicos.flatMap((b) =>
+          b.preguntas.map((q) => ({
+            questionKey: `b-${b.materia_id}-${q.id}`,
+            answer: q.respuesta_previa?.valor_texto ?? q.opciones.find((o) => o.id === q.respuesta_previa?.opcion_seleccionada_id)?.texto_opcion ?? q.respuesta_previa?.valor_numerico?.toString() ?? "",
+          })),
+        ),
+      ];
+      for (const ans of allAnswers) {
+        if (!result[ans.questionKey]) {
+          result[ans.questionKey] = [];
+        }
+        result[ans.questionKey].push(ans.answer);
+      }
+    }
+    return result;
+  }, [responses, questions]);
+  console.log("responsesByQuestion:", responsesByQuestion); // Debugging line
   const tasaDeRespuesta = useMemo(() => {
     if (!responses || responses.length === 0) return 0;
     return (responses.length / survey.total_asignadas) * 100;
@@ -115,7 +146,7 @@ export default function SurveyResponsesModal({
                   </h4>
                   <div className="space-y-2">
                     {questions.map((q, idx) => (
-                      <div key={q.id} className="text-xs flex gap-2">
+                      <div key={q.key} className="text-xs flex gap-2">
                         <span className="font-black text-brand-primary shrink-0">
                           Q{idx + 1}.
                         </span>
@@ -154,7 +185,7 @@ export default function SurveyResponsesModal({
                   </div>
                 )}
 
-                {filteredResponses.map((resp) => (
+                {filteredResponses.map((resp, index) => (
                   <div
                     key={resp.asignacion_id}
                     className="border border-brand-outline-variant rounded overflow-hidden"
@@ -163,34 +194,29 @@ export default function SurveyResponsesModal({
                       <span className="text-xs font-extrabold text-brand-primary">
                         {resp.nombre_completo}
                       </span>
-                      <span className="text-[10px] text-brand-outline font-semibold">
+                      {/* <span className="text-[10px] text-brand-outline font-semibold">
                         {resp.asignacion_id} - {resp.periodo_lectivo}
-                      </span>
+                      </span> */}
                     </div>
                     <div className="divide-y divide-brand-outline-variant">
-                      {questions.map((ans, idx) => {
-                        const question = questions?.find(
-                          (q) => q.id === ans.questionId,
-                        );
-                        return (
-                          <div
-                            key={ans.questionId}
-                            className="px-4 py-2.5 flex items-start gap-3"
-                          >
-                            <span className="text-[10px] font-black text-brand-outline bg-[#edeeef] px-1.5 py-0.5 rounded shrink-0 mt-0.5">
-                              Q{idx + 1}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[11px] text-[#43474f] font-medium">
-                                {question?.texto ?? "Pregunta"}
-                              </p>
-                              <p className="text-xs font-bold text-brand-primary mt-0.5">
-                                {ans.answer}
-                              </p>
-                            </div>
+                      {questions.map((q, idx) => (
+                        <div
+                          key={q.key}
+                          className="px-4 py-2.5 flex items-start gap-3"
+                        >
+                          <span className="text-[10px] font-black text-brand-outline bg-[#edeeef] px-1.5 py-0.5 rounded shrink-0 mt-0.5">
+                            Q{idx + 1}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] text-[#43474f] font-medium">
+                              {q.texto}
+                            </p>
+                            <p className="text-xs font-bold text-brand-primary mt-0.5">
+                              {responsesByQuestion[q.key]?.[index] ?? "Sin respuesta"}
+                            </p>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}

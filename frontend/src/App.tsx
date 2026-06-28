@@ -56,14 +56,8 @@ export default function App() {
         element={<TeacherPanel onLogout={handleLogout} />}
       />
 
-      <Route path="/tutor" element={<TutorPanel onLogout={handleLogout} />} />
+      <Route path="/tutor/*" element={<TutorPanel onLogout={handleLogout} />} />
     </Routes>
 
-<<<<<<< HEAD
-        <Route path="/tutor/*" element={<TutorPanel onLogout={handleLogout} />} />
-      </Routes>
-    </AuthProvider>
-=======
->>>>>>> c7120f0bff24e6485c666f144759fdb3d71f7855
   );
 }

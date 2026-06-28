@@ -1,15 +1,9 @@
 import { useMemo, useState } from "react";
-import type { Survey } from "../../types/types.ts";
-<<<<<<< HEAD
 import SurveyEditor from "./SurveyEditor.tsx";
 import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
-=======
-import SurveyEditor from "../SurveyEditor.tsx";
-import SurveyResponsesModal from "../SurveyResponsesModal.tsx";
+import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
 import type { EstadisticasEventos } from "../../types/encuestas.ts";
 import { useAuth } from "../../hooks/useAuth.ts";
-import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
->>>>>>> c7120f0bff24e6485c666f144759fdb3d71f7855
 
 
 
@@ -42,7 +36,6 @@ export default function EncuestasView() {
   const tasaDeRespuestaPromedio = useMemo(() => {
     let totalAsignadas = 0;
     let totalCompletadas = 0;
-    console.log("Calculating tasaDeRespuestaPromedio with asignationsByEvent:", asignationsByEvent); // Debugging line
     if (!asignationsByEvent || asignationsByEvent.length === 0) return 0;
     for (const survey of asignationsByEvent) {
       totalAsignadas += survey.total_asignadas;

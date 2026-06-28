@@ -17,10 +17,10 @@ interface Pregunta {
 }
 interface RespuestaPrevia {
     pregunta_id: number
-    materia_id: number | null = null
-    opcion_seleccionada_id: number | null = null
-    valor_numerico: number | null = null
-    valor_texto: string | null = null
+    materia_id: number | null
+    opcion_seleccionada_id: number | null
+    valor_numerico: number | null
+    valor_texto: string | null
 }
 interface OpcionPregunta {
     id: number
@@ -33,7 +33,7 @@ interface PreguntaEncuesta extends Pregunta {
     opciones: OpcionPregunta[]
     respuesta_previa: RespuestaPrevia
 }
-interface BloqueAcademnico {
+interface BloqueAcademico {
     materia_id: number
     materia_nombre: string,
     preguntas: PreguntaEncuesta[]
@@ -44,7 +44,7 @@ interface FormularioEncuestaResponse {
     evento_disparador: number,
     periodo_lectivo: string,
     preguntas_generales: PreguntaEncuesta[],
-    bloques_academicos: BloqueAcademnico[]
+    bloques_academicos: BloqueAcademico[]
 }
 
 
