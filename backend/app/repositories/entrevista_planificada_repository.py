@@ -10,7 +10,7 @@ class EntrevistaPlanificadaRepository(CrudRepository[EntrevistaPlanificadaRespon
             conn,
             EntrevistaPlanificadaResponse,
             CrudTableConfig(
-                table_name="entrevistas_planificadas",
+                table_name="entrevista_planificada",
                 columns=(
                     "id", "alerta_id", "tutor_id", "estudiante_id", "fecha_propuesta",
                     "modalidad", "notas_previas", "estado", "intervencion_id", "creado_en"
