@@ -1,11 +1,13 @@
 import asyncpg
 
+from app.schemas.reportes import ReporteResponse
+
 class ReportesRepository:
     def __init__(self, conn: asyncpg.Connection):
         self.conn = conn
     
-    async def get_reporte_estudiantes_carrera(self, carrera_id: int):
-        query = """
+    async def get_reporte_estudiantes_carrera(self, carrera_id: int) -> list[ReporteResponse]:
+        rows =  await self.conn.fetch("""
             SELECT 
             e.legajo,
             e.nombre,
@@ -19,7 +21,7 @@ class ReportesRepository:
                 FROM cursadas
                 WHERE estudiante_id = e.id
                 AND estado = 'aprobada'
-            ) AS materias_aprobadas,
+            ) AS aprobadas,
             (
                 SELECT COUNT(DISTINCT m.id) AS total
                 FROM plan_estudios pe
@@ -37,5 +39,5 @@ class ReportesRepository:
                     WHERE estudiante_id = e.id
                 )
             WHERE e.carrera_id = $1
-        """
-        return await self.conn.fetch(query, carrera_id)
+        """, carrera_id)
+        return [ReporteResponse(**dict(row)) for row in rows]
