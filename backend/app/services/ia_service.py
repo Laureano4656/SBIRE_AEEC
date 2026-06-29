@@ -1,8 +1,14 @@
 from pydantic import BaseModel, Field
-from google.genai import aio, types
+from google import genai
+from google.genai import types
 from app.core.config import settings 
 
-client = aio.Client(api_key=settings.GEMINI_API_KEY)
+
+# Instancias el cliente normal
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+
+
 
 class AnalisisDesercion(BaseModel):
     nivel_riesgo: float = Field(description="Decimal 0.0 a 1.0 (1.0 = Riesgo Crítico, 0.0 = Riesgo Nulo)")

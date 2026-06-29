@@ -318,8 +318,6 @@ class RiesgoService:
 
         return score_total_id
 
-        return resultado
-
     # ==========================================
     # LÓGICA DE EXPOSICIÓN: GET DEL SEMÁFORO
     # ==========================================
