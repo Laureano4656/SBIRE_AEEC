@@ -5,6 +5,7 @@ import {
   getTutorAlertasSinAtender,
   getTutorIntervenciones,
   getTutorEntrevistas,
+  getGeneralEstudiante,
   crearTutorIntervencion,
   crearTutorEntrevista,
   completarTutorEntrevista,
@@ -22,12 +23,21 @@ export const tutorKeys = {
   intervenciones: (tutor_id: number) =>
     ["tutorIntervenciones", tutor_id] as const,
   entrevistas: (tutor_id: number) => ["tutorEntrevistas", tutor_id] as const,
+  general: (estudiante_id: number) => ["tutorGeneralEstudiante", estudiante_id] as const,
 };
 
 export const useTutorEstudiantes = (tutor_id: number | undefined) => {
   return useQuery({
     queryKey: tutorKeys.estudiantes(tutor_id ?? 0),
     queryFn: () => getTutorEstudiantes(tutor_id!),
+  });
+};
+
+export const useGeneralEstudiante = (estudiante_id: number | null) => {
+  return useQuery({
+    enabled: estudiante_id !== null,
+    queryKey: tutorKeys.general(estudiante_id ?? 0),
+    queryFn: () => getGeneralEstudiante(estudiante_id!),
   });
 };
 
@@ -91,8 +101,8 @@ export const useCrearTutorEntrevista = (tutor_id: number | undefined) => {
 export const useCompletarTutorEntrevista = (tutor_id: number | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (entrevista_id: number) =>
-      completarTutorEntrevista(entrevista_id),
+    mutationFn: ({ entrevista_id, comentario }: { entrevista_id: number; comentario?: string }) =>
+      completarTutorEntrevista(entrevista_id, comentario),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: tutorKeys.entrevistas(tutor_id ?? 0),

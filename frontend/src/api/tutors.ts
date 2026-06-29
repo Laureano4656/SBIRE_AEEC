@@ -1,5 +1,5 @@
 import { axiosInstance } from "../libs/axios.ts";
-import type { EstudianteDashboardResponse, AlertaTutorResponse, IntervencionTutorResponse, EntrevistaTutorResponse, IntervencionCreatePayload, EntrevistaCreatePayload } from "../types/admin_dep.ts";
+import type { EstudianteDashboardResponse, AlertaTutorResponse, IntervencionTutorResponse, EntrevistaTutorResponse, GeneralEstudianteDashboardAdminResponse, IntervencionCreatePayload, EntrevistaCreatePayload } from "../types/admin_dep.ts";
 
 const PREFIX = "/dashboard-tutor";
 
@@ -29,6 +29,16 @@ export const getTutorIntervenciones = async (
   const response = await axiosInstance.get<IntervencionTutorResponse[]>(
     `${PREFIX}/tutor/intervenciones`,
     { params: { tutor_id } },
+  );
+  return response.data;
+};
+
+export const getGeneralEstudiante = async (
+  estudiante_id: number,
+): Promise<GeneralEstudianteDashboardAdminResponse | null> => {
+  const response = await axiosInstance.get<GeneralEstudianteDashboardAdminResponse | null>(
+    `${PREFIX}/tutor/estudiante/general`,
+    { params: { estudiante_id } },
   );
   return response.data;
 };
@@ -63,9 +73,10 @@ export const crearTutorEntrevista = async (
   return response.data;
 };
 
-export const completarTutorEntrevista = async (entrevista_id: number) => {
+export const completarTutorEntrevista = async (entrevista_id: number, comentario?: string) => {
   const response = await axiosInstance.patch(
     `${PREFIX}/tutor/entrevistas/${entrevista_id}/completar`,
+    { comentario },
   );
   return response.data;
 };

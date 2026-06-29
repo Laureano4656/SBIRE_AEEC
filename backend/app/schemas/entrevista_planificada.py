@@ -26,6 +26,7 @@ class EntrevistaPlanificadaResponse(BaseModel):
     creado_en: datetime
     estudiante_nombre: str | None = None
     estudiante_apellido: str | None = None
+    comentario: str | None = None
     
     class Config:
         from_attributes = True

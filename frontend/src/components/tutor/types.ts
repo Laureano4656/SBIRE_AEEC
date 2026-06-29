@@ -35,4 +35,4 @@ export interface Alerta {
   estado: "NUEVA" | "EN_REVISION" | "RESUELTA";
 }
 
-export type ActiveMenu = "intervenciones" | "entrevistas" | "alertas";
+export type ActiveMenu = "intervenciones" | "entrevistas" | "alertas" | "estudiante";

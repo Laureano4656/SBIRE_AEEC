@@ -4,7 +4,7 @@ interface EntrevistasViewProps {
   entrevistas: EntrevistaTutorResponse[];
   isLoading?: boolean;
   isError?: boolean;
-  onCompletar: (id: number) => void;
+  onCompletar: (e: EntrevistaTutorResponse) => void;
   onCancelar: (id: number) => void;
 }
 
@@ -139,28 +139,33 @@ export default function EntrevistasView({
                     minute: "2-digit",
                   })}
                 </p>
-                {e.notas_previas && (
-                  <p className="text-xs text-[#43474f] leading-relaxed max-w-lg italic">
-                    &quot;{e.notas_previas}&quot;
-                  </p>
-                )}
-              </div>
-              {e.estado === "pendiente" && (
-                <div className="flex gap-2 self-start">
-                  <button
-                    onClick={() => onCompletar(e.id)}
-                    className="text-[10px] font-bold text-[#006a6a] border border-[#006a6a]/30 bg-[#e2f3f5] hover:bg-[#c8eeee] px-3 py-1.5 rounded transition-all whitespace-nowrap"
-                  >
-                    Marcar como realizada
-                  </button>
-                  <button
-                    onClick={() => onCancelar(e.id)}
-                    className="text-[10px] font-bold text-[#43474f] border border-brand-outline-variant bg-[#f3f4f5] hover:bg-[#edeeef] px-3 py-1.5 rounded transition-all whitespace-nowrap"
-                  >
-                    Cancelar
-                  </button>
+                  {e.notas_previas && (
+                    <p className="text-xs text-[#43474f] leading-relaxed max-w-lg italic">
+                      &quot;{e.notas_previas}&quot;
+                    </p>
+                  )}
+                  {e.comentario && (
+                    <p className="text-xs text-brand-primary leading-relaxed max-w-lg mt-1">
+                      <span className="font-semibold">Comentario:</span> {e.comentario}
+                    </p>
+                  )}
                 </div>
-              )}
+                {e.estado === "pendiente" && (
+                  <div className="flex gap-2 self-start">
+                    <button
+                      onClick={() => onCompletar(e)}
+                      className="text-[10px] font-bold text-[#006a6a] border border-[#006a6a]/30 bg-[#e2f3f5] hover:bg-[#c8eeee] px-3 py-1.5 rounded transition-all whitespace-nowrap"
+                    >
+                      Marcar como realizada
+                    </button>
+                    <button
+                      onClick={() => onCancelar(e.id)}
+                      className="text-[10px] font-bold text-[#43474f] border border-brand-outline-variant bg-[#f3f4f5] hover:bg-[#edeeef] px-3 py-1.5 rounded transition-all whitespace-nowrap"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
             </div>
           ))}
 

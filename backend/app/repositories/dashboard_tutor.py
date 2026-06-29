@@ -107,7 +107,8 @@ class dashboardTutorRepository:
             SELECT i.*,
             a.estudiante_id,
             e.nombre AS estudiante_nombre,
-            e.apellido AS estudiante_apellido
+            e.apellido AS estudiante_apellido,
+            e.dni AS estudiante_dni
             FROM intervenciones i
             INNER JOIN alertas a ON i.alerta_id = a.id
             INNER JOIN estudiantes e ON a.estudiante_id = e.id

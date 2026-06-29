@@ -13,5 +13,6 @@ class IntervencionesTutorResponse(BaseModel):
     estudiante_id: int
     estudiante_nombre: str
     estudiante_apellido: str
+    estudiante_dni: str
     class Config:
         from_attributes = True

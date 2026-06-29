@@ -1,70 +1,108 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { IntervencionTutorResponse } from "../../types/admin_dep.ts";
+import HistorialIntervencionesModal from "./HistorialIntervencionesModal.tsx";
 
 interface IntervencionesViewProps {
   intervenciones: IntervencionTutorResponse[];
   isLoading?: boolean;
   isError?: boolean;
   onAgendarEntrevista?: (intervencion: IntervencionTutorResponse) => void;
+  onIntervenir?: (alerta_id: number, estudiante_id: number) => void;
+  onSelectStudent?: (dni: string, estudiante_id: number) => void;
 }
 
-const tipoLabel: Record<string, string> = {
-  tutoria_academica: "Tutoría Académica",
-  entrevista: "Entrevista",
-  derivacion: "Derivación",
-  seguimiento_virtual: "Seguimiento Virtual",
-  contacto_familiar: "Contacto Familiar",
-  asesoria_par: "Asesoría Par",
-  otro: "Otro",
-};
-
-const resultadoBadge = (resultado: string | null) => {
-  switch (resultado) {
-    case "positivo":
-      return <span className="bg-[#e2f3f5] text-[#006e6e] px-2 py-0.5 rounded text-[10px] font-bold">Positivo</span>;
-    case "neutro":
-      return <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Neutro</span>;
-    case "negativo":
-      return <span className="bg-[#ffdad6] text-[#93000a] px-2 py-0.5 rounded text-[10px] font-bold">Negativo</span>;
-    case "sin_contacto":
-      return <span className="bg-[#f3f4f5] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">Sin Contacto</span>;
-    default:
-      return null;
-  }
-};
+function initials(nombre: string, apellido: string) {
+  return `${(nombre ?? "")[0] ?? ""}${(apellido ?? "")[0] ?? ""}`.toUpperCase();
+}
 
 export default function IntervencionesView({
   intervenciones,
   isLoading,
   isError,
   onAgendarEntrevista,
+  onIntervenir,
+  onSelectStudent,
 }: IntervencionesViewProps) {
-  const groupedByStudent = useMemo(() => {
-    const grouped: Record<string, { nombre: string; apellido: string; items: IntervencionTutorResponse[] }> = {};
+  const [busqueda, setBusqueda] = useState("");
+  const [modalEstudiante, setModalEstudiante] = useState<{ id: number; nombre: string; apellido: string } | null>(null);
+
+  const estudiantes = useMemo(() => {
+    const map = new Map<
+      number,
+      { id: number; nombre: string; apellido: string; dni: string; total: number; ultima: IntervencionTutorResponse | null }
+    >();
     for (const iv of intervenciones) {
-      const key = `${iv.estudiante_nombre}_${iv.estudiante_apellido}`;
-      if (!grouped[key]) {
-        grouped[key] = { nombre: iv.estudiante_nombre, apellido: iv.estudiante_apellido, items: [] };
+      const existente = map.get(iv.estudiante_id);
+      if (existente) {
+        existente.total += 1;
+        if (!existente.ultima || new Date(iv.fecha) > new Date(existente.ultima.fecha)) {
+          existente.ultima = iv;
+        }
+      } else {
+        map.set(iv.estudiante_id, {
+          id: iv.estudiante_id,
+          nombre: iv.estudiante_nombre ?? "",
+          apellido: iv.estudiante_apellido ?? "",
+          dni: iv.estudiante_dni ?? "",
+          total: 1,
+          ultima: iv,
+        });
       }
-      grouped[key].items.push(iv);
     }
-    return Object.values(grouped);
+    return Array.from(map.values()).sort((a, b) =>
+      `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`)
+    );
   }, [intervenciones]);
 
-  const total = intervenciones.length;
+  const filtrados = useMemo(() => {
+    if (!busqueda) return estudiantes;
+    const q = busqueda.toLowerCase();
+    return estudiantes.filter(
+      (e) => e.apellido.toLowerCase().includes(q) || e.nombre.toLowerCase().includes(q)
+    );
+  }, [estudiantes, busqueda]);
+
+  const resultadoIcon: Record<string, { icon: string; color: string }> = {
+    positivo: { icon: "check_circle", color: "text-[#006e6e]" },
+    neutro: { icon: "remove_circle_outline", color: "text-amber-600" },
+    negativo: { icon: "cancel", color: "text-[#ba1a1a]" },
+    sin_contacto: { icon: "person_off", color: "text-[#43474f]" },
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs">
-        <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
-          TOTAL INTERVENCIONES
-        </span>
-        <span className="text-3xl font-black text-brand-primary mt-1 block">
-          {total}
-        </span>
-        <p className="text-[10px] text-brand-outline mt-1 font-medium">
-          registros de seguimiento
-        </p>
+    <div className="space-y-5 animate-fade-in">
+      <div className="bg-white border border-brand-outline-variant rounded p-5 shadow-xs flex items-center justify-between">
+        <div>
+          <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
+            ESTUDIANTES CON INTERVENCIONES
+          </span>
+          <span className="text-3xl font-black text-brand-primary mt-1 block">
+            {estudiantes.length}
+          </span>
+          <p className="text-[10px] text-brand-outline mt-1 font-medium">
+            {intervenciones.length} intervenciones registradas
+          </p>
+        </div>
+        <div className="relative w-56">
+          <span className="material-symbols-outlined text-sm text-brand-outline absolute left-2.5 top-1/2 -translate-y-1/2">
+            search
+          </span>
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar estudiante..."
+            className="w-full border border-brand-outline-variant rounded pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+          />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-outline hover:text-brand-error transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {isLoading && (
@@ -85,57 +123,93 @@ export default function IntervencionesView({
       )}
 
       {!isLoading && !isError && (
-      <div className="space-y-4">
-        {groupedByStudent.map((group) => (
-          <div key={`${group.nombre}_${group.apellido}`} className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
-            <div className="px-6 py-3 border-b border-brand-outline-variant bg-[#f8f9fa] flex justify-between items-center">
-              <h4 className="font-bold text-brand-primary text-sm">
-                {group.apellido}, {group.nombre}
-              </h4>
-              <span className="text-[10px] text-brand-outline font-bold">
-                {group.items.length} intervención{group.items.length !== 1 ? "es" : ""}
-              </span>
+        <div className="space-y-3">
+          {filtrados.length === 0 ? (
+            <div className="bg-white border border-brand-outline-variant rounded shadow-xs p-12 text-center text-brand-outline font-medium text-xs">
+              {busqueda ? "No se encontraron estudiantes." : "No hay intervenciones registradas."}
             </div>
-            <div className="divide-y divide-brand-outline-variant">
-              {group.items.map((iv) => (
-                <div key={iv.id} className="p-4 hover:bg-[#f8f9fa] transition-colors">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#eef2ff] text-brand-primary">
-                      {tipoLabel[iv.tipo] ?? iv.tipo}
-                    </span>
-                    {resultadoBadge(iv.resultado)}
-                    <span className="text-[10px] text-brand-outline font-semibold ml-auto">
-                      {new Date(iv.fecha).toLocaleDateString("es-AR")}
-                    </span>
-                    {onAgendarEntrevista && (
-                      <button
-                        onClick={() => onAgendarEntrevista(iv)}
-                        className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-2 py-1 rounded transition-all whitespace-nowrap flex items-center gap-0.5"
-                      >
-                        <span className="material-symbols-outlined text-xs">
-                          event_note
+          ) : (
+            filtrados.map((e) => {
+              const avatar = initials(e.nombre, e.apellido) || "?";
+              const ultimoRes = e.ultima?.resultado ? resultadoIcon[e.ultima.resultado] : null;
+
+              return (
+                <div
+                  key={e.id}
+                  className="bg-white border border-brand-outline-variant rounded shadow-xs hover:shadow-md transition-all"
+                >
+                  <div
+                    onClick={() => onSelectStudent?.(e.dni, e.id)}
+                    className="p-4 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#eef2ff] text-brand-primary flex items-center justify-center text-sm font-bold shrink-0">
+                        {avatar}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-brand-primary">
+                          {e.apellido}, {e.nombre}
+                        </p>
+                        <p className="text-[11px] text-brand-outline font-semibold mt-0.5">
+                          {e.total} intervención{e.total !== 1 ? "es" : ""}
+                          {e.ultima && ` · Última: ${new Date(e.ultima.fecha).toLocaleDateString("es-AR")}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            setModalEstudiante({ id: e.id, nombre: e.nombre, apellido: e.apellido });
+                          }}
+                          title="Ver historial de intervenciones"
+                          className="text-brand-outline hover:text-brand-primary transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-lg">history</span>
+                        </button>
+                        {ultimoRes && (
+                          <span className={`text-[10px] flex items-center gap-0.5 font-bold ${ultimoRes.color}`}>
+                            <span className="material-symbols-outlined text-sm">{ultimoRes.icon}</span>
+                          </span>
+                        )}
+                        <span className="material-symbols-outlined text-brand-outline text-lg">
+                          chevron_right
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-4 pb-4 flex gap-2 justify-end border-t border-brand-outline-variant pt-3">
+                    {onIntervenir && e.ultima && (
+                      <button
+                        onClick={(ev) => { ev.stopPropagation(); onIntervenir(e.ultima!.alerta_id, e.id); }}
+                        className="text-[10px] font-bold text-brand-primary border border-brand-primary/30 bg-[#eef2ff] hover:bg-[#dde3fb] px-2.5 py-1.5 rounded transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-xs">handyman</span>
+                        Intervenir
+                      </button>
+                    )}
+                    {onAgendarEntrevista && e.ultima && (
+                      <button
+                        onClick={(ev) => { ev.stopPropagation(); onAgendarEntrevista(e.ultima!); }}
+                        className="text-[10px] font-bold text-[#006a6a] border border-[#006a6a]/30 bg-[#e2f3f5] hover:bg-[#c8eeee] px-2.5 py-1.5 rounded transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-xs">event_note</span>
                         Agendar Entrevista
                       </button>
                     )}
                   </div>
-                  {iv.descripcion && (
-                    <p className="text-xs text-[#43474f] leading-relaxed mt-1">
-                      {iv.descripcion}
-                    </p>
-                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-          {groupedByStudent.length === 0 && (
-            <div className="bg-white border border-brand-outline-variant rounded shadow-xs p-12 text-center text-brand-outline font-medium text-xs">
-              No hay intervenciones registradas.
-            </div>
+              );
+            })
           )}
         </div>
+      )}
+
+      {modalEstudiante && (
+        <HistorialIntervencionesModal
+          estudiante={modalEstudiante}
+          intervenciones={intervenciones.filter((iv) => iv.estudiante_id === modalEstudiante.id)}
+          onClose={() => setModalEstudiante(null)}
+        />
       )}
     </div>
   );

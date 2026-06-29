@@ -61,6 +61,7 @@ export interface IntervencionTutorResponse {
     estudiante_id: number
     estudiante_nombre: string
     estudiante_apellido: string
+    estudiante_dni: string
 }
 
 export interface EntrevistaTutorResponse {
@@ -76,6 +77,7 @@ export interface EntrevistaTutorResponse {
     creado_en: string
     estudiante_nombre: string | null
     estudiante_apellido: string | null
+    comentario: string | null
 }
 
 export interface IntervencionCreatePayload {

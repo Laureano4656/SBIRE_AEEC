@@ -36,30 +36,33 @@ async def conteo_por_riesgo(
     return await service.obtener_conteo_por_riesgo(carrera_id)
 
 
-@router.get("/estadisticas/totales/criticos", response_model=int)
+@router.get("/estadisticas/totales/criticos")
 async def total_criticos(
     carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
-) -> int:
+) -> dict:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_total_criticos(carrera_id)  # Puedes pasar un valor específico de carrera_id si es necesario
+    total = await service.obtener_total_criticos(carrera_id)
+    return {"total": total}
 
 
-@router.get("/estadisticas/totales/alertas-nuevas", response_model=int)
+@router.get("/estadisticas/totales/alertas-nuevas")
 async def total_alertas_nuevas(
     carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
-) -> int:
+) -> dict:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_total_alertas_nuevas(carrera_id)
+    total = await service.obtener_total_alertas_nuevas(carrera_id)
+    return {"total": total}
 
-@router.get("/estadisticas/totales/intervenciones", response_model=int)
+@router.get("/estadisticas/totales/intervenciones")
 async def intervenciones_totales(
     carrera_id: int,
     conn: asyncpg.Connection = Depends(get_conn),
-) -> int:
+) -> dict:
     service = DashboardAdminDepService(conn)
-    return await service.obtener_intervenciones(carrera_id)
+    total = await service.obtener_intervenciones(carrera_id)
+    return {"total": total}
 
 @router.get("/estadisticas/evolucion-score", response_model=dict)
 async def evolucion_mensual_score(

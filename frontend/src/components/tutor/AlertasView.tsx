@@ -244,7 +244,7 @@ export default function AlertasView({
                     onClick={() => onAtender(a.id, a.estudiante_id)}
                     className="text-[10px] font-bold text-[#006a6a] border border-[#006a6a]/30 bg-[#e2f3f5] hover:bg-[#c8eeee] px-3 py-1.5 rounded transition-all whitespace-nowrap"
                   >
-                    Atender
+                    Intervenir
                   </button>
                 )}
               </div>

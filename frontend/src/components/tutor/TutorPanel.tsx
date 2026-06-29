@@ -1,22 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ActiveMenu } from "./types";
-import type { IntervencionTutorResponse } from "../../types/admin_dep.ts";
+import type { Student } from "../../types/types";
+import type { EntrevistaTutorResponse, IntervencionTutorResponse } from "../../types/admin_dep.ts";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import IntervencionesView from "./IntervencionesView";
 import EntrevistasView from "./EntrevistasView";
 import AlertasView from "./AlertasView";
+import StudentProfileView from "../student/StudentProfileView";
+import AgendarEntrevistaModal from "./AgendarEntrevistaModal";
+import CompletarEntrevistaModal from "./CompletarEntrevistaModal";
+import ElegirIntervencionModal from "./ElegirIntervencionModal";
 import { useAuth } from "../../hooks/useAuth.ts";
 import {
   useTutorAlertasSinAtender,
   useTutorIntervenciones,
   useTutorEntrevistas,
+  useTutorEstudiantes,
+  useGeneralEstudiante,
   useCrearTutorIntervencion,
   useCrearTutorEntrevista,
   useCompletarTutorEntrevista,
   useCancelarTutorEntrevista,
   useActualizarEstadoAlerta,
 } from "../../hooks/queries/useTutorQueries.ts";
+import { getRiskLevel } from "../../utils/studentMapping.ts";
 
 interface TutorPanelProps {
   onLogout: () => void;
@@ -29,12 +37,33 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
 
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>("intervenciones");
 
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedEstudianteId, setSelectedEstudianteId] = useState<number | null>(null);
+
   const alertasQuery = useTutorAlertasSinAtender(carreraId);
   const intervencionesQuery = useTutorIntervenciones(tutorId);
   const entrevistasQuery = useTutorEntrevistas(tutorId);
+  const estudiantesQuery = useTutorEstudiantes(tutorId);
+  const generalQuery = useGeneralEstudiante(selectedEstudianteId);
   const alertas = alertasQuery.data ?? [];
   const intervenciones = intervencionesQuery.data ?? [];
   const entrevistas = entrevistasQuery.data ?? [];
+  const tutorEstudiantes = estudiantesQuery.data ?? [];
+  const datosGenerales = generalQuery.data ?? null;
+
+  useEffect(() => {
+    if (!datosGenerales || !selectedStudent) return;
+    setSelectedStudent((prev) =>
+      prev
+        ? {
+            ...prev,
+            year: datosGenerales.anio,
+            subjectsApproved: datosGenerales.materias_aprobadas,
+            subjectsTotal: datosGenerales.materias_totales,
+          }
+        : prev,
+    );
+  }, [datosGenerales]);
 
   const crearIntervencion = useCrearTutorIntervencion(tutorId, carreraId);
   const crearEntrevista = useCrearTutorEntrevista(tutorId);
@@ -42,30 +71,84 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
   const cancelarEntrevista = useCancelarTutorEntrevista(tutorId);
   const actualizarEstado = useActualizarEstadoAlerta(carreraId);
 
-  const handleAtender = (alerta_id: number) => {
+  const [intervencionModal, setIntervencionModal] =
+    useState<{ alerta_id: number; estudiante_id: number } | null>(null);
+
+  const handleAtender = (alerta_id: number, _estudiante_id: number) => {
     crearIntervencion.mutate({
       alerta_id,
       tutor_id: tutorId!,
       tipo: "seguimiento_virtual",
-      resultado: "positivo",
+      resultado: "sin_contacto",
       fecha: new Date().toISOString().split("T")[0],
     });
   };
 
-  const handleAgendarEntrevista = (intervencion: IntervencionTutorResponse) => {
-    crearEntrevista.mutate({
-      alerta_id: intervencion.alerta_id,
-      tutor_id: tutorId!,
-      estudiante_id: intervencion.estudiante_id,
-      fecha_propuesta: new Date().toISOString(),
-      modalidad: "virtual",
-      notas_previas: "",
-      intervencion_id: intervencion.id,
-    });
+  const handleIntervenir = (alerta_id: number, estudiante_id: number) => {
+    setIntervencionModal({ alerta_id, estudiante_id });
   };
 
-  const handleCompletarEntrevista = (id: number) => {
-    completarEntrevista.mutate(id);
+  const handleIntervencionSubmit = async (data: {
+    alerta_id: number;
+    tutor_id: number;
+    tipo: string;
+    resultado: string;
+    fecha: string;
+    descripcion?: string;
+    estudiante_id?: number;
+  }) => {
+    const created = await crearIntervencion.mutateAsync(data);
+    setIntervencionModal(null);
+    if (data.tipo === "entrevista" && data.estudiante_id) {
+      setEntrevistaModal({
+        id: created.id,
+        alerta_id: data.alerta_id,
+        estudiante_id: data.estudiante_id,
+        estudiante_nombre: "",
+        estudiante_apellido: "",
+      } as IntervencionTutorResponse);
+    }
+  };
+
+  const [entrevistaModal, setEntrevistaModal] =
+    useState<IntervencionTutorResponse | null>(null);
+  const [completarModal, setCompletarModal] =
+    useState<EntrevistaTutorResponse | null>(null);
+
+  const handleAgendarEntrevista = (intervencion: IntervencionTutorResponse) => {
+    setEntrevistaModal(intervencion);
+  };
+
+  const handleAgendarSubmit = (data: {
+    alerta_id: number;
+    tutor_id: number;
+    estudiante_id: number;
+    fecha_propuesta: string;
+    modalidad: string;
+    notas_previas: string;
+    intervencion_id: number;
+  }) => {
+    crearEntrevista.mutate(data);
+    setEntrevistaModal(null);
+  };
+
+  const handleCompletarEntrevista = (e: EntrevistaTutorResponse) => {
+    setCompletarModal(e);
+  };
+
+  const handleCompletarSubmit = (data: { entrevista_id: number; comentario: string; resultado: string }) => {
+    completarEntrevista.mutate({ entrevista_id: data.entrevista_id, comentario: data.comentario });
+    if (completarModal) {
+      crearIntervencion.mutate({
+        alerta_id: completarModal.alerta_id,
+        tutor_id: completarModal.tutor_id,
+        tipo: "entrevista",
+        resultado: data.resultado,
+        fecha: new Date().toISOString().split("T")[0],
+        descripcion: data.comentario,
+      });
+    }
+    setCompletarModal(null);
   };
 
   const handleCancelarEntrevista = (id: number) => {
@@ -74,6 +157,76 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
 
   const handleCambiarEstadoAlerta = (alerta_id: number, estado: string) => {
     actualizarEstado.mutate({ alerta_id, estado });
+  };
+
+  const handleSelectStudent = (dni: string, estudiante_id: number) => {
+    const api = tutorEstudiantes.find((s) => s.dni === dni);
+    let student: Student;
+    if (api) {
+      student = {
+        id: api.dni,
+        dni: api.dni,
+        firstNames: api.nombre,
+        lastNames: api.apellido,
+        fullName: `${api.nombre} ${api.apellido}`,
+        email: "",
+        avatarUrl: "",
+        career: api.carrera,
+        year: 0,
+        legajo: "",
+        riskLevel: getRiskLevel(api.indice_riesgo),
+        riskValue: api.indice_riesgo ?? 0,
+        tramo: "INICIAL" as const,
+        lastRecalculation:
+          api.ultima_fecha_recalculo === null
+            ? "-"
+            : typeof api.ultima_fecha_recalculo === "string"
+              ? api.ultima_fecha_recalculo
+              : api.ultima_fecha_recalculo.toISOString(),
+        statusAlerta: api.estado_alerta ?? "SIN ALERTA",
+        gpa: 0,
+        subjectsApproved: 0,
+        subjectsTotal: 0,
+        engagement: "Medio",
+        phone: "",
+      };
+    } else {
+      const iv = intervenciones.find((x) => x.estudiante_dni === dni);
+      if (!iv) return;
+      student = {
+        id: dni,
+        dni,
+        firstNames: iv.estudiante_nombre,
+        lastNames: iv.estudiante_apellido,
+        fullName: `${iv.estudiante_nombre} ${iv.estudiante_apellido}`,
+        email: "",
+        avatarUrl: "",
+        career: "",
+        year: 0,
+        legajo: "",
+        riskLevel: "BAJO",
+        riskValue: 0,
+        tramo: "INICIAL" as const,
+        lastRecalculation: "-",
+        statusAlerta: "SIN ALERTA",
+        gpa: 0,
+        subjectsApproved: 0,
+        subjectsTotal: 0,
+        engagement: "Medio",
+        phone: "",
+      };
+    }
+    setSelectedEstudianteId(estudiante_id);
+    setSelectedStudent(student);
+  };
+
+  const handleBackFromStudent = () => {
+    setSelectedStudent(null);
+    setSelectedEstudianteId(null);
+  };
+
+  const handleUpdateStudent = (updated: Student) => {
+    setSelectedStudent(updated);
   };
 
   const pendientes = entrevistas.filter((e) => e.estado === "pendiente").length;
@@ -87,6 +240,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
         alertasActivas={alertasActivas}
         onMenuChange={(menu) => {
           setActiveMenu(menu);
+          setSelectedStudent(null);
+          setSelectedEstudianteId(null);
         }}
         onLogout={onLogout}
       />
@@ -101,6 +256,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               isLoading={intervencionesQuery.isLoading}
               isError={intervencionesQuery.isError}
               onAgendarEntrevista={handleAgendarEntrevista}
+              onIntervenir={handleIntervenir}
+              onSelectStudent={handleSelectStudent}
             />
           )}
 
@@ -125,6 +282,41 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
           )}
         </main>
       </div>
+      {intervencionModal && (
+        <ElegirIntervencionModal
+          alerta_id={intervencionModal.alerta_id}
+          estudiante_id={intervencionModal.estudiante_id}
+          tutorId={tutorId!}
+          onClose={() => setIntervencionModal(null)}
+          onSubmit={handleIntervencionSubmit}
+        />
+      )}
+      {entrevistaModal && (
+        <AgendarEntrevistaModal
+          intervencion={entrevistaModal}
+          tutorId={tutorId!}
+          onClose={() => setEntrevistaModal(null)}
+          onSubmit={handleAgendarSubmit}
+        />
+      )}
+      {completarModal && (
+        <CompletarEntrevistaModal
+          entrevista={completarModal}
+          onClose={() => setCompletarModal(null)}
+          onSubmit={handleCompletarSubmit}
+        />
+      )}
+      {selectedStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#191c1d]/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-brand-outline-variant rounded shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <StudentProfileView
+              student={selectedStudent}
+              onBack={handleBackFromStudent}
+              onUpdateStudent={handleUpdateStudent}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
