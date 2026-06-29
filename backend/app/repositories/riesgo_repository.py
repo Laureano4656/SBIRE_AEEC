@@ -233,6 +233,18 @@ class RiesgoRepository:
             return dict(row)
         return None
 
+    async def obtener_respuestas_texto_sin_analizar(self) -> list[asyncpg.Record]:
+        query = """
+            SELECT re.id as respuesta_id, re.valor_texto, p.texto_pregunta
+            FROM respuesta_estudiante re
+            JOIN pregunta p ON re.pregunta_id = p.id
+            WHERE p.tipo_pregunta = 'texto_libre'
+              AND re.valor_texto IS NOT NULL
+              AND re.riesgo_calculado IS NULL
+              AND re.requiere_revision = false
+        """
+        return await self.conn.fetch(query)
+
     async def obtener_estudiantes_por_carrera(self, carrera_id: int) -> list[asyncpg.Record]:
         """
         Trae únicamente los IDs de todos los estudiantes inscritos en una carrera.

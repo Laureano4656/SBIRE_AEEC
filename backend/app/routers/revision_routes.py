@@ -49,3 +49,15 @@ async def aprobar_revision(
             )
 
     return {"mensaje": "Revisión aprobada. Recalculando riesgo en segundo plano."}
+
+
+@router.post("/backfill", status_code=202)
+async def iniciar_backfill(
+    background_tasks: BackgroundTasks,
+    pool: asyncpg.Pool = Depends(get_pool),
+):
+    background_tasks.add_task(
+        RevisionService.backfill_analizar_pendientes,
+        pool=pool,
+    )
+    return {"mensaje": "Backfill iniciado en segundo plano."}
