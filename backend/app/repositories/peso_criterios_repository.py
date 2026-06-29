@@ -8,18 +8,19 @@ class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
     def __init__(self, conn: asyncpg.Connection) -> None:
         super().__init__(model=PesoCriterios, conn=conn)
 
-    async def crear_configuracion(self, config_data) -> int:
+    async def crear_configuracion(self, config_data, json_data) -> int:
         """
         Inserta la nueva configuración del jefe departamental y devuelve el ID generado.
         """
         query = """
             INSERT INTO configuracion_indicador (
                 carrera_id, etapa, umbral_amarillo, umbral_rojo, 
-                factor_extension, descripcion, activo, actualizado_en, actualizado_por
+                factor_extension, descripcion, activo, actualizado_en, actualizado_por,
+                valores_saaty_crudos
             )
             VALUES (
                 $1, $2::public.etapa_desercion_enum, $3, $4, 
-                $5, $6, true, NOW(), $7
+                $5, $6, true, NOW(), $7, $8::jsonb
             )
             RETURNING id;
         """
@@ -31,7 +32,8 @@ class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
             config_data.umbral_rojo,
             config_data.factor_extension,
             config_data.descripcion,
-            config_data.actualizado_por
+            config_data.actualizado_por,
+            json_data
         )
         return nuevo_id
 
@@ -127,3 +129,31 @@ class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
             resultado.append(dim)
             
         return resultado
+
+    async def get_ultimo_saaty_crudo(self, carrera_id: int, etapa: str) -> str | None:
+        """
+        Trae únicamente la columna de valores crudos de la última 
+        configuración guardada para una carrera y etapa.
+        """
+        query = """
+            SELECT valores_saaty_crudos
+            FROM configuracion_indicador
+            WHERE carrera_id = $1 AND etapa = $2
+            ORDER BY actualizado_en DESC
+            LIMIT 1;
+        """
+        return await self.conn.fetchval(query, carrera_id, etapa)
+
+    async def get_indicadores_por_carrera(self, carrera_id: int) -> list[dict]:
+        """
+        Trae la lista de indicadores (subcriterios) actuales para una carrera.
+        Excluye las dimensiones raíz (las que tienen indicador_id en NULL).
+        """
+        query = """
+            SELECT id
+            FROM indicador
+            WHERE carrera_id = $1 
+        """
+        filas = await self.conn.fetch(query, carrera_id)
+        
+        return [dict(f) for f in filas]

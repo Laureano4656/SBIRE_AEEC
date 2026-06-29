@@ -1,10 +1,12 @@
 import asyncpg
 from typing import List, Dict
 import numpy as np
+import json
+from fastapi.encoders import jsonable_encoder
 
 from app.models.comparacion import Comparacion
 from app.repositories.peso_criterios_repository import PesoCriteriosRepository
-from app.models.configuracion import DatosConfiguracion, DimensionResponse
+from app.models.configuracion import DatosConfiguracion, PreguntaResponse, IndicadorResponse, DimensionResponse, AHPRequest
 
 
 class PesoCriteriosServices:
@@ -93,17 +95,17 @@ class PesoCriteriosServices:
 
         return resultados, reportes_cr
 
-    async def guardar_resultados_ahp(
-        self, config_data: DatosConfiguracion, pesos_globales: Dict[int, float]
-    ) -> int:
+    async def guardar_resultados_ahp(self, config_data: DatosConfiguracion, pesos_globales: Dict[int, float], raw_json:AHPRequest) -> int:
         """
         Guarda la configuración general y los pesos globales mapeados en la BD de forma atómica.
         """
         # Abrimos una transacción para asegurar consistencia total
         async with self.repo.conn.transaction():
+            
             # 1. Insertar la configuración principal y obtener el ID autogenerado
-            id_configuracion = await self.repo.crear_configuracion(config_data)
-
+            json_data = json.dumps(jsonable_encoder(raw_json))
+            id_configuracion = await self.repo.crear_configuracion(config_data, json_data)
+            
             # 2. Guardar los pesos globales calculados (que corresponden a los IDs de tus indicadores hoja)
             for id_indicador, peso_global in pesos_globales.items():
                 await self.repo.guardar_peso_indicador(
@@ -118,3 +120,15 @@ class PesoCriteriosServices:
         self, carrera_id: int
     ) -> list[DimensionResponse]:
         return await self.repo.get_arbol_dimensiones_preguntas(carrera_id)
+
+    async def obtener_valores_iniciales_saaty(self, carrera_id: int, etapa: str) -> dict:
+        json_crudo = await self.repo.get_ultimo_saaty_crudo(carrera_id, etapa)
+        
+        if not json_crudo:
+            return {}
+            
+        if isinstance(json_crudo, str):
+            return json.loads(json_crudo)
+            
+        return json_crudo
+    
