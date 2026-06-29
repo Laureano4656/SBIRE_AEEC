@@ -7,6 +7,7 @@ import TopBar from "./TopBar";
 import IntervencionesView from "./IntervencionesView";
 import EntrevistasView from "./EntrevistasView";
 import AlertasView from "./AlertasView";
+import RevisionesPendientesView from "./RevisionesPendientesView";
 import StudentProfileView from "../student/StudentProfileView";
 import AgendarEntrevistaModal from "./AgendarEntrevistaModal";
 import CompletarEntrevistaModal from "./CompletarEntrevistaModal";
@@ -23,6 +24,8 @@ import {
   useCompletarTutorEntrevista,
   useCancelarTutorEntrevista,
   useActualizarEstadoAlerta,
+  useRevisionesPendientes,
+  useAprobarRevision,
 } from "../../hooks/queries/useTutorQueries.ts";
 import { getRiskLevel } from "../../utils/studentMapping.ts";
 
@@ -45,6 +48,8 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
   const entrevistasQuery = useTutorEntrevistas(tutorId);
   const estudiantesQuery = useTutorEstudiantes(tutorId);
   const generalQuery = useGeneralEstudiante(selectedEstudianteId);
+  const revisionesQuery = useRevisionesPendientes(carreraId);
+  const revisiones = revisionesQuery.data ?? [];
   const alertas = alertasQuery.data ?? [];
   const intervenciones = intervencionesQuery.data ?? [];
   const entrevistas = entrevistasQuery.data ?? [];
@@ -70,6 +75,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
   const completarEntrevista = useCompletarTutorEntrevista(tutorId);
   const cancelarEntrevista = useCancelarTutorEntrevista(tutorId);
   const actualizarEstado = useActualizarEstadoAlerta(carreraId);
+  const aprobarRevision = useAprobarRevision(carreraId);
 
   const [intervencionModal, setIntervencionModal] =
     useState<{ alerta_id: number; estudiante_id: number } | null>(null);
@@ -231,6 +237,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
 
   const pendientes = entrevistas.filter((e) => e.estado === "pendiente").length;
   const alertasActivas = alertas.length;
+  const revisionesPendientes = revisiones.length;
 
   return (
     <div className="min-h-screen flex text-[#191c1d] bg-[#f8f9fa]">
@@ -238,6 +245,7 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
         activeMenu={activeMenu}
         pendientes={pendientes}
         alertasActivas={alertasActivas}
+        revisionesPendientes={revisionesPendientes}
         onMenuChange={(menu) => {
           setActiveMenu(menu);
           setSelectedStudent(null);
@@ -278,6 +286,17 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
               isError={alertasQuery.isError}
               onAtender={handleAtender}
               onCambiarEstado={handleCambiarEstadoAlerta}
+            />
+          )}
+
+          {activeMenu === "revisiones" && (
+            <RevisionesPendientesView
+              items={revisiones}
+              isLoading={revisionesQuery.isLoading}
+              isError={revisionesQuery.isError}
+              onAprobar={async (respuesta_id, riesgo_calculado) => {
+                await aprobarRevision.mutateAsync({ respuesta_id, riesgo_calculado });
+              }}
             />
           )}
         </main>

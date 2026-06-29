@@ -4,6 +4,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from app.repositories.riesgo_repository import RiesgoRepository
+from app.services.ia_service import analizar_comentario
 from app.schemas.semaforo_schemas import SemaforoResponse, DetalleIndicadorSemaforo
 from app.schemas.alertas import AlertaCreate
 from app.services.alertas_service import AlertasService
@@ -216,6 +217,31 @@ class RiesgoService:
                 riesgo_pregunta = self._normalizar_riesgo(
                     float(row["valor_numerico"]), config_riesgo
                 )
+            elif (
+                row["tipo_pregunta"] == "texto_libre"
+                and row["valor_texto"] is not None
+            ):
+                if row["requiere_revision"]:
+                    continue
+                if row["riesgo_calculado"] is not None:
+                    riesgo_pregunta = float(row["riesgo_calculado"])
+                else:
+                    try:
+                        resultado = await analizar_comentario(
+                            row["texto_pregunta"], row["valor_texto"]
+                        )
+                        if resultado.confianza < 60:
+                            await self.repo.marcar_para_revision(
+                                row["respuesta_id"]
+                            )
+                            continue
+                        riesgo_pregunta = resultado.nivel_riesgo
+                        await self.repo.actualizar_riesgo_calculado(
+                            row["respuesta_id"], riesgo_pregunta
+                        )
+                    except Exception as e:
+                        print(f"Error IA respuesta {row['respuesta_id']}: {e}")
+                        riesgo_pregunta = 0.0
 
             if ind_id not in riesgos_por_indicador:
                 riesgos_por_indicador[ind_id] = []

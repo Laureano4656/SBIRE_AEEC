@@ -11,6 +11,8 @@ import {
   completarTutorEntrevista,
   cancelarTutorEntrevista,
   actualizarEstadoAlerta,
+  getRevisionesPendientes,
+  aprobarRevision,
 } from "../../api/tutors.ts";
 import type {
   IntervencionCreatePayload,
@@ -24,6 +26,7 @@ export const tutorKeys = {
     ["tutorIntervenciones", tutor_id] as const,
   entrevistas: (tutor_id: number) => ["tutorEntrevistas", tutor_id] as const,
   general: (estudiante_id: number) => ["tutorGeneralEstudiante", estudiante_id] as const,
+  revisiones: (carrera_id: number) => ["tutorRevisiones", carrera_id] as const,
 };
 
 export const useTutorEstudiantes = (tutor_id: number | undefined) => {
@@ -119,6 +122,36 @@ export const useCancelarTutorEntrevista = (tutor_id: number | undefined) => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: tutorKeys.entrevistas(tutor_id ?? 0),
+      });
+    },
+  });
+};
+
+export const useRevisionesPendientes = (
+  carrera_id: number | undefined | null,
+) => {
+  return useQuery({
+    enabled: !!carrera_id,
+    queryKey: tutorKeys.revisiones(carrera_id ?? 0),
+    queryFn: () => getRevisionesPendientes(carrera_id!),
+  });
+};
+
+export const useAprobarRevision = (
+  carrera_id: number | undefined | null,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      respuesta_id,
+      riesgo_calculado,
+    }: {
+      respuesta_id: number;
+      riesgo_calculado: number;
+    }) => aprobarRevision(respuesta_id, riesgo_calculado),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: tutorKeys.revisiones(carrera_id ?? 0),
       });
     },
   });

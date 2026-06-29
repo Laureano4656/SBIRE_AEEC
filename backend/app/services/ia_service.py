@@ -1,9 +1,8 @@
 from pydantic import BaseModel, Field
-from google import genai
-from google.genai import types
+from google.genai import aio, types
 from app.core.config import settings 
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+client = aio.Client(api_key=settings.GEMINI_API_KEY)
 
 class AnalisisDesercion(BaseModel):
     nivel_riesgo: float = Field(description="Decimal 0.0 a 1.0 (1.0 = Riesgo Crítico, 0.0 = Riesgo Nulo)")
@@ -20,7 +19,7 @@ Categoriza el motivo principal y tu nivel de confianza en la evaluación.
 async def analizar_comentario(pregunta: str, comentario: str) -> AnalisisDesercion:
     prompt = f"Pregunta original: {pregunta}\nRespuesta: {comentario}"
     
-    response = client.models.generate_content(
+    response = await client.models.generate_content(
         model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(

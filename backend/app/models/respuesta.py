@@ -10,6 +10,7 @@ class RespuestaEstudiante(BaseModel):
     valor_numerico: float | None
     valor_texto: str | None
     riesgo_calculado: float | None
+    requiere_revision: bool = False
 
     class Config:
         from_attributes = True

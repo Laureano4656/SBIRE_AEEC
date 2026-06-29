@@ -1,5 +1,5 @@
 import { axiosInstance } from "../libs/axios.ts";
-import type { EstudianteDashboardResponse, AlertaTutorResponse, IntervencionTutorResponse, EntrevistaTutorResponse, GeneralEstudianteDashboardAdminResponse, IntervencionCreatePayload, EntrevistaCreatePayload } from "../types/admin_dep.ts";
+import type { EstudianteDashboardResponse, AlertaTutorResponse, IntervencionTutorResponse, EntrevistaTutorResponse, GeneralEstudianteDashboardAdminResponse, IntervencionCreatePayload, EntrevistaCreatePayload, RevisionPendienteResponse } from "../types/admin_dep.ts";
 
 const PREFIX = "/dashboard-tutor";
 
@@ -84,6 +84,27 @@ export const completarTutorEntrevista = async (entrevista_id: number, comentario
 export const cancelarTutorEntrevista = async (entrevista_id: number) => {
   const response = await axiosInstance.patch(
     `${PREFIX}/tutor/entrevistas/${entrevista_id}/cancelar`,
+  );
+  return response.data;
+};
+
+export const getRevisionesPendientes = async (
+  carrera_id: number,
+): Promise<RevisionPendienteResponse[]> => {
+  const response = await axiosInstance.get<RevisionPendienteResponse[]>(
+    "/revisiones/pendientes",
+    { params: { carrera_id } },
+  );
+  return response.data;
+};
+
+export const aprobarRevision = async (
+  respuesta_id: number,
+  riesgo_calculado: number,
+) => {
+  const response = await axiosInstance.patch(
+    `/revisiones/pendientes/${respuesta_id}/aprobar`,
+    { riesgo_calculado },
   );
   return response.data;
 };
