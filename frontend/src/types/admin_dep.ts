@@ -80,6 +80,17 @@ export interface EntrevistaTutorResponse {
     comentario: string | null
 }
 
+export interface RevisionPendienteResponse {
+  respuesta_id: number;
+  asignacion_id: number;
+  estudiante_id: number;
+  legajo: string;
+  nombre_completo: string;
+  texto_pregunta: string;
+  valor_texto: string;
+  fecha_asignacion: string | null;
+}
+
 export interface IntervencionCreatePayload {
     alerta_id: number
     tutor_id: number

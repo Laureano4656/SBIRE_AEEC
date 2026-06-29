@@ -4,6 +4,7 @@ interface SidebarProps {
   activeMenu: ActiveMenu;
   pendientes: number;
   alertasActivas: number;
+  revisionesPendientes: number;
   onMenuChange: (menu: ActiveMenu) => void;
   onLogout: () => void;
 }
@@ -12,6 +13,7 @@ export default function Sidebar({
   activeMenu,
   pendientes,
   alertasActivas,
+  revisionesPendientes,
   onMenuChange,
   onLogout,
 }: SidebarProps) {
@@ -69,6 +71,23 @@ export default function Sidebar({
           {alertasActivas > 0 && (
             <span className="bg-brand-error text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
               {alertasActivas}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => onMenuChange("revisiones")}
+          className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeMenu === "revisiones"
+              ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
+              : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">rate_review</span>
+          <span className="flex-1 text-left">Revisiones</span>
+          {revisionesPendientes > 0 && (
+            <span className="bg-amber-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+              {revisionesPendientes}
             </span>
           )}
         </button>
