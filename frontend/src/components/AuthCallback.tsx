@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../libs/axios";
 import ValidationScreen from "./ValidationScreen";
@@ -6,15 +6,27 @@ import ValidationScreen from "./ValidationScreen";
 export default function AuthCallback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const [Auth, setAuth] = useState(false);
 
   const handleValidated = useCallback(() => {
-    navigate("/admin", { replace: true });
+    if (Auth) {
+      if (params.get("role") === "admin") {
+        navigate("/admin");
+      } else if (params.get("role") === "student") {
+        navigate("/student");
+      } else if (params.get("role") === "teacher") {
+        navigate("/teacher");
+      } else if (params.get("role") === "tutor") {
+        navigate("/tutor");
+      } else {
+        navigate("/");
+      }
+    }
   }, [navigate]);
 
   useEffect(() => {
     const token = params.get("access_token");
     if (!token) {
-      navigate("/login", { replace: true });
       return;
     }
 
@@ -26,10 +38,12 @@ export default function AuthCallback() {
 
       // 2. Cookie is now set on localhost:5173 — verify it with /auth/me
       await axiosInstance.get("/auth/me");
+
+      setAuth(true);
     };
 
     initSession().catch(() => {
-      navigate("/login", { replace: true });
+      setAuth(false);
     });
   }, [params, navigate]);
 
