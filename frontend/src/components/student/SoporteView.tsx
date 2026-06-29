@@ -1,8 +1,13 @@
+import { useDatosTutor } from "../../hooks/queries/useEstudianteQueries.ts";
+
 interface SoporteViewProps {
+  estudianteId: number;
   onOpenChat: () => void;
 }
 
-export default function SoporteView({ onOpenChat }: SoporteViewProps) {
+export default function SoporteView({ estudianteId, onOpenChat }: SoporteViewProps) {
+  const { data: tutor, isLoading } = useDatosTutor(estudianteId);
+
   return (
     <div className="space-y-8 animate-fade-in text-slate-800">
       <div>
@@ -28,26 +33,43 @@ export default function SoporteView({ onOpenChat }: SoporteViewProps) {
             Tu Tutor Académico Oficial
           </h4>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <img
-              alt="Tutor de Mateo"
-              referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
-            />
-            <div className="space-y-1">
-              <h5 className="font-bold text-base text-slate-800">
-                Dr. Juan Pérez
-              </h5>
-              <p className="text-xs text-slate-500 font-semibold">
-                Tutor Senior - Departamento de Orientación al Alumno
-              </p>
-              <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 pt-1">
-                <span className="material-symbols-outlined text-sm">mail</span>
-                jperez@fi.mdp.edu.ar
-              </p>
+          {isLoading ? (
+            <div className="animate-pulse space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-slate-200" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-slate-200 rounded w-1/3" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                  <div className="h-3 bg-slate-200 rounded w-1/4" />
+                </div>
+              </div>
             </div>
-          </div>
+          ) : tutor ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <img
+                alt={tutor.nombre}
+                referrerPolicy="no-referrer"
+                className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+              />
+              <div className="space-y-1">
+                <h5 className="font-bold text-base text-slate-800">
+                  {tutor.nombre} {tutor.apellido}
+                </h5>
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                  {tutor.rol === "docente_tutor" ? "Tutor Académico" : tutor.rol}
+                </p>
+                <p className="text-xs text-slate-400 font-semibold flex items-center gap-1.5 pt-1">
+                  <span className="material-symbols-outlined text-sm">mail</span>
+                  {tutor.email}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 font-semibold">
+              No hay un tutor asignado actualmente.
+            </p>
+          )}
 
           <div className="pt-2">
             <button

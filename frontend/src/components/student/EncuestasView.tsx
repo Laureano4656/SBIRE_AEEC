@@ -1,4 +1,6 @@
 import { useState } from "react";
+import type { FormularioEncuesta, PreguntaEncuesta } from "../../types/students.ts";
+import { getEncuestaFormulario, postEncuestaSubmit } from "../../api/students.ts";
 
 export interface StudentSurvey {
   id: string;
@@ -9,23 +11,90 @@ export interface StudentSurvey {
   status: "PENDIENTE" | "COMPLETADA";
   completedAt?: string;
   questions: Question[];
+  asignacion_id?: number;
 }
 
-interface Question {
+export interface Question {
   id: string;
   question: string;
-  type: "select" | "text";
+  type: "select" | "text" | "numero";
   options?: string[];
+  optionsIds?: Record<string, number>;
   value: string;
+  pregunta_id?: number;
 }
 
 interface EncuestasViewProps {
+  estudianteId: number;
   surveys: StudentSurvey[];
   onSurveysChange: (surveys: StudentSurvey[]) => void;
   onShowToast: (text: string, variant?: "success" | "error" | "info") => void;
 }
 
+function mapRealQuestions(form: FormularioEncuesta): Question[] {
+  const all: Question[] = [];
+  for (const p of form.preguntas_generales) {
+    all.push(mapPregunta(p));
+  }
+  for (const b of form.bloques_academicos) {
+    for (const p of b.preguntas) {
+      all.push({
+        ...mapPregunta(p),
+        question: `[${b.materia_nombre}] ${p.texto_pregunta}`,
+      });
+    }
+  }
+  return all;
+}
+
+function mapPregunta(p: PreguntaEncuesta): Question {
+  const tipo = p.tipo_pregunta;
+  let type: Question["type"] = "text";
+  let options: string[] | undefined;
+  let optionsIds: Record<string, number> | undefined;
+
+  if (tipo === "si_no") {
+    type = "select";
+    options = ["Si", "No"];
+  } else if (tipo === "opcion_multiple") {
+    type = "select";
+    options = p.opciones?.map((o) => o.texto_opcion) ?? [];
+    if (p.opciones) {
+      optionsIds = {};
+      for (const o of p.opciones) {
+        optionsIds[o.texto_opcion] = o.id;
+      }
+    }
+  } else if (tipo === "escala") {
+    type = "select";
+    try {
+      const cfg = typeof p.configuracion_riesgo === "string"
+        ? JSON.parse(p.configuracion_riesgo)
+        : p.configuracion_riesgo;
+      const min = cfg?.intervalo_min ?? 1;
+      const max = cfg?.intervalo_max ?? 5;
+      options = [];
+      for (let i = min; i <= max; i++) options.push(String(i));
+    } catch {
+      options = ["1", "2", "3", "4", "5"];
+    }
+  } else if (tipo === "numero") {
+    type = "numero";
+  }
+
+  return {
+    id: String(p.id),
+    pregunta_id: p.id,
+    question: p.texto_pregunta,
+    type,
+    options,
+    optionsIds,
+    value: "",
+  };
+}
+
 export default function EncuestasView({
+  estudianteId,
   surveys,
   onSurveysChange,
   onShowToast,
@@ -37,9 +106,29 @@ export default function EncuestasView({
   const [activeSurveyTab, setActiveSurveyTab] = useState<
     "pendientes" | "completadas"
   >("pendientes");
+  const [loadingForm, setLoadingForm] = useState(false);
 
   const pendingSurveys = surveys.filter((s) => s.status === "PENDIENTE");
   const completedSurveys = surveys.filter((s) => s.status === "COMPLETADA");
+
+  const handleOpenFill = async (survey: StudentSurvey) => {
+    if (survey.asignacion_id) {
+      setLoadingForm(true);
+      try {
+        const form = await getEncuestaFormulario(survey.asignacion_id);
+        setSelectedSurveyToFill({
+          ...survey,
+          questions: mapRealQuestions(form),
+        });
+      } catch {
+        onShowToast("Error al cargar el formulario de la encuesta.", "error");
+      } finally {
+        setLoadingForm(false);
+      }
+    } else {
+      setSelectedSurveyToFill(survey);
+    }
+  };
 
   const handleSurveyOptionChange = (questionId: string, newValue: string) => {
     if (!selectedSurveyToFill) return;
@@ -52,7 +141,7 @@ export default function EncuestasView({
     });
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSurveyToFill) return;
 
@@ -67,17 +156,32 @@ export default function EncuestasView({
       return;
     }
 
-    onSurveysChange(
-      surveys.map((s) =>
-        s.id === selectedSurveyToFill.id
-          ? {
-              ...s,
-              status: "COMPLETADA" as const,
-              completedAt: new Date().toLocaleDateString("es-AR"),
-              questions: selectedSurveyToFill.questions,
+    if (selectedSurveyToFill.asignacion_id) {
+      try {
+        await postEncuestaSubmit(
+          selectedSurveyToFill.asignacion_id,
+          selectedSurveyToFill.questions.map((q) => {
+            let opcionSeleccionadaId: number | null = null;
+            if (q.type === "select" && q.value && q.optionsIds) {
+              opcionSeleccionadaId = q.optionsIds[q.value] ?? null;
             }
-          : s,
-      ),
+            return {
+              pregunta_id: q.pregunta_id ?? 0,
+              materia_id: null,
+              opcion_seleccionada_id: opcionSeleccionadaId,
+              valor_numerico: q.type === "numero" ? Number(q.value) || null : null,
+              valor_texto: q.type === "text" && q.value ? q.value : null,
+            };
+          }),
+        );
+      } catch {
+        onShowToast("Error al enviar la encuesta. Intentalo de nuevo.", "error");
+        return;
+      }
+    }
+
+    onSurveysChange(
+      surveys.filter((s) => s.id !== selectedSurveyToFill.id),
     );
 
     setSelectedSurveyToFill(null);
@@ -215,13 +319,14 @@ export default function EncuestasView({
                       {ps.questions.length} Cuestionamientos
                     </span>
                     <button
-                      onClick={() => setSelectedSurveyToFill(ps)}
-                      className="bg-brand-primary text-white hover:opacity-90 font-bold text-xs py-2 px-4 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                      onClick={() => handleOpenFill(ps)}
+                      disabled={loadingForm}
+                      className="bg-brand-primary text-white hover:opacity-90 font-bold text-xs py-2 px-4 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <span className="material-symbols-outlined text-base">
-                        rate_review
+                        {loadingForm ? "hourglass_top" : "rate_review"}
                       </span>
-                      Completar Formulario
+                      {loadingForm ? "Cargando..." : "Completar Formulario"}
                     </button>
                   </div>
                 </div>
@@ -404,6 +509,20 @@ export default function EncuestasView({
                         }
                         rows={3}
                         placeholder="Por favor, relate cualquier otra consideración para tu tutor aquí..."
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-slate-800 bg-slate-50 focus:outline-none transition-all"
+                      />
+                    )}
+
+                    {q.type === "numero" && (
+                      <input
+                        id={q.id}
+                        type="number"
+                        min={0}
+                        value={q.value}
+                        onChange={(e) =>
+                          handleSurveyOptionChange(q.id, e.target.value)
+                        }
+                        placeholder="Ingresá un valor numérico..."
                         className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-slate-800 bg-slate-50 focus:outline-none transition-all"
                       />
                     )}

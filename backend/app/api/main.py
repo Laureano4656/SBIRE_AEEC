@@ -22,6 +22,7 @@ from app.routers.importacion_archivo_routes import router as importacion_archivo
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
 from app.routers.dashboard_admin_dep_routes import router as dashboard_admin_dep_router
+from app.routers.dashboard_estudiante_routes import routes as dashboard_estudiante_router
 from app.routers.dashboard_tutor_routes import router as dashboard_tutor_router
 from app.routers.indicadores_routes import router as indicadores_router
 from app.routers.reportes_routes import router as reportes_router
@@ -111,6 +112,7 @@ API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(dashboard_admin_dep_router, prefix=API_PREFIX)
+app.include_router(dashboard_estudiante_router, prefix=API_PREFIX)
 app.include_router(dashboard_tutor_router, prefix=API_PREFIX)
 app.include_router(indicadores_router, prefix=API_PREFIX)
 app.include_router(intervenciones_router, prefix=API_PREFIX)

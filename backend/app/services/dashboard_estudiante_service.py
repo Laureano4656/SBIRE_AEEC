@@ -28,3 +28,6 @@ class DashboardEstudianteService:
 
     async def encuestas_sin_responder(self, estudiante_id: int) -> int:
         return await self.repo.encuestas_sin_responder(estudiante_id)
+
+    async def list_encuestas_pendientes(self, estudiante_id: int) -> list[dict]:
+        return await self.repo.list_encuestas_pendientes(estudiante_id)

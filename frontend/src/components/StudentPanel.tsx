@@ -6,6 +6,7 @@ import TrayectoriaView from "./student/TrayectoriaView.tsx";
 import EncuestasView from "./student/EncuestasView.tsx";
 import type { StudentSurvey } from "./student/EncuestasView.tsx";
 import SoporteView from "./student/SoporteView.tsx";
+import { useEncuestasPendientes } from "../hooks/queries/useEstudianteQueries.ts";
 
 interface StudentPanelProps {
   onLogout: () => void;
@@ -26,50 +27,24 @@ interface ChatMessage {
 export default function StudentPanel({ onLogout }: StudentPanelProps) {
   const { pathname } = useLocation();
 
-  const [surveys, setSurveys] = useState<StudentSurvey[]>([
-    {
-      id: "enc_infra_2026",
-      title: "Encuesta de Satisfacción de Cursadas e Infraestructura",
-      description:
-        "Evalúa la calidad del equipamiento híbrido, las aulas presenciales y la velocidad de la red WiFi institucional para priorizar la asignación presupuestaria.",
-      category: "Infraestructura",
-      dueDate: "30/06/2026",
-      status: "PENDIENTE",
-      questions: [
-        { id: "infra_q1", question: "¿Cómo calificarías la infraestructura (aulas híbridas y wifi) de la Facultad de Ingeniería?", type: "select", options: ["excelente", "buena", "regular", "insuficiente"], value: "" },
-        { id: "infra_q2", question: "¿Cuentas con conflictos horarios con tu empleo actual para rendir exámenes prácticos?", type: "select", options: ["si", "no", "no_aplica"], value: "" },
-        { id: "infra_q3", question: "Observaciones / Comentarios adicionales:", type: "text", value: "" },
-      ],
-    },
-    {
-      id: "enc_laboral_2026",
-      title: "Relevamiento de Situación Laboral y Correlatividades",
-      description:
-        "Análisis institucional de la situación laboral del estudiantado para ajustar los laboratorios obligatorios de tarde/noche y becas de apuntes.",
-      category: "Inclusión Laboral",
-      dueDate: "15/07/2026",
-      status: "PENDIENTE",
-      questions: [
-        { id: "lab_q1", question: "¿Cuál es tu carga horaria laboral semanal?", type: "select", options: ["Menos de 20 horas", "Entre 20 y 40 horas", "Más de 40 horas", "No trabajo actualmente"], value: "" },
-        { id: "lab_q2", question: "¿Tu empleador respeta el otorgamiento de licencias por examen oficial?", type: "select", options: ["Siempre", "A veces", "Nunca", "No Aplica"], value: "" },
-        { id: "lab_q3", question: "Comenta brevemente si requieres adecuaciones curriculares o tutorías por motivos de trabajo:", type: "text", value: "" },
-      ],
-    },
-    {
-      id: "enc_tutoria_2026",
-      title: "Evaluación del Programa de Acompañamiento y Tutorías Tempranas",
-      description:
-        "Evaluación directa de la calidad del asesoramiento tutorial recibido durante tu trayecto por materias críticas del primer tramo.",
-      category: "Acompañamiento",
-      status: "COMPLETADA",
-      completedAt: "12/06/2026",
-      questions: [
-        { id: "tut_q1", question: "¿Cómo consideras el nivel de respuesta y seguimiento de tu tutor asignado?", type: "select", options: ["excelente", "bueno", "regular", "deficiente"], value: "excelente" },
-        { id: "tut_q2", question: "¿Asistió a los talleres de apoyo de Ciencias Básicas (Física II / Análisis II)?", type: "select", options: ["si", "no"], value: "si" },
-        { id: "tut_q3", question: "¿En qué aspectos consideras clave reforzar de cara al siguiente tramo?", type: "text", value: "Considero de gran ayuda las tutorías de acompañamiento los jueves en Ciencias Básicas." },
-      ],
-    },
-  ]);
+  const [estudianteId] = useState(1);
+
+  const { data: encuestasPendientes } = useEncuestasPendientes(estudianteId);
+
+  const [surveys, setSurveys] = useState<StudentSurvey[]>([]);
+
+  useEffect(() => {
+    if (!encuestasPendientes) return;
+    const mapped: StudentSurvey[] = encuestasPendientes.map((e) => ({
+      id: String(e.asignacion_id),
+      title: e.nombre_evento,
+      description: `Período lectivo ${e.periodo_lectivo}. Completá esta encuesta para ayudar a mejorar tu trayectoria académica.`,
+      category: "Encuesta",
+      status: "PENDIENTE" as const,
+      questions: [],
+    }));
+    setSurveys(mapped);
+  }, [encuestasPendientes]);
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [showTutorChat, setShowTutorChat] = useState(false);
@@ -176,19 +151,20 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
         </div>
       )}
 
-      <StudentSidebar pendingSurveysCount={pendingSurveysCount} onLogout={onLogout} />
+      <StudentSidebar pendingSurveysCount={pendingSurveysCount} studentName="Mateo García" studentCareer="Ing. Industrial" onLogout={onLogout} />
 
       <div className="flex-1 ml-64 min-h-screen flex flex-col">
         <StudentTopBar title={title} onShowToast={showToast} />
 
         <main className="p-8 flex-1 space-y-8 overflow-y-auto max-w-7xl w-full mx-auto animate-fade-in">
           <Routes>
-            <Route index element={<TrayectoriaView />} />
-            <Route path="trayectoria" element={<TrayectoriaView />} />
+            <Route index element={<TrayectoriaView estudianteId={estudianteId} />} />
+            <Route path="trayectoria" element={<TrayectoriaView estudianteId={estudianteId} />} />
             <Route
               path="encuestas"
               element={
                 <EncuestasView
+                  estudianteId={estudianteId}
                   surveys={surveys}
                   onSurveysChange={setSurveys}
                   onShowToast={showToast}
@@ -197,7 +173,7 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             />
             <Route
               path="soporte"
-              element={<SoporteView onOpenChat={() => setShowTutorChat(true)} />}
+              element={<SoporteView estudianteId={estudianteId} onOpenChat={() => setShowTutorChat(true)} />}
             />
           </Routes>
         </main>
