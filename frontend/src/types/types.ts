@@ -53,7 +53,8 @@ export type TipoPreguntaEncuesta =
   | "texto_libre"
   | "opcion_multiple"
   | "escala"
-  | "si_no";
+  | "si_no"
+  | "numero";
 
 export interface SurveyQuestion {
   id: string;

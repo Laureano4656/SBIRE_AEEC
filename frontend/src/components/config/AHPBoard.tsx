@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import type { TipoPreguntaEncuesta } from "../../types/types";
 import { TIPO_LABEL, type Dimension, type DraggedInfo } from "./types";
 import { useEventosDisparadores } from "../../hooks/queries/useEventosDisparadoresQueries";
+import { useCreatePreguntaMutation } from "../../hooks/mutations/usePreguntasMutations";
 
 interface AHPBoardProps {
   dimensiones: Dimension[];
@@ -11,6 +12,18 @@ interface AHPBoardProps {
   boardError: string | null;
   onBoardErrorChange: (error: string | null) => void;
   onNext: () => void;
+}
+
+
+export type CreatePreguntaPayload = {
+  indicador_id: number | null;
+  carrera_id: number;
+  texto_pregunta: string;
+  evento_id: number;
+  tipo_pregunta: TipoPreguntaEncuesta;
+  configuracion_riesgo: Record<string, unknown> | null;
+  activa: boolean;
+  opciones: { texto_opcion: string; valor_riesgo_manual: number }[] | null;
 }
 
 export function AHPBoard({
@@ -40,12 +53,21 @@ export function AHPBoard({
 
   const [formTexto, setFormTexto] = useState("");
   const [formTipo, setFormTipo] = useState<TipoPreguntaEncuesta>("texto_libre");
-  const [formOpciones, setFormOpciones] = useState<string[]>(["", ""]);
+  const [formOpciones, setFormOpciones] = useState<{ texto: string; valorRiesgoManual: number }[]>([
+    { texto: "", valorRiesgoManual: 0 },
+    { texto: "", valorRiesgoManual: 0 },
+  ]);
   const [formEventoId, setFormEventoId] = useState<number>(0);
   const [errorPregunta, setErrorPregunta] = useState<string | null>(null);
 
+  const [formRiesgoSiNo, setFormRiesgoSiNo] = useState<"si" | "no">("si");
+  const [formIntervaloMin, setFormIntervaloMin] = useState<number>(0);
+  const [formIntervaloMax, setFormIntervaloMax] = useState<number>(5);
+  const [formExtremoRiesgoso, setFormExtremoRiesgoso] = useState<"min" | "max">("max");
+
   const { user } = useAuth();
   const { mutate: createIndicador } = useCreateIndicadorMutation();
+  const { mutate: createPregunta } = useCreatePreguntaMutation();
 
   const handleGuardarConfiguracion = () => {
     let esValido = true;
@@ -117,13 +139,13 @@ export function AHPBoard({
   };
 
   const guardarNuevoIndicador = () => {
-    if (!nuevoIndNombre.trim() || !nuevoIndPregunta.trim()) {
+    if (!nuevoIndNombre.trim()) {
       alert("El nombre del indicador y la primera pregunta son obligatorios.");
       return;
     }
     createIndicador({
       nombre: nuevoIndNombre.trim(),
-      dimension: nuevoIndDimIdx,
+      dimension: Number(dimensiones[nuevoIndDimIdx]?.id) || null,
       carrera_id: user?.carrera_id ?? 0,
       preguntas_id: null,
     });
@@ -151,36 +173,54 @@ export function AHPBoard({
     setPreguntaDestino({ dimIdx, indIdx });
     setFormTexto("");
     setFormTipo("texto_libre");
-    setFormOpciones(["", ""]);
+    setFormOpciones([{ texto: "", valorRiesgoManual: 0 }, { texto: "", valorRiesgoManual: 0 }]);
     setFormEventoId(0);
     setErrorPregunta(null);
+    setFormRiesgoSiNo("si");
+    setFormIntervaloMin(0);
+    setFormIntervaloMax(5);
+    setFormExtremoRiesgoso("max");
     setModalPreguntaOpen(true);
   };
 
   const resetFormPregunta = () => {
     setFormTexto("");
     setFormTipo("texto_libre");
-    setFormOpciones(["", ""]);
+    setFormOpciones([{ texto: "", valorRiesgoManual: 0 }, { texto: "", valorRiesgoManual: 0 }]);
     setFormEventoId(0);
     setErrorPregunta(null);
+    setFormRiesgoSiNo("si");
+    setFormIntervaloMin(0);
+    setFormIntervaloMax(5);
+    setFormExtremoRiesgoso("max");
   };
 
-  const handleAgregarOpcion = () => setFormOpciones((prev) => [...prev, ""]);
+  const handleAgregarOpcion = () =>
+    setFormOpciones((prev) => [...prev, { texto: "", valorRiesgoManual: 0 }]);
   const handleEliminarOpcion = (idx: number) =>
     setFormOpciones((prev) => prev.filter((_, i) => i !== idx));
   const handleCambiarOpcion = (idx: number, valor: string) =>
-    setFormOpciones((prev) => prev.map((o, i) => (i === idx ? valor : o)));
+    setFormOpciones((prev) =>
+      prev.map((o, i) => (i === idx ? { ...o, texto: valor } : o)),
+    );
+  const handleCambiarValorRiesgoManual = (idx: number, valor: number) =>
+    setFormOpciones((prev) =>
+      prev.map((o, i) => (i === idx ? { ...o, valorRiesgoManual: valor } : o)),
+    );
 
   const guardarPregunta = () => {
     if (!formTexto.trim()) {
       setErrorPregunta("El texto de la pregunta es obligatorio.");
       return;
     }
-    let opcionesLimpias: string[] | undefined;
+    let opcionesLimpias: { texto_opcion: string; valor_riesgo_manual: number }[] | undefined;
     if (formTipo === "opcion_multiple") {
       opcionesLimpias = formOpciones
-        .map((o) => o.trim())
-        .filter((o) => o.length > 0);
+        .map((o) => ({
+          texto_opcion: o.texto.trim(),
+          valor_riesgo_manual: o.valorRiesgoManual,
+        }))
+        .filter((o) => o.texto_opcion.length > 0);
       if (opcionesLimpias.length < 2) {
         setErrorPregunta(
           "Una pregunta de opción múltiple necesita al menos 2 opciones.",
@@ -193,9 +233,37 @@ export function AHPBoard({
       return;
     }
 
+    if (formTipo === "escala" || formTipo === "numero") {
+      if (formIntervaloMin >= formIntervaloMax) {
+        setErrorPregunta("El valor mínimo debe ser menor al valor máximo.");
+        return;
+      }
+    }
+
     if (!preguntaDestino) return;
     const { dimIdx, indIdx } = preguntaDestino;
-    // TODO: enviar la pregunta al backend
+
+    let configuracionRiesgo: Record<string, unknown> | null = null;
+    if (formTipo === "si_no") {
+      configuracionRiesgo = { valor_riesgo_maximo: formRiesgoSiNo };
+    } else if (formTipo === "escala" || formTipo === "numero") {
+      configuracionRiesgo = {
+        intervalo_min: formIntervaloMin,
+        intervalo_max: formIntervaloMax,
+        extremo_riesgoso: formExtremoRiesgoso,
+      };
+    }
+
+    createPregunta({
+      indicador_id: Number(dimensiones[dimIdx].indicadores[indIdx].id) || null,
+      carrera_id: user?.carrera_id ?? 0,
+      texto_pregunta: formTexto.trim(),
+      evento_id: formEventoId,
+      tipo_pregunta: formTipo,
+      configuracion_riesgo: configuracionRiesgo,
+      activa: true,
+      opciones: opcionesLimpias || null,
+    })
 
     onDimensionesChange((prev) => {
       const next = prev.map((d) => ({ ...d, indicadores: [...d.indicadores] }));
@@ -207,6 +275,7 @@ export function AHPBoard({
             id: "q_new_" + Date.now(),
             texto: formTexto.trim(),
             tipo: formTipo,
+            opciones: opcionesLimpias?.map((o) => o.texto_opcion) ?? undefined,
             evento_disparador: formEventoId,
           },
         ],
@@ -527,6 +596,7 @@ export function AHPBoard({
                 <option value="opcion_multiple">Opción Múltiple</option>
                 <option value="escala">Escala (1 a 5)</option>
                 <option value="si_no">Sí / No</option>
+                <option value="numero">Numérica</option>
               </select>
             </div>
 
@@ -555,14 +625,27 @@ export function AHPBoard({
                 <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider">
                   Opciones
                 </label>
+                <p className="text-[10px] text-brand-outline italic">
+                  Valor de riesgo: 0 = riesgo nulo, 1 = máximo riesgo
+                </p>
                 {formOpciones.map((opcion, idx) => (
-                  <div key={idx} className="flex gap-2">
+                  <div key={idx} className="flex gap-2 items-center">
                     <input
                       type="text"
-                      value={opcion}
+                      value={opcion.texto}
                       onChange={(e) => handleCambiarOpcion(idx, e.target.value)}
                       placeholder={`Opción ${idx + 1}`}
                       className="flex-1 border border-brand-outline rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-brand-primary"
+                    />
+                    <input
+                      type="number"
+                      value={opcion.valorRiesgoManual}
+                      onChange={(e) =>
+                        handleCambiarValorRiesgoManual(idx, Number(e.target.value))
+                      }
+                      placeholder="Valor riesgo"
+                      title="Valor de riesgo manual"
+                      className="w-24 border border-brand-outline rounded px-2 py-1.5 text-xs focus:ring-1 focus:ring-brand-primary text-center"
                     />
                     <button
                       onClick={() => handleEliminarOpcion(idx)}
@@ -582,6 +665,102 @@ export function AHPBoard({
                 >
                   + Agregar opción
                 </button>
+              </div>
+            )}
+
+            {formTipo === "si_no" && (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider">
+                  Configuración de Riesgo
+                </label>
+                <p className="text-[10px] text-brand-outline italic">
+                  ¿Cuál de las dos respuestas representa el máximo riesgo (1.0)?
+                </p>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#43474f] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="riesgo_sino"
+                      value="si"
+                      checked={formRiesgoSiNo === "si"}
+                      onChange={() => setFormRiesgoSiNo("si")}
+                      className="text-brand-primary"
+                    />
+                    Responder "Sí"
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#43474f] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="riesgo_sino"
+                      value="no"
+                      checked={formRiesgoSiNo === "no"}
+                      onChange={() => setFormRiesgoSiNo("no")}
+                      className="text-brand-primary"
+                    />
+                    Responder "No"
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {(formTipo === "escala" || formTipo === "numero") && (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold text-[#43474f] uppercase tracking-wider">
+                  Configuración del Intervalo
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-semibold text-[#43474f] mb-0.5">
+                      Valor Mínimo
+                    </label>
+                    <input
+                      type="number"
+                      value={formIntervaloMin}
+                      onChange={(e) => setFormIntervaloMin(Number(e.target.value))}
+                      placeholder="Ej: 0"
+                      className="w-full border border-brand-outline rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-brand-primary"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-semibold text-[#43474f] mb-0.5">
+                      Valor Máximo
+                    </label>
+                    <input
+                      type="number"
+                      value={formIntervaloMax}
+                      onChange={(e) => setFormIntervaloMax(Number(e.target.value))}
+                      placeholder="Ej: 10"
+                      className="w-full border border-brand-outline rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-brand-primary"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-brand-outline italic">
+                  ¿Qué extremo del intervalo representa el máximo riesgo (1.0)?
+                </p>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#43474f] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="extremo_riesgo"
+                      value="min"
+                      checked={formExtremoRiesgoso === "min"}
+                      onChange={() => setFormExtremoRiesgoso("min")}
+                      className="text-brand-primary"
+                    />
+                    El valor mínimo
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-[#43474f] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="extremo_riesgo"
+                      value="max"
+                      checked={formExtremoRiesgoso === "max"}
+                      onChange={() => setFormExtremoRiesgoso("max")}
+                      className="text-brand-primary"
+                    />
+                    El valor máximo
+                  </label>
+                </div>
               </div>
             )}
 

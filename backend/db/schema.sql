@@ -1,7 +1,7 @@
 \restrict dbmate
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
--- Dumped by pg_dump version 18.4 (Ubuntu 18.4-1.pgdg24.04+1)
+-- Dumped by pg_dump version 18.4 (Ubuntu 18.4-0ubuntu0.26.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -443,6 +443,7 @@ CREATE TABLE public.entrevista_planificada (
     estado public.estado_entrevista_enum DEFAULT 'pendiente'::public.estado_entrevista_enum NOT NULL,
     intervencion_id integer,
     creado_en timestamp with time zone DEFAULT now() NOT NULL,
+    comentario text,
     CONSTRAINT ck_entrevista_realizada_tiene_intervencion CHECK (((estado <> 'realizada'::public.estado_entrevista_enum) OR (intervencion_id IS NOT NULL)))
 );
 
@@ -1195,14 +1196,6 @@ ALTER TABLE ONLY public.score_total
 
 
 --
--- Name: configuracion_indicador uq_configuracion_carrera_etapa; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.configuracion_indicador
-    ADD CONSTRAINT uq_configuracion_carrera_etapa UNIQUE (carrera_id, etapa);
-
-
---
 -- Name: parciales uq_cursada_numero_parcial; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1723,4 +1716,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260627154515'),
     ('20260627195954'),
     ('20260627224347'),
-    ('20260627225635');
+    ('20260627225635'),
+    ('20260628000001'),
+    ('20260629144055');

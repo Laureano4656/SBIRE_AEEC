@@ -1,75 +1,45 @@
-import { useState } from "react";
-import type { Dimension, Par, SliderMap } from "./types";
+import { useEffect, useState } from "react";
+import type { Dimension, Par, SliderMap, AHPRequest } from "./types";
 import { getPares, sliderKey, sliderToSaaty } from "./types";
 import { AHPBoard } from "./AHPBoard";
 import { AHPSliders } from "./AHPSliders";
 import { AHPResultado } from "./AHPResultado";
+import { useIndicadoresPreguntas } from "../../hooks/queries/useIndicadoresQueries";
+import { useAuth } from "../../hooks/useAuth";
+import type { DimensionResponse } from "../../types/indicadores";
+import type { TipoPreguntaEncuesta } from "../../types/types";
+import { useSaveConfiguracionAhpMutation } from "../../hooks/mutations/useSaveConfiguracionAhpMutation";
+import { calcularAhp } from "../../api/indicadores";
 
-const INITIAL_DIMENSIONES: Dimension[] = [
-  {
-    id: "dim_1",
-    nombre: "Dimensión Sociodemográfica",
-    indicadores: [
-      {
-        id: "ind_1",
-        nombre: "Capital Cultural Familiar",
-        activo: true,
-        preguntas: [
-          {
-            id: "q_1",
-            texto: "¿Nivel educativo de tu madre?",
-            tipo: "opcion_multiple",
-            evento_disparador: 1,
-          },
-          {
-            id: "q_2",
-            texto: "¿Nivel educativo de tu padre?",
-            tipo: "opcion_multiple",
-            evento_disparador: 1,
-          },
-        ],
-      },
-      {
-        id: "ind_2",
-        nombre: "Arraigo Local",
-        activo: true,
-        preguntas: [
-          {
-            id: "q_3",
-            texto: "¿Tu familia vive en Mar del Plata?",
-            tipo: "si_no",
-            evento_disparador: 1,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "dim_2",
-    nombre: "Dimensión de Infraestructura",
-    indicadores: [
-      {
-        id: "ind_3",
-        nombre: "Estabilidad Habitacional",
-        activo: true,
-        preguntas: [
-          {
-            id: "q_4",
-            texto: "¿Cómo es tu situación de vivienda?",
-            tipo: "opcion_multiple",
-            evento_disparador: 1,
-          },
-        ],
-      },
-    ],
-  },
-];
+
+
+
+function mapDimension(dr: DimensionResponse): Dimension {
+  return {
+    id: dr.id.toString(),
+    nombre: dr.nombre,
+    indicadores: dr.indicadores.map((ir) => ({
+      id: ir.id.toString(),
+      nombre: ir.nombre,
+      activo: true,
+      preguntas: ir.preguntas.map((pr) => ({
+        id: pr.id.toString(),
+        texto: pr.texto_pregunta,
+        tipo: pr.tipo_pregunta as TipoPreguntaEncuesta,
+        evento_disparador: 0,
+      })),
+    })),
+  };
+}
 
 export default function AHPConfigPanel() {
   const [paso, setPaso] = useState<"board" | "sliders" | "resultado">("board");
-  const [dimensiones, setDimensiones] =
-    useState<Dimension[]>(INITIAL_DIMENSIONES);
-
+  const [dimensiones, setDimensiones] = useState<Dimension[]>([]);
+  const [seeded, setSeeded] = useState(false);
+  const { user } = useAuth();
+  const { data: backendDimensiones, isLoading } = useIndicadoresPreguntas(
+    user?.carrera_id,
+  );
   const [pares, setPares] = useState<Par[]>([]);
   const [sliders, setSliders] = useState<SliderMap>({});
   const [jerarquiaSnapshot, setJerarquiaSnapshot] = useState<
@@ -79,6 +49,13 @@ export default function AHPConfigPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boardError, setBoardError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (backendDimensiones && !seeded) {
+      setDimensiones(backendDimensiones.map(mapDimension));
+      setSeeded(true);
+    }
+  }, [backendDimensiones, seeded]);
 
   const buildJerarquia = (): Record<string, string[]> => {
     const j: Record<string, string[]> = {};
@@ -112,53 +89,97 @@ export default function AHPConfigPanel() {
         getPares(criterios).forEach(([a, b]) =>
           nuevoPares.push({ padre: dim, i: a, j: b }),
         );
-
+    console.log("Jerarquía generada:", jerarquia);
+    console.log("Pares generados:", nuevoPares);
     setPares(nuevoPares);
     setSliders({});
     setJerarquiaSnapshot(jerarquia);
     setPaso("sliders");
   };
 
+  const { mutateAsync: saveConfigAsync } = useSaveConfiguracionAhpMutation();
+
   const handleEnviar = async () => {
-    const jerarquia = buildJerarquia();
-    const dims = Object.keys(jerarquia);
+    const dimNameToId = new Map(
+      dimensiones.map((d) => [d.nombre, Number(d.id)]),
+    );
+    const indNameToId = new Map(
+      dimensiones.flatMap((d) =>
+        d.indicadores.map((ind) => [ind.nombre, Number(ind.id)]),
+      ),
+    );
+    const activeDimIds = dimensiones
+      .filter((d) => d.indicadores.some((ind) => ind.preguntas.length > 0))
+      .map((d) => Number(d.id))
+      .filter((id) => !isNaN(id));
 
-    const requestData: {
-      nodo_raiz: string;
-      jerarquia: Record<string, string[]>;
-      comparaciones_por_nodo: Record<
-        string,
-        { criterio_i: string; valor: number; criterio_j: string }[]
-      >;
-    } = {
-      nodo_raiz: "Índice de Riesgo",
-      jerarquia: {},
-      comparaciones_por_nodo: {},
-    };
+    const jerarquia: Record<number, number[]> = {};
+    if (activeDimIds.length > 1) jerarquia[0] = activeDimIds;
+    for (const dim of dimensiones) {
+      const dimId = Number(dim.id);
+      if (isNaN(dimId)) continue;
+      const activeIndIds = dim.indicadores
+        .filter((ind) => ind.activo && ind.preguntas.length > 0)
+        .map((ind) => Number(ind.id))
+        .filter((id) => !isNaN(id));
+      if (activeIndIds.length > 1) jerarquia[dimId] = activeIndIds;
+    }
 
-    if (dims.length > 1) requestData.jerarquia["Índice de Riesgo"] = dims;
-    for (const [dim, criterios] of Object.entries(jerarquia))
-      if (criterios.length > 1) requestData.jerarquia[dim] = criterios;
-
+    const comparacionesPorNodo: Record<
+      number,
+      { criterio_i: number; criterio_j: number; valor: number }[]
+    > = {};
     pares.forEach((p) => {
+      const padreId = p.padre === "Índice de Riesgo"
+        ? 0
+        : (dimNameToId.get(p.padre) ?? NaN);
+      const iId = indNameToId.get(p.i) ?? dimNameToId.get(p.i) ?? NaN;
+      const jId = indNameToId.get(p.j) ?? dimNameToId.get(p.j) ?? NaN;
+      if (isNaN(padreId) || isNaN(iId) || isNaN(jId)) return;
       const valor = sliderToSaaty(sliders[sliderKey(p)] ?? 0);
-      if (!requestData.comparaciones_por_nodo[p.padre])
-        requestData.comparaciones_por_nodo[p.padre] = [];
-      requestData.comparaciones_por_nodo[p.padre].push({
-        criterio_i: p.i,
+      if (!comparacionesPorNodo[padreId])
+        comparacionesPorNodo[padreId] = [];
+      comparacionesPorNodo[padreId].push({
+        criterio_i: iId,
+        criterio_j: jId,
         valor,
-        criterio_j: p.j,
       });
     });
+
+    const requestData: AHPRequest = {
+      nodo_raiz: 0,
+      jerarquia,
+      comparaciones_por_nodo: comparacionesPorNodo,
+      configuracion: {
+        carrera_id: user?.carrera_id ?? 0,
+        etapa: "temprana",
+        umbral_amarillo: 0.33,
+        umbral_rojo: 0.66,
+        factor_extension: 1.0,
+        descripcion: "",
+        actualizado_por: user?.id ?? 0,
+      },
+    };
 
     setLoading(true);
     setError(null);
     try {
-      // TODO: enviar requestData al endpoint /calcular-ahp
-      // Ejemplo con un futuro hook:
-      //   const data = await calcularAhp(requestData);
-      //   setResultado(JSON.stringify(data, null, 2));
-      setResultado(JSON.stringify({ mensaje: "Placeholder - pendiente de integración con el backend" }, null, 2));
+      // await saveConfigAsync({
+      //   carrera_id: user?.carrera_id ?? 0,
+      //   dimensiones: dimensiones.map((dim) => ({
+      //     id: Number(dim.id) || null,
+      //     nombre: dim.nombre,
+      //     indicadores: dim.indicadores.map((ind) => ({
+      //       id: Number(ind.id) || null,
+      //       nombre: ind.nombre,
+      //       activo: ind.activo,
+      //       preguntas_ids: ind.preguntas.map((q) => Number(q.id) || null),
+      //     })),
+      //   })),
+      // });
+      console.log(requestData);
+      const data = await calcularAhp(requestData);
+      setResultado(JSON.stringify(requestData, null, 2));
       setPaso("resultado");
     } catch {
       setError("No se pudo conectar con el backend.");
@@ -174,7 +195,7 @@ export default function AHPConfigPanel() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl">
+    <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
       <div>
         <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
           Configurador de Semáforos — AHP
@@ -186,13 +207,21 @@ export default function AHPConfigPanel() {
       </div>
 
       {paso === "board" && (
-        <AHPBoard
-          dimensiones={dimensiones}
-          onDimensionesChange={setDimensiones}
-          boardError={boardError}
-          onBoardErrorChange={setBoardError}
-          onNext={handleGenerarSliders}
-        />
+        isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <span className="text-sm text-brand-outline animate-pulse">
+              Cargando dimensiones...
+            </span>
+          </div>
+        ) : (
+          <AHPBoard
+            dimensiones={dimensiones}
+            onDimensionesChange={setDimensiones}
+            boardError={boardError}
+            onBoardErrorChange={setBoardError}
+            onNext={handleGenerarSliders}
+          />
+        )
       )}
 
       {paso === "sliders" && (

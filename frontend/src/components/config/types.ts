@@ -22,6 +22,7 @@ export const TIPO_LABEL: Record<TipoPreguntaEncuesta, string> = {
   texto_libre: "Texto Libre",
   si_no: "Sí / No",
   escala: "Escala",
+  numero: "Numérica",
 };
 
 export function getPares(arr: string[]): [string, string][] {
@@ -46,3 +47,45 @@ export function feedbackLabel(v: number, i: string, j: string): string {
 export function sliderKey(p: Par): string {
   return `${p.padre}||${p.i}||${p.j}`;
 }
+
+// class Comparacion(BaseModel):
+//     criterio_i: int
+//     criterio_j: int
+//     valor: float
+// class DatosConfiguracion(BaseModel):
+//     carrera_id: int
+//     etapa: str 
+//     umbral_amarillo: float
+//     umbral_rojo: float
+//     factor_extension: float
+//     descripcion: str
+//     actualizado_por: int
+
+// class AHPRequest(BaseModel):
+//     nodo_raiz: int
+//     jerarquia: Dict[int, List[int]]
+//     comparaciones_por_nodo: Dict[int, List[Comparacion]]
+//     configuracion: DatosConfiguracion
+
+export type comparacion = {
+  criterio_i: number;
+  criterio_j: number;
+  valor: number;
+};
+
+export type datosConfiguracion = {
+  carrera_id: number;
+  etapa: string;
+  umbral_amarillo: number;
+  umbral_rojo: number;
+  factor_extension: number;
+  descripcion: string;
+  actualizado_por: number;
+};
+
+export type AHPRequest = {
+  nodo_raiz: number;
+  jerarquia: Record<number, number[]>;
+  comparaciones_por_nodo: Record<number, comparacion[]>;
+  configuracion: datosConfiguracion;
+};

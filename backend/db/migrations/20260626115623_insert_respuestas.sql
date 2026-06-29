@@ -161,18 +161,18 @@ BEGIN
     SELECT carrera_id INTO carrera_e2 FROM estudiantes WHERE id = 2;
     
     -- Cargar preguntas
-    SELECT id INTO p_madre FROM pregunta WHERE texto_pregunta ILIKE '%nivel educativo de tu madre%' LIMIT 1;
-    SELECT id INTO p_padre FROM pregunta WHERE texto_pregunta ILIKE '%nivel educativo de tu padre%' LIMIT 1;
-    SELECT id INTO p_familia_vive FROM pregunta WHERE texto_pregunta ILIKE '%familia vive en Mar del Plata%' LIMIT 1;
-    SELECT id INTO p_familia_oriunda FROM pregunta WHERE texto_pregunta ILIKE '%familia es oriunda%' LIMIT 1;
-    SELECT id INTO p_horas_viaje FROM pregunta WHERE texto_pregunta ILIKE '%horas de viaje%' LIMIT 1;
-    SELECT id INTO p_comunicacion FROM pregunta WHERE texto_pregunta ILIKE '%comunicas con ellos%' LIMIT 1;
-    SELECT id INTO p_tipo_institucion FROM pregunta WHERE texto_pregunta ILIKE '%tipo de institución%' LIMIT 1;
-    SELECT id INTO p_secundario_tiempo FROM pregunta WHERE texto_pregunta ILIKE '%secundario en tiempo%' LIMIT 1;
-    SELECT id INTO p_primera_opcion FROM pregunta WHERE texto_pregunta ILIKE '%primera op%' LIMIT 1;
-    SELECT id INTO p_seguridad_carrera FROM pregunta WHERE texto_pregunta ILIKE '%seguro te sentis%' LIMIT 1;
-    SELECT id INTO p_importancia_formacion FROM pregunta WHERE texto_pregunta ILIKE '%formación acad%' LIMIT 1;
-    SELECT id INTO p_apoyo_familiar FROM pregunta WHERE texto_pregunta ILIKE '%entorno familiar apoya%' LIMIT 1;
+    SELECT id INTO p_madre FROM pregunta WHERE texto_pregunta ILIKE '%nivel educativo de tu madre%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_padre FROM pregunta WHERE texto_pregunta ILIKE '%nivel educativo de tu padre%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_familia_vive FROM pregunta WHERE texto_pregunta ILIKE '%familia vive en Mar del Plata%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_familia_oriunda FROM pregunta WHERE texto_pregunta ILIKE '%familia es oriunda%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_horas_viaje FROM pregunta WHERE texto_pregunta ILIKE '%horas de viaje%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_comunicacion FROM pregunta WHERE texto_pregunta ILIKE '%comunicas con ellos%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_tipo_institucion FROM pregunta WHERE texto_pregunta ILIKE '%tipo de institución%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_secundario_tiempo FROM pregunta WHERE texto_pregunta ILIKE '%secundario en tiempo%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_primera_opcion FROM pregunta WHERE texto_pregunta ILIKE '%primera op%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_seguridad_carrera FROM pregunta WHERE texto_pregunta ILIKE '%seguro te sentis%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_importancia_formacion FROM pregunta WHERE texto_pregunta ILIKE '%formación acad%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_apoyo_familiar FROM pregunta WHERE texto_pregunta ILIKE '%entorno familiar apoya%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- Cargar opciones
     SELECT id INTO o_secundario FROM opcion_pregunta WHERE texto_opcion = 'Secundario' AND pregunta_id = p_madre;
@@ -182,23 +182,23 @@ BEGIN
     SELECT id INTO o_escuela_privada FROM opcion_pregunta WHERE texto_opcion = 'Escuela Privada' AND pregunta_id = p_tipo_institucion;
 
     -- ========= CARGAR PREGUNTAS EVENTO 2 ========
-    SELECT id INTO p_asistencia        FROM pregunta WHERE texto_pregunta ILIKE '%no pudiste asistir%' LIMIT 1;
-    SELECT id INTO p_estres            FROM pregunta WHERE texto_pregunta ILIKE '%niveles de estrés%' LIMIT 1;
-    SELECT id INTO p_apoyo_contencion  FROM pregunta WHERE texto_pregunta ILIKE '%apoyo o contención%' LIMIT 1;
-    SELECT id INTO p_motivacion        FROM pregunta WHERE texto_pregunta ILIKE '%tan motivado%' LIMIT 1;
-    SELECT id INTO p_pensaste_abandonar FROM pregunta WHERE texto_pregunta ILIKE '%pensaste en abandonar%' LIMIT 1;
-    SELECT id INTO p_dejar_proximo     FROM pregunta WHERE texto_pregunta ILIKE '%dejar de cursar el próximo%' LIMIT 1;
-    SELECT id INTO p_trabajando        FROM pregunta WHERE texto_pregunta ILIKE '%trabajando actualmente%' LIMIT 1;
-    SELECT id INTO p_carga_laboral     FROM pregunta WHERE texto_pregunta ILIKE '%carga laboral cambió%' LIMIT 1;
-    SELECT id INTO p_trabajo_rendimiento FROM pregunta WHERE texto_pregunta ILIKE '%trabajo interfiere%' LIMIT 1;
-    SELECT id INTO p_horas_trabajo     FROM pregunta WHERE texto_pregunta ILIKE '%horas trabajas por semana%' LIMIT 1;
-    SELECT id INTO p_situacion_economica FROM pregunta WHERE texto_pregunta ILIKE '%situación económica%' LIMIT 1;
-    SELECT id INTO p_rendimiento_academico FROM pregunta WHERE texto_pregunta ILIKE '%rendimiento académico%' LIMIT 1;
-    SELECT id INTO p_objetivos         FROM pregunta WHERE texto_pregunta ILIKE '%objetivos académicos%' LIMIT 1;
-    SELECT id INTO p_materia_dificultad FROM pregunta WHERE texto_pregunta ILIKE '%materia en que tuviste%' LIMIT 1;
-    SELECT id INTO p_recursos_facultad FROM pregunta WHERE texto_pregunta ILIKE '%facultad te brinda los recursos%' LIMIT 1;
-    SELECT id INTO p_conocias_recursos FROM pregunta WHERE texto_pregunta ILIKE '%recursos de apoyo disponibles%' LIMIT 1;
-    SELECT id INTO p_contacto_equipo   FROM pregunta WHERE texto_pregunta ILIKE '%contactado por alguien%' LIMIT 1;
+    SELECT id INTO p_asistencia        FROM pregunta WHERE texto_pregunta ILIKE '%no pudiste asistir%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_estres            FROM pregunta WHERE texto_pregunta ILIKE '%niveles de estrés%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_apoyo_contencion  FROM pregunta WHERE texto_pregunta ILIKE '%apoyo o contención%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_motivacion        FROM pregunta WHERE texto_pregunta ILIKE '%tan motivado%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_pensaste_abandonar FROM pregunta WHERE texto_pregunta ILIKE '%pensaste en abandonar%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_dejar_proximo     FROM pregunta WHERE texto_pregunta ILIKE '%dejar de cursar el próximo%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_trabajando        FROM pregunta WHERE texto_pregunta ILIKE '%trabajando actualmente%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_carga_laboral     FROM pregunta WHERE texto_pregunta ILIKE '%carga laboral cambió%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_trabajo_rendimiento FROM pregunta WHERE texto_pregunta ILIKE '%trabajo interfiere%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_horas_trabajo     FROM pregunta WHERE texto_pregunta ILIKE '%horas trabajas por semana%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_situacion_economica FROM pregunta WHERE texto_pregunta ILIKE '%situación económica%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_rendimiento_academico FROM pregunta WHERE texto_pregunta ILIKE '%rendimiento académico%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_objetivos         FROM pregunta WHERE texto_pregunta ILIKE '%objetivos académicos%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_materia_dificultad FROM pregunta WHERE texto_pregunta ILIKE '%materia en que tuviste%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_recursos_facultad FROM pregunta WHERE texto_pregunta ILIKE '%facultad te brinda los recursos%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_conocias_recursos FROM pregunta WHERE texto_pregunta ILIKE '%recursos de apoyo disponibles%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_contacto_equipo   FROM pregunta WHERE texto_pregunta ILIKE '%contactado por alguien%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- ======== CARGAR OPCIONES EVENTO 2 ========
     SELECT id INTO o_carga_menos       FROM opcion_pregunta WHERE texto_opcion = 'Menos'                    AND pregunta_id = p_carga_laboral;
@@ -218,15 +218,15 @@ BEGIN
     SELECT id INTO o_recursos_si       FROM opcion_pregunta WHERE texto_opcion = 'Sí'                       AND pregunta_id = p_conocias_recursos;
 
     -- ======== CARGAR PREGUNTAS EVENTO 3 ========
-    SELECT id INTO p_localidad          FROM pregunta WHERE texto_pregunta ILIKE '%localidad vivís%' LIMIT 1;
-    SELECT id INTO p_situacion_vivienda FROM pregunta WHERE texto_pregunta ILIKE '%situación de vivienda%' LIMIT 1;
-    SELECT id INTO p_personas_hogar     FROM pregunta WHERE texto_pregunta ILIKE '%personas viven en tu hogar%' LIMIT 1;
-    SELECT id INTO p_espacio_estudio    FROM pregunta WHERE texto_pregunta ILIKE '%espacio en tu casa adecuado%' LIMIT 1;
-    SELECT id INTO p_tiempo_viaje       FROM pregunta WHERE texto_pregunta ILIKE '%tiempo aproximado de la facultad%' LIMIT 1;
-    SELECT id INTO p_obstaculo_traslado FROM pregunta WHERE texto_pregunta ILIKE '%obstáculo%' LIMIT 1;
-    SELECT id INTO p_ganas_estudiar     FROM pregunta WHERE texto_pregunta ILIKE '%menos ganas de continuar la carrera%' LIMIT 1;
-    SELECT id INTO p_interes_contenidos FROM pregunta WHERE texto_pregunta ILIKE '%interesado te sentiste%' LIMIT 1;
-    SELECT id INTO p_conoce_espacios    FROM pregunta WHERE texto_pregunta ILIKE '%espacios que la facultad brinda%' LIMIT 1;
+    SELECT id INTO p_localidad          FROM pregunta WHERE texto_pregunta ILIKE '%localidad vivís%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_situacion_vivienda FROM pregunta WHERE texto_pregunta ILIKE '%situación de vivienda%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_personas_hogar     FROM pregunta WHERE texto_pregunta ILIKE '%personas viven en tu hogar%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_espacio_estudio    FROM pregunta WHERE texto_pregunta ILIKE '%espacio en tu casa adecuado%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_tiempo_viaje       FROM pregunta WHERE texto_pregunta ILIKE '%tiempo aproximado de la facultad%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_obstaculo_traslado FROM pregunta WHERE texto_pregunta ILIKE '%obstáculo%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_ganas_estudiar     FROM pregunta WHERE texto_pregunta ILIKE '%menos ganas de continuar la carrera%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_interes_contenidos FROM pregunta WHERE texto_pregunta ILIKE '%interesado te sentiste%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_conoce_espacios    FROM pregunta WHERE texto_pregunta ILIKE '%espacios que la facultad brinda%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- ======== CARGAR OPCIONES EVENTO 3 ========
     -- Pregunta 53: Situación de vivienda
@@ -264,11 +264,11 @@ BEGIN
     SELECT id INTO m_programacion FROM materias WHERE nombre ILIKE '%Fundamentos de la Programación%' LIMIT 1;
 
     -- ======== CARGAR PREGUNTAS EVENTO 4 ========
-    SELECT id INTO p_inscripcion_materia FROM pregunta WHERE texto_pregunta ILIKE '%inscribiste a {MATERIA}%' LIMIT 1;
+    SELECT id INTO p_inscripcion_materia FROM pregunta WHERE texto_pregunta ILIKE '%inscribiste a {MATERIA}%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- ======== CARGAR DATOS EVENTO 5 ========
-    SELECT id INTO p_e5_nota      FROM pregunta WHERE texto_pregunta ILIKE '%nota en {MATERIA}%' LIMIT 1;
-    SELECT id INTO p_e5_situacion FROM pregunta WHERE texto_pregunta ILIKE '%situación final en {MATERIA}%' LIMIT 1;
+    SELECT id INTO p_e5_nota      FROM pregunta WHERE texto_pregunta ILIKE '%nota en {MATERIA}%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_e5_situacion FROM pregunta WHERE texto_pregunta ILIKE '%situación final en {MATERIA}%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- Cargar opciones de situación final 
     SELECT id INTO o_e5_situacion_recursa    FROM opcion_pregunta WHERE texto_opcion = 'Recursa'    AND pregunta_id = p_e5_situacion LIMIT 1;
@@ -276,8 +276,8 @@ BEGIN
     SELECT id INTO o_e5_situacion_promociona FROM opcion_pregunta WHERE texto_opcion = 'Promociona' AND pregunta_id = p_e5_situacion LIMIT 1;
 
     -- ======== CARGAR DATOS EVENTO 6 ========
-    SELECT id INTO p_e6_aprobo_final FROM pregunta WHERE texto_pregunta ILIKE '%Aprobaste el final de {MATERIA}%' LIMIT 1;
-    SELECT id INTO p_e6_nota_final   FROM pregunta WHERE texto_pregunta ILIKE '%nota en el final de {MATERIA}%' LIMIT 1;
+    SELECT id INTO p_e6_aprobo_final FROM pregunta WHERE texto_pregunta ILIKE '%Aprobaste el final de {MATERIA}%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_e6_nota_final   FROM pregunta WHERE texto_pregunta ILIKE '%nota en el final de {MATERIA}%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- Cargar opciones de aprobación de final 
     SELECT id INTO o_e6_aprobo_si          FROM opcion_pregunta WHERE texto_opcion = 'Sí' AND pregunta_id = p_e6_aprobo_final LIMIT 1;

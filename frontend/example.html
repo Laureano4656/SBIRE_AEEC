@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Creador de Preguntas - Summit Labs</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f9f9f9; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; }
+        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        
+        #config-dinamica { background: #f4f7f6; padding: 15px; border-radius: 6px; border: 1px solid #dce3e0; margin-top: 15px; }
+        
+        /* Opciones Múltiples */
+        .opcion-row { display: flex; align-items: center; gap: 10px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+        .opcion-row input[type="text"] { flex-grow: 1; margin: 0; }
+        .opcion-row input[type="number"] { width: 100px; margin: 0; border-color: #0056b3; }
+        
+        /* Configuraciones numéricas/escalas */
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .radio-group { background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .radio-group label { display: inline-block; font-weight: normal; margin-right: 15px; cursor: pointer; color: #d9534f; font-weight: bold;}
+        
+        button { background-color: #0056b3; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        button:hover { background-color: #004494; }
+        .btn-danger { background-color: #d9534f; padding: 10px 12px; }
+        .btn-danger:hover { background-color: #c9302c; }
+        .btn-secondary { background-color: #6c757d; margin-bottom: 15px; }
+        
+        #json-preview { background: #2b2b2b; color: #a9b7c6; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Crear Nueva Pregunta para Encuesta</h2>
+        
+        <div class="form-group">
+            <label for="indicador">Asociar al Indicador:</label>
+            <select id="indicador">
+                <option value="ID_01">Capital Cultural Familiar</option>
+                <option value="ID_02">Arraigo Local y Red de Apoyo</option>
+                <option value="ID_04">Fricción de Movilidad</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="periodicidad">Periodicidad de la Pregunta:</label>
+            <select id="periodicidad">
+                <option value="unica_vez">Única vez (Ej: Ingreso a la carrera)</option>
+                <option value="cuatrimestral">Cuatrimestral (Ej: Seguimiento académico/laboral)</option>
+                <option value="anual">Anual (Ej: Actualización de domicilio o convivencia)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="texto_pregunta">Texto de la Pregunta:</label>
+            <input type="text" id="texto_pregunta" placeholder="Ej: ¿Cuál es el nivel educativo de tu madre?">
+        </div>
+
+        <div class="form-group">
+            <label for="tipo_pregunta">Tipo de Respuesta (ENUM):</label>
+            <select id="tipo_pregunta" onchange="renderizarConfiguracion()">
+                <option value="opcion_multiple" selected>Opción Múltiple (Lista de Opciones)</option>
+                <option value="texto_libre">Texto Libre</option>
+                <option value="escala">Escala (Slider predefinido)</option>
+                <option value="si_no">Sí / No</option>
+                <option value="numero">Número (Intervalo libre)</option>
+            </select>
+        </div>
+
+        <div id="config-dinamica" style="display: none;"></div>
+
+        <button type="button" style="width: 100%; font-size: 16px; padding: 12px; margin-top: 15px;" onclick="generarJSON()">Guardar Pregunta</button>
+    </div>
+
+    <div class="card" id="resultados-card" style="display: none;">
+        <h2>Payload Generado (Listo para FastAPI)</h2>
+        <pre id="json-preview"></pre>
+        <button type="button" onclick="location.reload()">Crear Otra Pregunta</button>
+    </div>
+
+    <script>
+        let contadorOpciones = 0;
+
+        window.onload = () => {
+            renderizarConfiguracion();
+        };
+
+        function renderizarConfiguracion() {
+            const tipo = document.getElementById('tipo_pregunta').value;
+            const contenedor = document.getElementById('config-dinamica');
+            contenedor.style.display = 'block';
+            contenedor.innerHTML = ''; 
+
+            if (tipo === 'texto_libre') {
+                contenedor.innerHTML = `<p style="color: #666; margin: 0;">Esta respuesta será evaluada posteriormente mediante procesamiento de lenguaje natural (IA). No requiere configuración de riesgo manual.</p>`;
+            
+            } else if (tipo === 'opcion_multiple') {
+                contenedor.innerHTML = `
+                    <label>Gestión de Opciones y Riesgo (0.0 a 1.0):</label>
+                    <p style="font-size: 12px; color: #666; margin-top: 0;">Asigná el valor de riesgo manualmente para cada opción (1 = Máximo Riesgo, 0 = Riesgo Nulo).</p>
+                    <div id="lista-opciones"></div>
+                    <button type="button" class="btn-secondary" onclick="agregarOpcionMultiple()">+ Agregar Opción</button>
+                `;
+                contadorOpciones = 0;
+                agregarOpcionMultiple();
+                agregarOpcionMultiple();
+            
+            } else if (tipo === 'si_no') {
+                contenedor.innerHTML = `
+                    <label>Configuración de Riesgo (Sí/No):</label>
+                    <div class="radio-group">
+                        <p style="font-size: 13px; margin-top: 0;">¿Cuál de las dos respuestas representa el máximo riesgo (1.0) para el estudiante?</p>
+                        <label><input type="radio" name="riesgo_sino" value="si" checked> Responder "Sí"</label>
+                        <label><input type="radio" name="riesgo_sino" value="no"> Responder "No"</label>
+                    </div>
+                `;
+            
+            } else if (tipo === 'escala' || tipo === 'numero') {
+                const tipoInput = tipo === 'escala' ? 'Slider predefinido' : 'Valor numérico libre';
+                contenedor.innerHTML = `
+                    <label>Configuración del Intervalo (${tipoInput}):</label>
+                    <div class="grid-2-col">
+                        <div>
+                            <label style="font-size: 13px;">Valor Mínimo Posible:</label>
+                            <input type="number" id="val_min" placeholder="Ej: 0" required>
+                        </div>
+                        <div>
+                            <label style="font-size: 13px;">Valor Máximo Posible:</label>
+                            <input type="number" id="val_max" placeholder="Ej: 10" required>
+                        </div>
+                    </div>
+                    <div class="radio-group">
+                        <p style="font-size: 13px; margin-top: 0;">¿Qué extremo de este intervalo representa el máximo riesgo (1.0)?</p>
+                        <label><input type="radio" name="extremo_riesgo" value="min"> El Valor Mínimo (Ej: 0 horas de estudio)</label><br>
+                        <label style="margin-top: 8px;"><input type="radio" name="extremo_riesgo" value="max" checked> El Valor Máximo (Ej: 45 horas de trabajo)</label>
+                    </div>
+                `;
+            }
+        }
+
+        function agregarOpcionMultiple() {
+            contadorOpciones++;
+            const lista = document.getElementById('lista-opciones');
+            const div = document.createElement('div');
+            div.className = 'opcion-row';
+            div.id = `opcion-${contadorOpciones}`;
+            
+            div.innerHTML = `
+                <input type="text" class="input-texto" placeholder="Respuesta (Ej: Inicial)" required>
+                <input type="number" class="input-riesgo" min="0" max="1" step="0.1" placeholder="Riesgo" required title="Valor de 0 a 1">
+                <button type="button" class="btn-danger" onclick="document.getElementById('opcion-${contadorOpciones}').remove()">X</button>
+            `;
+            lista.appendChild(div);
+        }
+
+        function generarJSON() {
+            const indicador = document.getElementById('indicador').value;
+            const periodicidad = document.getElementById('periodicidad').value; // <-- CAPTURA DE PERIODICIDAD
+            const textoPregunta = document.getElementById('texto_pregunta').value.trim();
+            const tipoPregunta = document.getElementById('tipo_pregunta').value;
+
+            if (!textoPregunta) return alert("Por favor, ingresá el texto de la pregunta.");
+
+            // SE AGREGA LA PERIODICIDAD AL PAYLOAD
+            let payload = {
+                indicador_id: indicador,
+                periodicidad: periodicidad, 
+                pregunta: textoPregunta,
+                tipo_enum: tipoPregunta,
+                configuracion: null 
+            };
+
+            try {
+                if (tipoPregunta === 'opcion_multiple') {
+                    const rows = document.querySelectorAll('.opcion-row');
+                    let opcionesData = [];
+                    rows.forEach(row => {
+                        const texto = row.querySelector('.input-texto').value.trim();
+                        const riesgo = parseFloat(row.querySelector('.input-riesgo').value);
+                        if (!texto) throw "Falta completar el texto de una opción.";
+                        if (isNaN(riesgo) || riesgo < 0 || riesgo > 1) throw "El riesgo debe ser un número entre 0 y 1 en todas las opciones.";
+                        
+                        opcionesData.push({ texto: texto, valor_riesgo: riesgo });
+                    });
+                    if (opcionesData.length < 2) throw "Debe haber al menos 2 opciones.";
+                    payload.configuracion = { opciones: opcionesData };
+
+                } else if (tipoPregunta === 'si_no') {
+                    const riesgoMaximo = document.querySelector('input[name="riesgo_sino"]:checked').value;
+                    payload.configuracion = { valor_riesgo_maximo: riesgoMaximo };
+
+                } else if (tipoPregunta === 'escala' || tipoPregunta === 'numero') {
+                    const min = parseFloat(document.getElementById('val_min').value);
+                    const max = parseFloat(document.getElementById('val_max').value);
+                    if (isNaN(min) || isNaN(max) || min >= max) throw "Definí un intervalo válido (el mínimo debe ser menor al máximo).";
+                    
+                    const extremoRiesgoso = document.querySelector('input[name="extremo_riesgo"]:checked').value;
+                    payload.configuracion = {
+                        intervalo_min: min,
+                        intervalo_max: max,
+                        extremo_riesgoso: extremoRiesgoso
+                    };
+                }
+            } catch (error) {
+                return alert("Error en la configuración: " + error);
+            }
+
+            document.getElementById('resultados-card').style.display = 'block';
+            document.getElementById('json-preview').textContent = JSON.stringify(payload, null, 4);
+        }
+    </script>
+</body>
+</html>
