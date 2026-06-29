@@ -5,6 +5,7 @@ from app.models.configuracion import AHPRequest, AHPResponse, PreguntaResponse, 
 from app.services.peso_criterios_services import PesoCriteriosServices
 from app.services.riesgo_service import RiesgoService
 from app.core.database import get_pool
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/calcular_ahp", tags=["calcular_ahp"])
 
@@ -28,7 +29,8 @@ async def calcular_ahp(
     # 2. Persistir en la base de datos
     id_configuracion = await service.guardar_resultados_ahp(
         config_data=datos.configuracion, 
-        pesos_globales=pesos_finales
+        pesos_globales=pesos_finales,
+        raw_json=datos
     )
 
     # Recálculo de los semáforos para todos los estudiantes de esa carrera
@@ -57,3 +59,14 @@ async def obtener_indicadores_con_preguntas(
     resultado = await service.obtener_listado_indicadores_preguntas(carrera_id)
 
     return await service.obtener_listado_indicadores_preguntas(carrera_id)
+
+@router.get("/carreras/{carrera_id}/etapas/{etapa}/saaty-inputs")
+async def obtener_inputs_saaty(
+    carrera_id: int, 
+    etapa: str,
+    conn: asyncpg.Connection = Depends(get_conn)
+):
+    service = PesoCriteriosServices(conn)
+    datos_crudos = await service.obtener_valores_iniciales_saaty(carrera_id, etapa)
+    
+    return JSONResponse(content=datos_crudos)
