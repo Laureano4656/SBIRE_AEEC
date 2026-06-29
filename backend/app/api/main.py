@@ -34,6 +34,8 @@ from app.routers.revision_routes import router as revision_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
 from app.tasks.scheduler import scheduler, start_scheduler
+from app.tasks.backfill_revisiones import backfill_revisiones
+import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -50,6 +52,9 @@ async def lifespan(app: FastAPI):
 
     await start_scheduler()
     print(" Scheduler de tareas periódicas iniciado")
+
+    # Ejecutar backfill de revisiones al startup (no bloquea)
+    asyncio.create_task(backfill_revisiones())
 
     yield  # La app corre aquí
 
