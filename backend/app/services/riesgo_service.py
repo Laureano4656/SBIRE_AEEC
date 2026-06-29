@@ -191,8 +191,7 @@ class RiesgoService:
         respuestas_crudas = await self.repo.obtener_respuestas_para_calculo_bulk(
             asignacion_ids
         )
-        print(f"Respuestas crudas obtenidas: {len(respuestas_crudas)} registros.")
-        print("Respuestas crudas", respuestas_crudas)
+
         riesgos_por_indicador: dict[int, list[float]] = {}
 
         for row in respuestas_crudas:
@@ -224,17 +223,12 @@ class RiesgoService:
 
         score_total_acumulado = 0.0
         detalles_insert = []
-        print(riesgos_por_indicador)
         # 6. Cálculo AHP final: Promedio del indicador * Peso de la BD
         for ind_id, lista_riesgos in riesgos_por_indicador.items():
             # Sumamos los riesgos de todas las respuestas que componen este indicador y dividimos por el total
             promedio_indicador = sum(lista_riesgos) / len(lista_riesgos)
 
             peso_ahp = pesos_ahp.get(ind_id, 0.0)
-            if peso_ahp == 0.0:
-                print(
-                    f"Advertencia: El indicador {ind_id} no tiene peso AHP asignado en la configuración actual."
-                )
 
             score_ponderado = promedio_indicador * peso_ahp
 
