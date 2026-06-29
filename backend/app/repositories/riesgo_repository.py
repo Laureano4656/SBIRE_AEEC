@@ -177,6 +177,7 @@ class RiesgoRepository:
                 re.valor_texto,
                 p.texto_pregunta,
                 re.riesgo_calculado,
+                re.requiere_revision,
                 re.id as respuesta_id
             FROM respuesta_estudiante re
             JOIN pregunta p ON re.pregunta_id = p.id
@@ -187,9 +188,50 @@ class RiesgoRepository:
 
     async def actualizar_riesgo_calculado(self, respuesta_id: int, riesgo: float) -> None:
         await self.conn.execute(
-            "UPDATE respuesta_estudiante SET riesgo_calculado = $1 WHERE id = $2",
+            "UPDATE respuesta_estudiante SET riesgo_calculado = $1, requiere_revision = false WHERE id = $2",
             riesgo, respuesta_id
         )
+
+    async def marcar_para_revision(self, respuesta_id: int) -> None:
+        await self.conn.execute(
+            "UPDATE respuesta_estudiante SET requiere_revision = true WHERE id = $1",
+            respuesta_id
+        )
+
+    async def obtener_pendientes_revision(self, carrera_id: int) -> list[asyncpg.Record]:
+        query = """
+            SELECT
+                re.id as respuesta_id,
+                re.asignacion_id,
+                e.id as estudiante_id,
+                e.legajo,
+                CONCAT(e.apellidos, ' ', e.nombres) as nombre_completo,
+                p.texto_pregunta,
+                re.valor_texto,
+                ae.fecha_asignacion
+            FROM respuesta_estudiante re
+            JOIN pregunta p ON re.pregunta_id = p.id
+            JOIN asignacion_encuesta ae ON re.asignacion_id = ae.id
+            JOIN estudiantes e ON ae.estudiante_id = e.id
+            WHERE re.requiere_revision = true
+              AND e.carrera_id = $1
+            ORDER BY ae.fecha_asignacion DESC
+        """
+        return await self.conn.fetch(query, carrera_id)
+
+    async def aprobar_revision(self, respuesta_id: int, riesgo: float) -> dict | None:
+        row = await self.conn.fetchrow(
+            """
+            UPDATE respuesta_estudiante
+            SET riesgo_calculado = $1, requiere_revision = false
+            WHERE id = $2
+            RETURNING asignacion_id
+            """,
+            riesgo, respuesta_id
+        )
+        if row:
+            return dict(row)
+        return None
 
     async def obtener_estudiantes_por_carrera(self, carrera_id: int) -> list[asyncpg.Record]:
         """

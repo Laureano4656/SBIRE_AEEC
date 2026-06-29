@@ -30,6 +30,7 @@ from app.routers.intervenciones_routes import router as intervenciones_router
 from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
 from app.routers.evento_disparador_routes import router as evento_disparador_router
 from app.routers.semaforo_routes import router as semaforo_router
+from app.routers.revision_routes import router as revision_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
 from app.tasks.scheduler import scheduler, start_scheduler
@@ -146,6 +147,7 @@ protected_router.include_router(criterios_router)
 protected_router.include_router(evento_disparador_router)
 protected_router.include_router(alertas_router)
 protected_router.include_router(reportes_router)
+protected_router.include_router(revision_router)
 
 app.include_router(protected_router, prefix=API_PREFIX)
 

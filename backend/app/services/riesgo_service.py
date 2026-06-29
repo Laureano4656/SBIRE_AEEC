@@ -221,6 +221,8 @@ class RiesgoService:
                 row["tipo_pregunta"] == "texto_libre"
                 and row["valor_texto"] is not None
             ):
+                if row["requiere_revision"]:
+                    continue
                 if row["riesgo_calculado"] is not None:
                     riesgo_pregunta = float(row["riesgo_calculado"])
                 else:
@@ -228,6 +230,11 @@ class RiesgoService:
                         resultado = await analizar_comentario(
                             row["texto_pregunta"], row["valor_texto"]
                         )
+                        if resultado.confianza < 60:
+                            await self.repo.marcar_para_revision(
+                                row["respuesta_id"]
+                            )
+                            continue
                         riesgo_pregunta = resultado.nivel_riesgo
                         await self.repo.actualizar_riesgo_calculado(
                             row["respuesta_id"], riesgo_pregunta
