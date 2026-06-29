@@ -9,7 +9,6 @@ from app.routers.carreras_routes import router as carreras_router
 from app.routers.correlativas_routes import router as correlativas_router
 from app.routers.cursadas_routes import router as cursadas_router
 from app.routers.encuestas_routes import router as encuestas_router
-from app.routers.inscripciones_cuatrimestres_routes import router as inscripciones_cuatrimestres_router
 from app.routers.intentos_finales_routes import router as intentos_finales_router
 from app.routers.materias_routes import router as materias_router
 from app.routers.opciones_pregunta_routes import router as opciones_pregunta_router
@@ -135,7 +134,6 @@ protected_router = APIRouter()
 protected_router.include_router(carreras_router)
 protected_router.include_router(materias_router)
 protected_router.include_router(correlativas_router)
-protected_router.include_router(inscripciones_cuatrimestres_router)
 protected_router.include_router(cursadas_router)
 protected_router.include_router(parciales_router)
 protected_router.include_router(intentos_finales_router)

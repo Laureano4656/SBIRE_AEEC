@@ -10,7 +10,7 @@ class CursadaRepository(CrudRepository[Cursada]):
             Cursada,
             CrudTableConfig(
                 table_name="cursadas",
-                columns=("id", "estudiante_id", "materia_id", "inscripcion_id", "anio", "cuatrimestre", "estado"),
+                columns=("id", "estudiante_id", "materia_id", "anio", "cuatrimestre", "estado"),
             ),
         )
 

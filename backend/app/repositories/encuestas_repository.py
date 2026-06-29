@@ -188,7 +188,7 @@ class EncuestasRepository:
 
     async def get_materias_con_final(self, estudiante_id: int) -> list[dict]:
         return await self._obtener_materias_alumno(
-            estudiante_id, "aprobada falta final"
+            estudiante_id, "aprobada_falta_final"
         )
 
     async def get_materias_disponibles(self, estudiante_id: int) -> list[dict]:
