@@ -12,7 +12,7 @@ from app.routers.encuestas_routes import router as encuestas_router
 from app.routers.inscripciones_cuatrimestres_routes import router as inscripciones_cuatrimestres_router
 from app.routers.intentos_finales_routes import router as intentos_finales_router
 from app.routers.materias_routes import router as materias_router
-from app.routers.opciones_respuesta_routes import router as opciones_respuesta_router
+from app.routers.opciones_pregunta_routes import router as opciones_pregunta_router
 from app.routers.parciales_routes import router as parciales_router
 from app.routers.preguntas_routes import router as preguntas_router
 from app.routers.respuestas_routes import router as respuestas_router
@@ -22,11 +22,13 @@ from app.routers.importacion_archivo_routes import router as importacion_archivo
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
 from app.routers.dashboard_admin_dep_routes import router as dashboard_admin_dep_router
+from app.routers.dashboard_estudiante_routes import routes as dashboard_estudiante_router
 from app.routers.dashboard_tutor_routes import router as dashboard_tutor_router
 from app.routers.indicadores_routes import router as indicadores_router
 from app.routers.reportes_routes import router as reportes_router
 from app.routers.intervenciones_routes import router as intervenciones_router
 from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
+from app.routers.evento_disparador_routes import router as evento_disparador_router
 from app.routers.semaforo_routes import router as semaforo_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
@@ -113,6 +115,7 @@ API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(dashboard_admin_dep_router, prefix=API_PREFIX)
+app.include_router(dashboard_estudiante_router, prefix=API_PREFIX)
 app.include_router(dashboard_tutor_router, prefix=API_PREFIX)
 app.include_router(indicadores_router, prefix=API_PREFIX)
 app.include_router(intervenciones_router, prefix=API_PREFIX)
@@ -133,13 +136,14 @@ protected_router.include_router(intentos_finales_router)
 protected_router.include_router(asistencias_router)
 protected_router.include_router(encuestas_router)
 protected_router.include_router(preguntas_router)
-protected_router.include_router(opciones_respuesta_router)
+protected_router.include_router(opciones_pregunta_router)
 protected_router.include_router(asignaciones_encuestas_router)
 protected_router.include_router(respuestas_router)
 protected_router.include_router(plan_estudios_router)
 protected_router.include_router(estudiantes_router)
 protected_router.include_router(importacion_archivo_router)
 protected_router.include_router(criterios_router)
+protected_router.include_router(evento_disparador_router)
 protected_router.include_router(alertas_router)
 protected_router.include_router(reportes_router)
 

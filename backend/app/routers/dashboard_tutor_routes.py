@@ -119,10 +119,14 @@ async def cancelar_entrevista(
     service = DashboardTutorService(conn)
     return await service.cancel_interview(entrevista_id)
 
+class CompletarEntrevistaBody(BaseModel):
+    comentario: str | None = None
+
 @router.patch("/tutor/entrevistas/{entrevista_id}/completar", response_model=EntrevistaPlanificadaResponse, status_code=status.HTTP_200_OK)
 async def completar_entrevista(
     entrevista_id: int,
+    body: CompletarEntrevistaBody,
     conn: asyncpg.Connection = Depends(get_conn)
 ):
     service = DashboardTutorService(conn)
-    return await service.complete_interview(entrevista_id)
+    return await service.complete_interview(entrevista_id, body.comentario)

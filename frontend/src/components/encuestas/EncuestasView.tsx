@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import SurveyEditor from "./SurveyEditor.tsx";
 import SurveyResponsesModal from "./SurveyResponsesModal.tsx";
 import { useMetricasEncuestasCicloActual } from "../../hooks/queries/useEncuestasQueries.ts";
 import type { EstadisticasEventos } from "../../types/encuestas.ts";
@@ -13,9 +12,6 @@ export default function EncuestasView() {
   const { data: asignationsByEvent, isLoading } =
     useMetricasEncuestasCicloActual(user?.carrera_id);
 
-  const [showSurveyModal, setShowSurveyModal] = useState(false);
-  const [editingSurvey, setEditingSurvey] =
-    useState<EstadisticasEventos | null>(null);
   const [viewingResponsesSurvey, setViewingResponsesSurvey] =
     useState<EstadisticasEventos | null>(null);
 
@@ -30,10 +26,10 @@ export default function EncuestasView() {
   //   setEditingSurvey(null);
   // };
 
-  const handleCancelSurveyEditor = () => {
-    setShowSurveyModal(false);
-    setEditingSurvey(null);
-  };
+  // const handleCancelSurveyEditor = () => {
+  //   setShowSurveyModal(false);
+  //   setEditingSurvey(null);
+  // };
 
   const tasaDeRespuestaPromedio = useMemo(() => {
     let totalAsignadas = 0;
@@ -59,7 +55,7 @@ export default function EncuestasView() {
           </p>
         </div>
         <button
-          onClick={() => setShowSurveyModal(true)}
+
           className="flex items-center gap-1.5 bg-brand-primary text-white py-2 px-4 rounded text-xs font-bold hover:bg-[#002f5e] transition-all cursor-pointer"
         >
           <span className="material-symbols-outlined text-base">
@@ -120,7 +116,6 @@ export default function EncuestasView() {
                   <td className="p-4 pl-5">
                     <div
                       className="font-extrabold text-brand-primary text-sm hover:underline cursor-pointer"
-                      onClick={() => setEditingSurvey(sur)}
                     >
                       {sur.nombre_evento}
                     </div>
@@ -173,14 +168,14 @@ export default function EncuestasView() {
         </div>
       </div>
 
-      {(showSurveyModal || editingSurvey) && (
+      {/* {(showSurveyModal || editingSurvey) && (
         <SurveyEditor
           key={editingSurvey?.evento_id ?? "new"}
           //initialSurvey={editingSurvey ?? undefined}
           //onSave={handleSaveSurvey}
           onCancel={handleCancelSurveyEditor}
         />
-      )}
+      )} */}
 
       {viewingResponsesSurvey && (
         <SurveyResponsesModal

@@ -2,6 +2,8 @@ from typing import Literal, Any
 from pydantic import BaseModel, Field, field_validator
 import json
 
+from app.schemas.opcion_pregunta import OpcionPreguntaCrearOpcion
+
 class PreguntaCreate(BaseModel):
     indicador_id: int | None = Field(None, ge=1)
     carrera_id: int | None = Field(None, ge=1)
@@ -10,6 +12,7 @@ class PreguntaCreate(BaseModel):
     tipo_pregunta: Literal["texto_libre", "opcion_multiple", "escala", "si_no", "numero"]
     configuracion_riesgo: dict[str, Any] | None = None
     activa: bool = True
+    opciones: list[OpcionPreguntaCrearOpcion] | None = None
 
 class PreguntaUpdate(BaseModel):
     indicador_id: int | None = Field(None, ge=1)

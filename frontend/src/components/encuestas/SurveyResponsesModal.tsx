@@ -11,9 +11,12 @@ interface SurveyResponsesModalProps {
 export default function SurveyResponsesModal({
   onClose,
   survey,
-  carreraId
+  carreraId,
 }: SurveyResponsesModalProps) {
-  const { data: responses, isLoading } = useRespuestasUltimoAnio(carreraId, survey.evento_id);
+  const { data: responses, isLoading } = useRespuestasUltimoAnio(
+    carreraId,
+    survey.evento_id,
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredResponses =
@@ -50,12 +53,24 @@ export default function SurveyResponsesModal({
       const allAnswers = [
         ...response.preguntas_generales.map((q) => ({
           questionKey: `g-${q.id}`,
-          answer: q.respuesta_previa?.valor_texto ?? q.opciones.find((o) => o.id === q.respuesta_previa?.opcion_seleccionada_id)?.texto_opcion ?? q.respuesta_previa?.valor_numerico?.toString() ?? "",
+          answer:
+            q.respuesta_previa?.valor_texto ??
+            q.opciones.find(
+              (o) => o.id === q.respuesta_previa?.opcion_seleccionada_id,
+            )?.texto_opcion ??
+            q.respuesta_previa?.valor_numerico?.toString() ??
+            "",
         })),
         ...response.bloques_academicos.flatMap((b) =>
           b.preguntas.map((q) => ({
             questionKey: `b-${b.materia_id}-${q.id}`,
-            answer: q.respuesta_previa?.valor_texto ?? q.opciones.find((o) => o.id === q.respuesta_previa?.opcion_seleccionada_id)?.texto_opcion ?? q.respuesta_previa?.valor_numerico?.toString() ?? "",
+            answer:
+              q.respuesta_previa?.valor_texto ??
+              q.opciones.find(
+                (o) => o.id === q.respuesta_previa?.opcion_seleccionada_id,
+              )?.texto_opcion ??
+              q.respuesta_previa?.valor_numerico?.toString() ??
+              "",
           })),
         ),
       ];
@@ -84,7 +99,6 @@ export default function SurveyResponsesModal({
               <span className="material-symbols-outlined text-xl">ballot</span>
               {survey.nombre_evento}
             </h2>
-
           </div>
           <button
             onClick={onClose}
@@ -163,9 +177,11 @@ export default function SurveyResponsesModal({
               {/* Individual responses */}
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-brand-primary uppercase tracking-wider">
-                  Respuestas individuales ({searchQuery
+                  Respuestas individuales (
+                  {searchQuery
                     ? `${filteredResponses.length} de ${responses.length}`
-                    : responses.length})
+                    : responses.length}
+                  )
                 </h4>
 
                 {filteredResponses.length === 0 && responses.length > 0 && (
@@ -212,7 +228,8 @@ export default function SurveyResponsesModal({
                               {q.texto}
                             </p>
                             <p className="text-xs font-bold text-brand-primary mt-0.5">
-                              {responsesByQuestion[q.key]?.[index] ?? "Sin respuesta"}
+                              {responsesByQuestion[q.key]?.[index] ??
+                                "Sin respuesta"}
                             </p>
                           </div>
                         </div>

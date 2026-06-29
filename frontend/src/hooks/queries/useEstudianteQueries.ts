@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getDatosTutor,
+  getEncuestasPendientes,
   getEncuestasSinResponder,
   getMateriasAprobadas,
   getMateriasCursadas,
@@ -19,6 +20,8 @@ export const EstudianteKeys = {
     [...EstudianteKeys.all, "materias-cursadas", estudiante_id] as const,
   encuestasSinResponder: (estudiante_id: number) =>
     [...EstudianteKeys.all, "encuestas-pendientes", estudiante_id] as const,
+  encuestasPendientes: (estudiante_id: number) =>
+    [...EstudianteKeys.all, "encuestas-lista", estudiante_id] as const,
 };
 
 export const useDatosTutor = (estudianteId: number) => {
@@ -57,6 +60,14 @@ export const useEncuestasSinResponder = (estudianteId: number) => {
   return useQuery({
     queryKey: EstudianteKeys.encuestasSinResponder(estudianteId),
     queryFn: () => getEncuestasSinResponder(estudianteId),
+    enabled: !!estudianteId,
+  });
+};
+
+export const useEncuestasPendientes = (estudianteId: number) => {
+  return useQuery({
+    queryKey: EstudianteKeys.encuestasPendientes(estudianteId),
+    queryFn: () => getEncuestasPendientes(estudianteId),
     enabled: !!estudianteId,
   });
 };
