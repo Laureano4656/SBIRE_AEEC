@@ -24,6 +24,7 @@ from app.routers.auth_routes import router as auth_router
 from app.routers.dashboard_admin_dep_routes import router as dashboard_admin_dep_router
 from app.routers.dashboard_tutor_routes import router as dashboard_tutor_router
 from app.routers.indicadores_routes import router as indicadores_router
+from app.routers.reportes_routes import router as reportes_router
 from app.routers.intervenciones_routes import router as intervenciones_router
 from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
 from app.routers.semaforo_routes import router as semaforo_router
@@ -138,6 +139,7 @@ protected_router.include_router(estudiantes_router)
 protected_router.include_router(importacion_archivo_router)
 protected_router.include_router(criterios_router)
 protected_router.include_router(alertas_router)
+protected_router.include_router(reportes_router)
 
 app.include_router(protected_router, prefix=API_PREFIX)
 
