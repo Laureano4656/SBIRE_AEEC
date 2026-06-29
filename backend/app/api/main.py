@@ -12,7 +12,7 @@ from app.routers.encuestas_routes import router as encuestas_router
 from app.routers.inscripciones_cuatrimestres_routes import router as inscripciones_cuatrimestres_router
 from app.routers.intentos_finales_routes import router as intentos_finales_router
 from app.routers.materias_routes import router as materias_router
-from app.routers.opciones_respuesta_routes import router as opciones_respuesta_router
+from app.routers.opciones_pregunta_routes import router as opciones_pregunta_router
 from app.routers.parciales_routes import router as parciales_router
 from app.routers.preguntas_routes import router as preguntas_router
 from app.routers.respuestas_routes import router as respuestas_router
@@ -26,6 +26,7 @@ from app.routers.dashboard_tutor_routes import router as dashboard_tutor_router
 from app.routers.indicadores_routes import router as indicadores_router
 from app.routers.intervenciones_routes import router as intervenciones_router
 from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
+from app.routers.evento_disparador_routes import router as evento_disparador_router
 from app.routers.semaforo_routes import router as semaforo_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
@@ -130,13 +131,14 @@ protected_router.include_router(intentos_finales_router)
 protected_router.include_router(asistencias_router)
 protected_router.include_router(encuestas_router)
 protected_router.include_router(preguntas_router)
-protected_router.include_router(opciones_respuesta_router)
+protected_router.include_router(opciones_pregunta_router)
 protected_router.include_router(asignaciones_encuestas_router)
 protected_router.include_router(respuestas_router)
 protected_router.include_router(plan_estudios_router)
 protected_router.include_router(estudiantes_router)
 protected_router.include_router(importacion_archivo_router)
 protected_router.include_router(criterios_router)
+protected_router.include_router(evento_disparador_router)
 protected_router.include_router(alertas_router)
 
 app.include_router(protected_router, prefix=API_PREFIX)

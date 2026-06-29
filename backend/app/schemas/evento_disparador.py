@@ -8,3 +8,6 @@ class EventoDisparadorResponse(BaseModel):
 class EventoDisparadorCreate(BaseModel):
     nombre: str
 
+class EventoDisparadorUpdate(BaseModel):
+    nombre: str | None = None
+

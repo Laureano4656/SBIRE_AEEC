@@ -476,7 +476,7 @@ CREATE TABLE public.estudiantes (
     anio_ingreso integer NOT NULL,
     etapa public.enum_etapa_estudiante DEFAULT 'temprana'::public.enum_etapa_estudiante,
     porcentaje_carrera double precision DEFAULT 0.0,
-    activo boolean NOT NULL DEFAULT true,
+    activo boolean DEFAULT true NOT NULL,
     moodle_id character varying(255)
 );
 
@@ -1719,4 +1719,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260626115623'),
     ('20260626125225'),
     ('20260626225339'),
-    ('20260627154515');
+    ('20260627000001'),
+    ('20260627154515'),
+    ('20260627195954'),
+    ('20260627224347'),
+    ('20260627225635');

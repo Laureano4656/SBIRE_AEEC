@@ -66,7 +66,6 @@ class UsuarioService(CrudService[Usuario]):
                 usuario.id,
                 nombre=self._normalize_optional(nombre),
                 apellido=self._normalize_optional(apellido),
-                carrera_id=carrera_id,
             )
         try:
             session_token = TokenManager.create_session_token(usuario)
