@@ -11,13 +11,32 @@ class UsuarioResponse(BaseModel):
     nombre: str
     apellido: str
     email: str
-    moodle_id: str
+    moodle_id: int | None
     rol: RolUsuario
     max_casos_activos: int | None
     activo: bool
 
     class Config:
         from_attributes = True
+
+
+class UsuarioAdminResponse(BaseModel):
+    """Respuesta estándar de Usuario para dashboard admin."""
+
+    id: int
+    carrera_id: int | None
+    nombre: str
+    apellido: str
+    email: str
+    moodle_id: int | None
+    rol: RolUsuario
+    max_casos_activos: int | None
+    activo: bool
+    nombre_carrera: str | None
+
+    class Config:
+        from_attributes = True
+
 
 class LTILaunchRequest(BaseModel):
     """Solicitud de launch de LTI con el token JWT."""

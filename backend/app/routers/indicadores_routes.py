@@ -28,7 +28,7 @@ async def obtener_indicador(
     return IndicadorResponse.model_validate(item)
 
 
-@router.put("/", response_model=IndicadorResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=IndicadorResponse, status_code=status.HTTP_201_CREATED)
 async def crear_indicador(
     body: IndicadorCreate,
     conn: asyncpg.Connection = Depends(get_conn),

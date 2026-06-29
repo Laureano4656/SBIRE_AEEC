@@ -1,7 +1,7 @@
 \restrict dbmate
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
--- Dumped by pg_dump version 18.4 (Ubuntu 18.4-0ubuntu0.26.04.1)
+-- Dumped by pg_dump version 18.4 (Ubuntu 18.4-1.pgdg24.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -842,6 +842,7 @@ CREATE TABLE public.respuesta_estudiante (
     valor_numerico numeric(10,2),
     valor_texto text,
     riesgo_calculado numeric(3,2),
+    requiere_revision boolean DEFAULT false,
     CONSTRAINT respuesta_estudiante_riesgo_calculado_check CHECK (((riesgo_calculado >= (0)::numeric) AND (riesgo_calculado <= (1)::numeric)))
 );
 
@@ -1723,4 +1724,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260629000001'),
     ('20260629144055'),
     ('20260629151343'),
-    ('20260629153552');
+    ('20260629153552'),
+    ('20260629160000');
