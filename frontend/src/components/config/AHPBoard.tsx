@@ -66,8 +66,8 @@ export function AHPBoard({
   const [formExtremoRiesgoso, setFormExtremoRiesgoso] = useState<"min" | "max">("max");
 
   const { user } = useAuth();
-  const { mutate: createIndicador } = useCreateIndicadorMutation();
-  const { mutate: createPregunta } = useCreatePreguntaMutation();
+  const { mutateAsync: createIndicador } = useCreateIndicadorMutation();
+  const { mutateAsync: createPregunta } = useCreatePreguntaMutation();
 
   const handleGuardarConfiguracion = () => {
     let esValido = true;
@@ -95,7 +95,7 @@ export function AHPBoard({
     setModalDimensionOpen(true);
   };
 
-  const guardarNuevaDimension = () => {
+  const guardarNuevaDimension = async () => {
     const nombre = nuevaDimNombre.trim();
     if (!nombre) {
       alert("El nombre de la dimensión es obligatorio.");
@@ -107,7 +107,7 @@ export function AHPBoard({
       alert("Ya existe una dimensión con ese nombre.");
       return;
     }
-    createIndicador({
+    const result = await createIndicador({
       nombre,
       dimension: null,
       carrera_id: user?.carrera_id ?? 0,
@@ -115,7 +115,7 @@ export function AHPBoard({
     });
     onDimensionesChange((prev) => [
       ...prev,
-      { id: "dim_new_" + Date.now(), nombre, indicadores: [] },
+      { id: String(result.id), nombre, indicadores: [] },
     ]);
     setModalDimensionOpen(false);
   };
@@ -138,12 +138,12 @@ export function AHPBoard({
     setModalIndicadorOpen(true);
   };
 
-  const guardarNuevoIndicador = () => {
+  const guardarNuevoIndicador = async () => {
     if (!nuevoIndNombre.trim()) {
       alert("El nombre del indicador y la primera pregunta son obligatorios.");
       return;
     }
-    createIndicador({
+    const result = await createIndicador({
       nombre: nuevoIndNombre.trim(),
       dimension: Number(dimensiones[nuevoIndDimIdx]?.id) || null,
       carrera_id: user?.carrera_id ?? 0,
@@ -152,7 +152,7 @@ export function AHPBoard({
     onDimensionesChange((prev) => {
       const next = prev.map((d) => ({ ...d, indicadores: [...d.indicadores] }));
       next[nuevoIndDimIdx].indicadores.push({
-        id: "ind_new_" + Date.now(),
+        id: String(result.id),
         nombre: nuevoIndNombre.trim(),
         activo: true,
         preguntas: [
@@ -208,7 +208,7 @@ export function AHPBoard({
       prev.map((o, i) => (i === idx ? { ...o, valorRiesgoManual: valor } : o)),
     );
 
-  const guardarPregunta = () => {
+  const guardarPregunta = async () => {
     if (!formTexto.trim()) {
       setErrorPregunta("El texto de la pregunta es obligatorio.");
       return;
@@ -254,7 +254,7 @@ export function AHPBoard({
       };
     }
 
-    createPregunta({
+    const result = await createPregunta({
       indicador_id: Number(dimensiones[dimIdx].indicadores[indIdx].id) || null,
       carrera_id: user?.carrera_id ?? 0,
       texto_pregunta: formTexto.trim(),
@@ -272,7 +272,7 @@ export function AHPBoard({
         preguntas: [
           ...next[dimIdx].indicadores[indIdx].preguntas,
           {
-            id: "q_new_" + Date.now(),
+            id: String(result.id),
             texto: formTexto.trim(),
             tipo: formTipo,
             opciones: opcionesLimpias?.map((o) => o.texto_opcion) ?? undefined,

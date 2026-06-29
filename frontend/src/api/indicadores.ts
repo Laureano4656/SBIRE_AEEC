@@ -1,5 +1,5 @@
 import { axiosInstance } from '../libs/axios';
-import type { DimensionResponse } from '../types/indicadores';
+import type { DimensionResponse, AHPRequest } from '../types/indicadores';
 
 const PREFIX = '/indicadores';
 
@@ -30,23 +30,14 @@ export const saveConfiguracionAhp = async (payload: {
     return response.data;
 }
 
-export const calcularAhp = async (payload: {
-    nodo_raiz: number;
-    jerarquia: Record<number, number[]>;
-    comparaciones_por_nodo: Record<
-        number,
-        { criterio_i: number; criterio_j: number; valor: number }[]
-    >;
-    configuracion: {
-        carrera_id: number;
-        etapa: string;
-        umbral_amarillo: number;
-        umbral_rojo: number;
-        factor_extension: number;
-        descripcion: string;
-        actualizado_por: number;
-    };
-}) => {
+export const getSaatyInputs = async (carrera_id: number, etapa: string) => {
+    const response = await axiosInstance.get<AHPRequest>(
+        `/calcular_ahp/carreras/${carrera_id}/etapas/${etapa}/saaty-inputs`,
+    );
+    return response.data;
+};
+
+export const calcularAhp = async (payload: AHPRequest) => {
     const response = await axiosInstance.post('/calcular_ahp/', payload);
     return response.data;
 }

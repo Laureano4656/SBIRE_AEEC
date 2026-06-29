@@ -13,7 +13,6 @@ from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 from app.repositories.cursada_repository import CursadaRepository
 from app.repositories.estudiante_repository import EstudianteRepository
 from app.repositories.importacion_archivo_repository import ImportacionArchivoRepository
-from app.repositories.inscripcion_cuatrimestre_repository import InscripcionCuatrimestreRepository
 from app.services.crud_service import CrudService
 
 
@@ -22,7 +21,6 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
         super().__init__(ImportacionArchivoRepository(conn), "ImportacionArchivo")
         self._carrera_repo = CarreraRepository(conn)
         self._estudiante_repo = EstudianteRepository(conn)
-        self._inscripcion_repo = InscripcionCuatrimestreRepository(conn)
         self._cursada_repo = CursadaRepository(conn)
         self._parcial_repo = CrudRepository[Parcial](
             conn,
@@ -51,6 +49,7 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
                 await self._procesar_fila(row, materia_id)
                 filas_importadas += 1
             except Exception:
+                print(f"Error al procesar fila: {row}")
                 filas_errores += 1
 
         result = await self.repo.create(
@@ -93,15 +92,15 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
         if not legajo:
             raise ValueError("legajo vacío")
 
-        apellido, nombre = self._split_apellido_nombre(
-            str(row.get("apellido y nombre", "")).strip()
-        )
+        apellido = str(row.get("apellido", "")).strip()
+        nombre = str(row.get("nombre", "")).strip()
         nota = float(row.get("nota", 0))
         cod_carrera = str(row.get("cod_carrera", "")).strip().upper()
         nro_parcial = int(row.get("nro_parcial", 0))
 
         carrera = await self._carrera_repo.get_by_codigo(cod_carrera)
         if not carrera:
+            print(f"Carrera con código '{cod_carrera}' no encontrada")
             raise ValueError(f"Carrera con código '{cod_carrera}' no encontrada")
         carrera_id = carrera.id
 
@@ -127,19 +126,6 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
         cuatrimestre = 1 if hoy.month <= 7 else 2
         anio = hoy.year
 
-        inscripcion = await self._inscripcion_repo.get_by_estudiante_anio_cuatrimestre(
-            estudiante_id, anio, cuatrimestre
-        )
-        if not inscripcion:
-            inscripcion = await self._inscripcion_repo.create(
-                estudiante_id=estudiante_id,
-                anio=anio,
-                cuatrimestre=cuatrimestre,
-                materilas_anotadas=1,
-                activo=True,
-            )
-        inscripcion_id = inscripcion.id
-
         cursada = await self._cursada_repo.get_by_estudiante_materia_anio_cuatrimestre(
             estudiante_id, materia_id, anio, cuatrimestre
         )
@@ -147,7 +133,6 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
             cursada = await self._cursada_repo.create(
                 estudiante_id=estudiante_id,
                 materia_id=materia_id,
-                inscripcion_id=inscripcion_id,
                 anio=anio,
                 cuatrimestre=cuatrimestre,
                 estado="cursando",
@@ -160,9 +145,3 @@ class ImportacionArchivoService(CrudService[ImportacionArchivo]):
             nota=nota,
             recuperatorio=False,
         )
-
-    def _split_apellido_nombre(self, raw: str) -> tuple[str, str]:
-        if ", " in raw:
-            parts = raw.split(", ", 1)
-            return parts[0].strip(), parts[1].strip()
-        return raw.strip(), ""

@@ -1,4 +1,11 @@
 import type { SurveyQuestion, TipoPreguntaEncuesta } from "../../types/types";
+import type {
+  comparacion,
+  datosConfiguracion,
+  AHPRequest,
+} from "../../types/indicadores";
+
+export type { comparacion, datosConfiguracion, AHPRequest };
 
 export type Indicador = {
   id: string;
@@ -38,6 +45,12 @@ export function sliderToSaaty(v: number): number {
   return 1;
 }
 
+export function saatyToSlider(v: number): number {
+  if (v > 1) return v - 1;
+  if (v > 0 && v < 1) return -(1 / v - 1);
+  return 0;
+}
+
 export function feedbackLabel(v: number, i: string, j: string): string {
   if (v > 0) return `${i} es ${v + 1}x más importante`;
   if (v < 0) return `${j} es ${Math.abs(v) + 1}x más importante`;
@@ -47,45 +60,3 @@ export function feedbackLabel(v: number, i: string, j: string): string {
 export function sliderKey(p: Par): string {
   return `${p.padre}||${p.i}||${p.j}`;
 }
-
-// class Comparacion(BaseModel):
-//     criterio_i: int
-//     criterio_j: int
-//     valor: float
-// class DatosConfiguracion(BaseModel):
-//     carrera_id: int
-//     etapa: str 
-//     umbral_amarillo: float
-//     umbral_rojo: float
-//     factor_extension: float
-//     descripcion: str
-//     actualizado_por: int
-
-// class AHPRequest(BaseModel):
-//     nodo_raiz: int
-//     jerarquia: Dict[int, List[int]]
-//     comparaciones_por_nodo: Dict[int, List[Comparacion]]
-//     configuracion: DatosConfiguracion
-
-export type comparacion = {
-  criterio_i: number;
-  criterio_j: number;
-  valor: number;
-};
-
-export type datosConfiguracion = {
-  carrera_id: number;
-  etapa: string;
-  umbral_amarillo: number;
-  umbral_rojo: number;
-  factor_extension: number;
-  descripcion: string;
-  actualizado_por: number;
-};
-
-export type AHPRequest = {
-  nodo_raiz: number;
-  jerarquia: Record<number, number[]>;
-  comparaciones_por_nodo: Record<number, comparacion[]>;
-  configuracion: datosConfiguracion;
-};

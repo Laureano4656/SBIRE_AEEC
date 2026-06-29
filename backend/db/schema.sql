@@ -357,6 +357,7 @@ CREATE TABLE public.configuracion_indicador (
     activo boolean DEFAULT true NOT NULL,
     actualizado_en timestamp with time zone DEFAULT now() NOT NULL,
     actualizado_por integer,
+    valores_saaty_crudos jsonb,
     CONSTRAINT ck_factor_extension_positivo CHECK ((factor_extension > (0.0)::double precision)),
     CONSTRAINT ck_umbrales_rango CHECK (((umbral_amarillo >= (0.0)::double precision) AND (umbral_amarillo < umbral_rojo) AND (umbral_rojo <= (1.0)::double precision)))
 );
@@ -1719,4 +1720,7 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260627224347'),
     ('20260627225635'),
     ('20260628000001'),
-    ('20260629144055');
+    ('20260629000001'),
+    ('20260629144055'),
+    ('20260629151343'),
+    ('20260629153552');

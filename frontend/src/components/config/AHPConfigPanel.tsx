@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Dimension, Par, SliderMap, AHPRequest } from "./types";
-import { getPares, sliderKey, sliderToSaaty } from "./types";
+import { getPares, sliderKey, sliderToSaaty, saatyToSlider } from "./types";
 import { AHPBoard } from "./AHPBoard";
 import { AHPSliders } from "./AHPSliders";
 import { AHPResultado } from "./AHPResultado";
@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import type { DimensionResponse } from "../../types/indicadores";
 import type { TipoPreguntaEncuesta } from "../../types/types";
 import { useSaveConfiguracionAhpMutation } from "../../hooks/mutations/useSaveConfiguracionAhpMutation";
+import { useSaatyInputs } from "../../hooks/queries/useSaatyInputsQueries";
 import { calcularAhp } from "../../api/indicadores";
 
 
@@ -49,6 +50,9 @@ export default function AHPConfigPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boardError, setBoardError] = useState<string | null>(null);
+  const [etapa, setEtapa] = useState<string>("temprana");
+
+  const { data: saatyInputs } = useSaatyInputs(user?.carrera_id, etapa);
 
   useEffect(() => {
     if (backendDimensiones && !seeded) {
@@ -89,10 +93,36 @@ export default function AHPConfigPanel() {
         getPares(criterios).forEach(([a, b]) =>
           nuevoPares.push({ padre: dim, i: a, j: b }),
         );
-    console.log("Jerarquía generada:", jerarquia);
-    console.log("Pares generados:", nuevoPares);
+
+    const dimNombreToId = new Map(
+      dimensiones.map((d) => [d.nombre, Number(d.id)]),
+    );
+    const indNombreToId = new Map(
+      dimensiones.flatMap((d) =>
+        d.indicadores.map((ind) => [ind.nombre, Number(ind.id)]),
+      ),
+    );
+    const nuevosSliders: SliderMap = {};
+    if (saatyInputs && saatyInputs.comparaciones_por_nodo) {
+      for (const par of nuevoPares) {
+        const padreId =
+          par.padre === "Índice de Riesgo"
+            ? 0
+            : (dimNombreToId.get(par.padre) ?? NaN);
+        const iId = dimNombreToId.get(par.i) ?? indNombreToId.get(par.i) ?? NaN;
+        const jId = dimNombreToId.get(par.j) ?? indNombreToId.get(par.j) ?? NaN;
+        if (isNaN(padreId) || isNaN(iId) || isNaN(jId)) continue;
+        const comp = saatyInputs.comparaciones_por_nodo[padreId]?.find(
+          (c) =>
+            (c.criterio_i === iId && c.criterio_j === jId) ||
+            (c.criterio_i === jId && c.criterio_j === iId),
+        );
+        if (comp) nuevosSliders[sliderKey(par)] = saatyToSlider(comp.valor);
+      }
+    }
+
     setPares(nuevoPares);
-    setSliders({});
+    setSliders(nuevosSliders);
     setJerarquiaSnapshot(jerarquia);
     setPaso("sliders");
   };
@@ -152,7 +182,7 @@ export default function AHPConfigPanel() {
       comparaciones_por_nodo: comparacionesPorNodo,
       configuracion: {
         carrera_id: user?.carrera_id ?? 0,
-        etapa: "temprana",
+        etapa,
         umbral_amarillo: 0.33,
         umbral_rojo: 0.66,
         factor_extension: 1.0,
@@ -194,16 +224,45 @@ export default function AHPConfigPanel() {
     setError(null);
   };
 
+  const handleEtapaChange = (nuevaEtapa: string) => {
+    setEtapa(nuevaEtapa);
+    setPaso("board");
+    setPares([]);
+    setSliders({});
+    setJerarquiaSnapshot({});
+    setResultado(null);
+    setError(null);
+    setBoardError(null);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
       <div>
-        <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
-          Configurador de Semáforos — AHP
-        </h3>
-        <p className="text-xs text-[#43474f] mt-1">
-          Construí tus indicadores y definí sus pesos relativos mediante
-          comparación por pares (método AHP).
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-brand-primary tracking-tight">
+              Configurador de Semáforos — AHP
+            </h3>
+            <p className="text-xs text-[#43474f] mt-1">
+              Construí tus indicadores y definí sus pesos relativos mediante
+              comparación por pares (método AHP).
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-bold text-[#43474f]">
+              Etapa
+            </label>
+            <select
+              value={etapa}
+              onChange={(e) => handleEtapaChange(e.target.value)}
+              className="border border-brand-outline-variant rounded p-2 text-xs"
+            >
+              <option value="temprana">Temprana</option>
+              <option value="tardia">Tardía</option>
+              <option value="extendida">Extendida</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {paso === "board" && (

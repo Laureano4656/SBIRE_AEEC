@@ -17,6 +17,7 @@ function renderSliderRow(
   onSliderChange: (p: Par, v: number) => void,
 ) {
   const v = sliders[sliderKey(p)] ?? 0;
+  console.log(`Renderizando slider para par (${p.padre}): ${p.i} vs ${p.j}, valor: ${v}`);
   return (
     <div
       key={sliderKey(p)}
@@ -39,13 +40,12 @@ function renderSliderRow(
         </span>
       </div>
       <p
-        className={`text-center text-[11px] font-bold rounded py-1 ${
-          v === 0
+        className={`text-center text-[11px] font-bold rounded py-1 ${v === 0
             ? "bg-[#edeeef] text-[#43474f]"
             : v > 0
               ? "bg-[#eef2ff] text-brand-primary"
               : "bg-[#e2f3f5] text-[#006a6a]"
-        }`}
+          }`}
       >
         {feedbackLabel(v, p.i, p.j)}
       </p>

@@ -78,11 +78,11 @@ class dashboardAdminRepository:
         rows = await self.conn.fetch(
             """
             SELECT
-                e.anio_ingreso, 
+                --e.anio_ingreso, 
                 CASE
                     WHEN s.valor IS NULL THEN 'bajo'
                     WHEN s.valor > 0.8 then 'critico'
-                    WHEN ( s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'alto' )
+                    WHEN  s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'alto' 
                     WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'medio'
                     ELSE 'alto'
                 END AS tipo_riesgo,

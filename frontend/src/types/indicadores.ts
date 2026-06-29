@@ -14,3 +14,26 @@ export interface DimensionResponse {
     nombre: string
     indicadores: IndicadorResponse[]
 }
+
+export type comparacion = {
+    criterio_i: number;
+    criterio_j: number;
+    valor: number;
+};
+
+export type datosConfiguracion = {
+    carrera_id: number;
+    etapa: string;
+    umbral_amarillo: number;
+    umbral_rojo: number;
+    factor_extension: number;
+    descripcion: string;
+    actualizado_por: number;
+};
+
+export type AHPRequest = {
+    nodo_raiz: number;
+    jerarquia: Record<number, number[]>;
+    comparaciones_por_nodo: Record<number, comparacion[]>;
+    configuracion: datosConfiguracion;
+};
