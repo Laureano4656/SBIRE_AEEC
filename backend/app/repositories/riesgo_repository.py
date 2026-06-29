@@ -173,13 +173,23 @@ class RiesgoRepository:
                 p.tipo_pregunta,
                 p.configuracion_riesgo,
                 op.valor_riesgo_manual,
-                re.valor_numerico
+                re.valor_numerico,
+                re.valor_texto,
+                p.texto_pregunta,
+                re.riesgo_calculado,
+                re.id as respuesta_id
             FROM respuesta_estudiante re
             JOIN pregunta p ON re.pregunta_id = p.id
             LEFT JOIN opcion_pregunta op ON re.opcion_seleccionada_id = op.id
             WHERE re.asignacion_id = ANY($1::int[])
         """
         return await self.conn.fetch(query, asignacion_ids)
+
+    async def actualizar_riesgo_calculado(self, respuesta_id: int, riesgo: float) -> None:
+        await self.conn.execute(
+            "UPDATE respuesta_estudiante SET riesgo_calculado = $1 WHERE id = $2",
+            riesgo, respuesta_id
+        )
 
     async def obtener_estudiantes_por_carrera(self, carrera_id: int) -> list[asyncpg.Record]:
         """
