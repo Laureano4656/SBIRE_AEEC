@@ -2,6 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   pendingSurveysCount: number;
+  studentName?: string;
+  studentCareer?: string;
   onLogout: () => void;
 }
 
@@ -11,7 +13,7 @@ const menuItems = [
   { key: "soporte", icon: "support_agent", label: "Soporte Académico" },
 ];
 
-export default function Sidebar({ pendingSurveysCount, onLogout }: SidebarProps) {
+export default function Sidebar({ pendingSurveysCount, studentName, studentCareer, onLogout }: SidebarProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -79,10 +81,10 @@ export default function Sidebar({ pendingSurveysCount, onLogout }: SidebarProps)
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-xs truncate text-slate-800 block">
-              Mateo García
+              {studentName ?? "Estudiante"}
             </p>
             <p className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">
-              Ing. Industrial
+              {studentCareer ?? ""}
             </p>
           </div>
           <button

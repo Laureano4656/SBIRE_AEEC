@@ -51,3 +51,18 @@ async def obtener_encuestas_sin_responder(
 ):
     service = DashboardEstudianteService(conn)
     return await service.encuestas_sin_responder(estudiante_id)
+
+class AsignacionPendienteResponse(BaseModel):
+    asignacion_id: int
+    evento_disparador: int
+    periodo_lectivo: str
+    completado: bool
+    nombre_evento: str
+
+@routes.get("/estudiante/encuestas/pendientes", response_model=list[AsignacionPendienteResponse])
+async def listar_encuestas_pendientes(
+    estudiante_id: int,
+    conn: asyncpg.Connection = Depends(get_conn)
+):
+    service = DashboardEstudianteService(conn)
+    return await service.list_encuestas_pendientes(estudiante_id)

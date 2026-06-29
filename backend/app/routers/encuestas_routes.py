@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import APIRouter, Depends, status, BackgroundTasks, Request
+from fastapi import APIRouter, Depends, status, BackgroundTasks, Request, HTTPException
 
 from app.api.deps import get_conn
 from app.schemas.encuesta import (
@@ -42,7 +42,7 @@ async def enviar_respuestas(
 
     encuesta_service = EncuestaService(conn)
 
-    asignacion = await service.repo.get_asignacion(asignacion_id)
+    asignacion = await encuesta_service.repo.get_asignacion(asignacion_id)
     if not asignacion:
         raise HTTPException(
             status_code=404, detail="Asignación no encontrada o ya completada."

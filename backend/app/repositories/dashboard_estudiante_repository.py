@@ -18,13 +18,18 @@ class dashboardEstudiantesRepository:
                 u.nombre,
                 u.apellido,
                 u.email,
-                u.rol
+                u.rol,
+                u.carrera_id,
+                u.moodle_id,
+                u.max_casos_activos,
+                u.activo
             FROM alertas a
             INNER JOIN intervenciones i ON i.alerta_id = a.id
             INNER JOIN usuarios u ON u.id = i.tutor_id
             WHERE a.estudiante_id = $1
             AND a.estado IN ('en_revision', 'intervenida')
-            """
+            """,
+            estudiante_id,
         )
         return UsuarioResponse(**row) if row else None
     
@@ -91,3 +96,23 @@ class dashboardEstudiantesRepository:
             estudiante_id,
         )
         return row["total"] if row else 0
+
+    async def list_encuestas_pendientes(self, estudiante_id: int) -> list[dict]:
+        rows = await self.conn.fetch(
+            """
+            SELECT
+                a.id AS asignacion_id,
+                a.evento_id AS evento_disparador,
+                a.periodo_lectivo,
+                a.completado,
+                e.nombre AS nombre_evento
+            FROM asignacion_encuesta a
+            INNER JOIN evento_disparador e ON e.id = a.evento_id
+            WHERE a.estudiante_id = $1
+              AND a.completado = FALSE
+              AND a.borrador = FALSE
+            ORDER BY a.fecha_asignacion DESC
+            """,
+            estudiante_id,
+        )
+        return [dict(row) for row in rows]

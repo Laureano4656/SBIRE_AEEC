@@ -26,6 +26,8 @@ class AlertaResponse(BaseModel):
     anio_cursada: int
     generada_en: datetime
     fecha_cierre: datetime | None = None
+    estudiante_nombre: str | None = None
+    estudiante_apellido: str | None = None
 
     class Config:
         from_attributes = True

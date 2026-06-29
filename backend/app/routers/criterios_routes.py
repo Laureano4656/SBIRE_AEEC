@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, BackgroundTasks
 import asyncpg
 from app.api.deps import get_conn
-from app.models.configuracion import AHPRequest, AHPResponse
+from app.models.configuracion import AHPRequest, AHPResponse, PreguntaResponse, IndicadorResponse, DimensionResponse
 from app.services.peso_criterios_services import PesoCriteriosServices
 from app.services.riesgo_service import RiesgoService
 from app.core.database import get_pool
@@ -45,3 +45,15 @@ async def calcular_ahp(
         "pesos_globales": pesos_finales,
         "consistencia_matrices": consistencias
     }
+
+@router.get("/indicadores/{carrera_id}", response_model=list[DimensionResponse] ,status_code=status.HTTP_201_CREATED)
+async def obtener_indicadores_con_preguntas(
+    carrera_id: int, 
+    conn: asyncpg.Connection = Depends(get_conn)
+) -> list[DimensionResponse]:
+
+    service = PesoCriteriosServices(conn)
+
+    resultado = await service.obtener_listado_indicadores_preguntas(carrera_id)
+
+    return await service.obtener_listado_indicadores_preguntas(carrera_id)

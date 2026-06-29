@@ -1,20 +1,53 @@
-import { SUBJECTS_MATEO } from "../../data.ts";
+import { useMateriasCursadas, useMateriasAprobadas, useMateriasTotales } from "../../hooks/queries/useEstudianteQueries.ts";
 
-export default function TrayectoriaView() {
+interface TrayectoriaViewProps {
+  estudianteId: number;
+}
+
+export default function TrayectoriaView({ estudianteId }: TrayectoriaViewProps) {
+  const { data: materias, isLoading: loadingMaterias } = useMateriasCursadas(estudianteId);
+  const { data: aprobadas, isLoading: loadingAprobadas } = useMateriasAprobadas(estudianteId);
+  const { data: totales, isLoading: loadingTotales } = useMateriasTotales(estudianteId);
+
+  const isLoading = loadingMaterias || loadingAprobadas || loadingTotales;
+  const totalAprobadas = aprobadas ?? 0;
+  const totalMaterias = totales ?? 0;
+  const porcentajeAvance = totalMaterias > 0 ? Math.round((totalAprobadas / totalMaterias) * 100) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-slate-200 rounded w-1/3" />
+            <div className="h-4 bg-slate-200 rounded w-1/2" />
+            <div className="h-4 bg-slate-200 rounded w-2/3" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-xs animate-pulse">
+              <div className="h-3 bg-slate-200 rounded w-1/2 mb-4" />
+              <div className="h-8 bg-slate-200 rounded w-1/3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden shadow-sm">
         <div className="space-y-2 max-w-2xl">
           <h3 className="text-3xl font-bold tracking-tight text-slate-800">
-            Hola Mateo,
+            Mi Trayectoria Académica
           </h3>
           <p className="text-xl font-medium text-slate-500">
-            este es tu resumen de trayectoria y materias.
+            Resumen de tu progreso académico.
           </p>
           <p className="text-xs text-slate-400 font-medium leading-relaxed">
-            Mantienes un excelente progreso académico de cara al tramo
-            final de la carrera. Responde los relevamientos
-            correspondientes para recibir atención y agendar tutorías.
+            Mantenés {totalAprobadas} materias aprobadas sobre {totalMaterias} del plan de estudios.
           </p>
         </div>
       </div>
@@ -25,23 +58,11 @@ export default function TrayectoriaView() {
             AVANCE EN LA CARRERA
           </span>
           <span className="text-3xl font-black text-slate-800 mt-2 block">
-            64%
+            {porcentajeAvance}%
           </span>
           <div className="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
-            <div className="bg-brand-primary h-full rounded-full" style={{ width: "64%" }} />
+            <div className="bg-brand-primary h-full rounded-full" style={{ width: `${porcentajeAvance}%` }} />
           </div>
-        </div>
-
-        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 relative shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            PROMEDIO GENERAL
-          </span>
-          <span className="text-3xl font-black text-slate-800 mt-2 block">
-            8.42
-          </span>
-          <p className="text-[10px] text-slate-400 mt-4 font-semibold leading-none">
-            Basado en 22 materias aprobadas
-          </p>
         </div>
 
         <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 relative shadow-xs flex flex-col justify-between">
@@ -50,7 +71,7 @@ export default function TrayectoriaView() {
               MATERIAS APROBADAS
             </span>
             <span className="text-3xl font-black text-slate-800 mt-2 block">
-              18 / 32
+              {totalAprobadas} / {totalMaterias}
             </span>
           </div>
         </div>
@@ -62,11 +83,8 @@ export default function TrayectoriaView() {
             <span className="material-symbols-outlined text-lg text-brand-primary">
               menu_book
             </span>
-            Mis Materias Actuales
+            Mis Materias
           </h4>
-          <span className="text-xs text-brand-primary font-bold">
-            Plan de Estudios 2020
-          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -74,26 +92,39 @@ export default function TrayectoriaView() {
             <thead>
               <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
                 <th className="p-4 pl-6">Materia</th>
+                <th className="p-4 text-center">Código</th>
                 <th className="p-4 text-center">Estado</th>
-                <th className="p-4 text-center">Calificación Parcial</th>
+                <th className="p-4 text-center">Cuatrimestre</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8f0]">
-              {SUBJECTS_MATEO.map((sm, index) => (
-                <tr key={index} className="hover:bg-slate-50 transition-colors">
+              {materias?.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-slate-400 font-semibold text-xs">
+                    No hay materias registradas.
+                  </td>
+                </tr>
+              )}
+              {materias?.map((m) => (
+                <tr key={m.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4 pl-6">
-                    <div className="font-bold text-slate-800">{sm.name}</div>
-                    <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                      {sm.teacher}
-                    </div>
+                    <div className="font-bold text-slate-800">{m.nombre}</div>
+                  </td>
+                  <td className="p-4 text-center text-slate-500 font-semibold">
+                    {m.codigo}
                   </td>
                   <td className="p-4 text-center animate-fade-in">
-                    <span className="bg-[#e0f1fe] text-[#0369a1] px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                      {sm.status}
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                      m.estado === "aprobada" ? "bg-emerald-50 text-emerald-700" :
+                      m.estado === "cursando" ? "bg-[#e0f1fe] text-[#0369a1]" :
+                      m.estado === "desaprobada" ? "bg-red-50 text-red-700" :
+                      "bg-slate-100 text-slate-600"
+                    }`}>
+                      {m.estado}
                     </span>
                   </td>
-                  <td className="p-4 text-center font-bold text-slate-800 text-sm">
-                    {sm.finalGrade !== "-" ? sm.finalGrade : "Pendiente de Examen"}
+                  <td className="p-4 text-center text-slate-500 font-semibold">
+                    {m.cuatrimestre_sugerido}°
                   </td>
                 </tr>
               ))}

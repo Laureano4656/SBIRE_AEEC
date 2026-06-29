@@ -61,8 +61,8 @@ class DashboardTutorService:
     async def cancel_interview(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
         return await self.entrevista_repo.cancel_interview(entrevista_id)
     
-    async def complete_interview(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
-        return await self.entrevista_repo.complete_interview(entrevista_id)
+    async def complete_interview(self, entrevista_id: int, comentario: str | None = None) -> EntrevistaPlanificadaResponse:
+        return await self.entrevista_repo.complete_interview(entrevista_id, comentario)
     
     
     

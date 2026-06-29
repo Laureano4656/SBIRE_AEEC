@@ -42,11 +42,15 @@ async def cancelar_entrevista(
     item = await service.cancelar_entrevista(entrevista_id)
     return EntrevistaPlanificadaResponse.model_validate(item)
 
+class CompletarBody(BaseModel):
+    comentario: str | None = None
+
 @router.patch("/{entrevista_id}/completar", response_model=EntrevistaPlanificadaResponse)
 async def completar_entrevista(
     entrevista_id: int,
+    body: CompletarBody,
     conn: asyncpg.Connection = Depends(get_conn),
 ) -> EntrevistaPlanificadaResponse:
     service = EntrevistaPlanificadaService(conn)
-    item = await service.completar_entrevista(entrevista_id)
+    item = await service.completar_entrevista(entrevista_id, body.comentario)
     return EntrevistaPlanificadaResponse.model_validate(item)

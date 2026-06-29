@@ -28,15 +28,15 @@ export default function Sidebar({
 
       <nav className="flex-1 py-6 space-y-1">
         <button
-          onClick={() => onMenuChange("estudiantes")}
+          onClick={() => onMenuChange("intervenciones")}
           className={`w-full flex items-center gap-3 px-6 py-3.5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            activeMenu === "estudiantes"
+            activeMenu === "intervenciones"
               ? "text-brand-primary bg-[#edeeef] border-r-4 border-brand-primary"
               : "text-[#43474f] hover:text-brand-primary hover:bg-[#f3f4f5]"
           }`}
         >
-          <span className="material-symbols-outlined text-lg">groups</span>
-          Mis Estudiantes
+          <span className="material-symbols-outlined text-lg">assignment</span>
+          Intervenciones
         </button>
 
         <button

@@ -37,9 +37,10 @@ class EntrevistaPlanificadaRepository(CrudRepository[EntrevistaPlanificadaRespon
     async def cancel_interview(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
         return await self.update(entrevista_id, estado="cancelada")
     
-    async def complete_interview(self, entrevista_id: int) -> EntrevistaPlanificadaResponse:
+    async def complete_interview(self, entrevista_id: int, comentario: str | None = None) -> EntrevistaPlanificadaResponse:
         return await self.update(
             entrevista_id,
-            estado="realizada")
+            estado="realizada",
+            comentario=comentario)
     
     
