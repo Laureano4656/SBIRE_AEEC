@@ -60,7 +60,7 @@ export interface SurveyQuestion {
   texto: string;
   tipo: TipoPreguntaEncuesta;
   opciones?: string[]; // solo aplica para "opcion_multiple"
-  obligatoria: boolean;
+  evento_disparador: number;
 }
 
 export interface SurveyAnswer {

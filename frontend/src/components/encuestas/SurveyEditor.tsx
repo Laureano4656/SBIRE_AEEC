@@ -146,6 +146,7 @@ export default function SurveyEditor({
           tipo: formTipo,
           opciones: opcionesLimpias,
           obligatoria: formObligatoria,
+          evento_disparador: 0,
         },
       ]);
     }
