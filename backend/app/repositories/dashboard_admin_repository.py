@@ -24,7 +24,7 @@ class DashboardAdminRepository:
     async def obtener_todos_los_usuarios(self) -> list[dict]:
         """Obtiene la lista completa para gestionar permisos de usuarios."""
         records = await self.conn.fetch(
-            "SELECT usuarios.*, c.nombre AS nombre_carrera,c.id AS carrera_id FROM usuarios INNER JOIN carreras c ON usuarios.carrera_id = c.id"
+            "SELECT usuarios.*, c.nombre AS nombre_carrera,c.id AS carrera_id FROM usuarios LEFT JOIN carreras c ON usuarios.carrera_id = c.id"
         )
         return [dict(record) for record in records]
 
@@ -54,7 +54,9 @@ class DashboardAdminRepository:
 
     async def actualizar_usuario(self, user_id: int, **campos) -> dict | None:
         if not campos:
-            return await self.conn.fetchrow("SELECT * FROM usuarios WHERE id = $1", user_id)
+            return await self.conn.fetchrow(
+                "SELECT * FROM usuarios WHERE id = $1", user_id
+            )
 
         sets = ", ".join(f"{col} = ${i}" for i, col in enumerate(campos, start=1))
         valores = list(campos.values())

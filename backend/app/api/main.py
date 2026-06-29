@@ -141,6 +141,7 @@ app.include_router(semaforo_router, prefix=API_PREFIX)
 # protected_router = APIRouter(dependencies=[Depends(get_current_user)])
 protected_router = APIRouter()
 
+protected_router.include_router(dashboard_admin_dep_router)
 protected_router.include_router(carreras_router)
 protected_router.include_router(materias_router)
 protected_router.include_router(correlativas_router)

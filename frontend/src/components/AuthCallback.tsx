@@ -9,23 +9,27 @@ export default function AuthCallback() {
   const [Auth, setAuth] = useState(false);
 
   const handleValidated = useCallback(() => {
+    console.log("Validated, navigating based on role...");
+    console.log(Auth);
     if (Auth) {
-      if (params.get("role") === "admin") {
+      console.log("Navigating based on role:", params.get("role"));
+      if (params.get("role") === "administrador") {
         navigate("/admin");
-      } else if (params.get("role") === "student") {
+      } else if (params.get("role") === "estudiante") {
         navigate("/student");
-      } else if (params.get("role") === "teacher") {
+      } else if (params.get("role") === "docente_carga") {
         navigate("/teacher");
-      } else if (params.get("role") === "tutor") {
+      } else if (params.get("role") === "docente_tutor") {
         navigate("/tutor");
       } else {
         navigate("/");
       }
     }
-  }, [navigate]);
+  }, [navigate, params, Auth]);
 
   useEffect(() => {
     const token = params.get("access_token");
+    console.log("Access token from URL:", token);
     if (!token) {
       return;
     }
@@ -42,8 +46,9 @@ export default function AuthCallback() {
       setAuth(true);
     };
 
-    initSession().catch(() => {
-      setAuth(false);
+    initSession().catch((err) => {
+      console.error("Session init failed:", err);
+      // optionally navigate to /error or /login
     });
   }, [params, navigate]);
 
