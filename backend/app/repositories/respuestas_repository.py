@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import asyncpg
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 from app.models.respuesta import RespuestaEstudiante
@@ -20,7 +22,11 @@ class RespuestasRepository(CrudRepository[RespuestaEstudiante]):
     async def get_estado_asignacion(self, asignacion_id: int) -> str | None:
         """Devuelve el estado actual de la asignación."""
         return await self.conn.fetchval(
-            "SELECT estado::text FROM asignacion_encuesta WHERE id = $1", 
+            """SELECT CASE
+            WHEN completado THEN 'Completada'
+            WHEN borrador THEN 'Borrador'
+            ELSE 'Pendiente'
+            END::text FROM asignacion_encuesta WHERE id = $1""", 
             asignacion_id
         )
 
@@ -32,16 +38,15 @@ class RespuestasRepository(CrudRepository[RespuestaEstudiante]):
         async with self.conn.transaction():
             # 1. Obtener info de la asignación antes de modificarla
             asig = await self.conn.fetchrow(
-                "SELECT estudiante_id, e.nombre as evento_disparador FROM asignacion_encuesta as a JOIN evento_disparador as e ON a.evento_id = e.id WHERE a.id = $1",
+            "SELECT estudiante_id, e.periodicidad as evento_disparador FROM asignacion_encuesta as a JOIN evento_disparador as e ON a.evento_id = e.id WHERE a.id = $1",
                 asignacion_id
             )
 
-            # 2. Actualizar estado de la asignación si corresponde
-            if nuevo_estado:
-                await self.conn.execute(
-                    "UPDATE asignacion_encuesta SET estado = $1::public.enum_estado_encuesta WHERE id = $2",
-                    nuevo_estado, asignacion_id
-                )
+            completado = (nuevo_estado == 'Completada')
+            await self.conn.execute(
+                "UPDATE asignacion_encuesta SET completado = $1, borrador = false WHERE id = $2",
+                completado, asignacion_id
+            )       
 
             # 3. Limpieza: Borramos respuestas anteriores de esta asignación
             await self.conn.execute(
@@ -81,7 +86,7 @@ class RespuestasRepository(CrudRepository[RespuestaEstudiante]):
                     # Buscamos la cursada que está habilitada para rendir final
                     cursada = await self.conn.fetchrow("""
                         SELECT id FROM cursadas
-                        WHERE estudiante_id = $1 AND materia_id = $2 AND estado = 'aprobada falta final'
+                        WHERE estudiante_id = $1 AND materia_id = $2 AND estado = 'aprobada_falta_final' 
                     """, asig['estudiante_id'], materia_id)
 
                     if not cursada:
@@ -137,3 +142,18 @@ class RespuestasRepository(CrudRepository[RespuestaEstudiante]):
                             "UPDATE cursadas SET estado = 'desaprobada'::public.enum_estado_cursada WHERE id = $1", 
                             cursada_id
                         )
+
+                        # Generar alerta por agotar intentos de final
+                        estudiante = await self.conn.fetchrow(
+                            "SELECT etapa FROM estudiantes WHERE id = $1",
+                            asig['estudiante_id']
+                        )
+                        etapa = estudiante['etapa'] if estudiante else 'tardia'
+                        anio_actual = datetime.now().year
+                        await self.conn.execute("""
+                            INSERT INTO alertas
+                                (estudiante_id, score_id, asignacion_id, tipo_desercion,
+                                 nivel_riesgo, origen, anio_cursada)
+                            VALUES ($1, NULL, NULL, $2::etapa_desercion_enum,
+                                    'critico'::nivel_riesgo_enum, 'intentos_final_agotados'::origen_alerta_enum, $3)
+                        """, asig['estudiante_id'], etapa, anio_actual)

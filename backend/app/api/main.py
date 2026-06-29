@@ -30,6 +30,7 @@ from app.routers.entrevista_planificada_routes import router as entrevista_plani
 from app.routers.semaforo_routes import router as semaforo_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
+from app.tasks.scheduler import scheduler, start_scheduler
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -44,15 +45,16 @@ async def lifespan(app: FastAPI):
     await init_pool()
     print(f" Pool de conexiones inicializado (min={settings.DB_POOL_MIN_SIZE}, max={settings.DB_POOL_MAX_SIZE})")
 
-    # TODO: inicializar el scheduler de APScheduler para los cron jobs
-    # from app.jobs.scheduler import start_scheduler
-    # await start_scheduler()
+    await start_scheduler()
+    print(" Scheduler de tareas periódicas iniciado")
 
     yield  # La app corre aquí
 
     # ── SHUTDOWN ──────────────────────────────────────────────────────────────
     # Se ejecuta cuando la app recibe SIGTERM (ej. en un deploy o Ctrl+C).
     # Espera a que las conexiones activas terminen antes de cerrar el pool.
+    print("⏹  Deteniendo scheduler...")
+    scheduler.shutdown(wait=False)
     print("⏹  Cerrando pool de conexiones...")
     await close_pool()
     print("👋 Aplicación cerrada correctamente.")

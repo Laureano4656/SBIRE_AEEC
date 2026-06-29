@@ -141,7 +141,8 @@ CREATE TYPE public.nivel_riesgo_enum AS ENUM (
 CREATE TYPE public.origen_alerta_enum AS ENUM (
     'score_riesgo',
     'omision_encuesta',
-    'carrera_extendida'
+    'carrera_extendida',
+    'intentos_final_agotados'
 );
 
 

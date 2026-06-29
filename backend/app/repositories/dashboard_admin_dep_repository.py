@@ -80,10 +80,11 @@ class dashboardAdminRepository:
             SELECT
                 e.anio_ingreso, 
                 CASE
-                    WHEN s.valor IS NULL THEN 'verde'
-                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'rojo'
-                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'amarillo'
-                    ELSE 'verde'
+                    WHEN s.valor IS NULL THEN 'bajo'
+                    WHEN s.valor > 0.8 then 'critico'
+                    WHEN ( s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'alto' )
+                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'medio'
+                    ELSE 'alto'
                 END AS tipo_riesgo,
                 COUNT(*) AS count
             FROM estudiantes e
@@ -95,7 +96,7 @@ class dashboardAdminRepository:
                     WHERE estudiante_id = e.id
                 )
             WHERE e.carrera_id = $1 AND e.activo = TRUE
-            GROUP BY tipo_riesgo, e.anio_ingreso
+            GROUP BY tipo_riesgo
             """,
             carrera_id,
         )
@@ -262,9 +263,10 @@ class dashboardAdminRepository:
                 )
             WHERE 
                 CASE
-                    WHEN s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1) THEN 'rojo'
-                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE id_carrera = e.carrera_id LIMIT 1)  THEN 'amarillo'
-                    ELSE 'verde'
+                    WHEN s.valor > 0.8 THEN 'critico'
+                    WHEN ( s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE  carrera_id = $1 LIMIT 1) ) THEN 'alto'
+                    WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE  carrera_id = $1 LIMIT 1)  THEN 'medio'
+                    ELSE 'bajo'
                 END = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)
             """,
             risk_level,
