@@ -24,9 +24,10 @@ export const getConteoPorRiesgo = async ({
   carrera_id: number;
 }) => {
   const response = await axiosInstance.get<{
-    rojo: number;
-    amarillo: number;
-    verde: number;
+    critico: number;
+    medio: number;
+    bajo: number;
+    alto: number;
   }>(`${PREFIX}/estadisticas/riesgo`, { params: { carrera_id } });
   return response.data;
 };

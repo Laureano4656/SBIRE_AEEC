@@ -1,5 +1,5 @@
 import { axiosInstance } from '../libs/axios';
-import type { DimensionResponse, AHPRequest } from '../types/indicadores';
+import type { DimensionResponse, AHPRequest, ConfiguracionAhpResponse } from '../types/indicadores';
 
 const PREFIX = '/indicadores';
 
@@ -39,5 +39,12 @@ export const getSaatyInputs = async (carrera_id: number, etapa: string) => {
 
 export const calcularAhp = async (payload: AHPRequest) => {
     const response = await axiosInstance.post('/calcular_ahp/', payload);
+    return response.data;
+}
+
+export const getUltimaConfiguracion = async (carrera_id: number, etapa: string) => {
+    const response = await axiosInstance.get<ConfiguracionAhpResponse>(
+        `/calcular_ahp/carreras/${carrera_id}/etapas/${etapa}/configuracion`,
+    );
     return response.data;
 }

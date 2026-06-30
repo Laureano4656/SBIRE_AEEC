@@ -1,5 +1,6 @@
 import type { Entrevista, Alerta } from "./types";
 import type { Student } from "../../types/types";
+import { getRiskLevel } from "../../utils/studentMapping";
 
 export function riskBadge(level: string) {
   switch (level) {
@@ -105,18 +106,20 @@ export function getFilteredStudents(
   students: Student[],
   searchQuery: string,
   filterRisk: "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO",
+  umbralRojo?: number,
+  umbralAmarillo?: number,
 ) {
   return students.filter((s) => {
+    const fullName = `${s.apellido} ${s.nombre}`.toLowerCase();
     const matchSearch =
-      s.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.dni.includes(searchQuery) ||
-      s.legajo.includes(searchQuery);
+      fullName.includes(searchQuery.toLowerCase()) ||
+      s.dni.includes(searchQuery);
+    const level = getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo);
     const matchRisk =
       filterRisk === "TODOS" ||
-      (filterRisk === "CRÍTICO" && s.riskLevel === "CRÍTICO") ||
-      (filterRisk === "MEDIO" && s.riskLevel === "MEDIO") ||
-      (filterRisk === "BAJO" &&
-        (s.riskLevel === "BAJO" || s.riskLevel === "SEGURO"));
+      (filterRisk === "CRÍTICO" && level === "CRÍTICO") ||
+      (filterRisk === "MEDIO" && level === "MEDIO") ||
+      (filterRisk === "BAJO" && level === "BAJO");
     return matchSearch && matchRisk;
   });
 }

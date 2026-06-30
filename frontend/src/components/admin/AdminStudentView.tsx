@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { Student, SubjectProgress } from "../../types/types.ts";
+import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { useRiskConfig } from "../../hooks/useRiskConfig.ts";
 import { SUBJECTS_SOFIA, SUBJECTS_MATEO } from "../../data.ts";
 
 interface AdminStudentViewProps {
@@ -7,7 +9,7 @@ interface AdminStudentViewProps {
   onBack: () => void;
 }
 
-const getAlertPill = (status: Student["statusAlerta"]) => {
+const getAlertPill = (status: string | null) => {
   switch (status) {
     case "NUEVA":
       return (
@@ -104,13 +106,16 @@ export default function AdminStudentView({
   student,
   onBack,
 }: AdminStudentViewProps) {
+  const { umbralRojo, umbralAmarillo } = useRiskConfig();
   const [activeTab, setActiveTab] = useState<"trayectoria" | "timeline">(
     "trayectoria",
   );
+  const riskLevel = getRiskLevel(student.indice_riesgo, umbralRojo, umbralAmarillo);
+
   const subjects: SubjectProgress[] =
-    student.id === "sofia_martinez"
+    student.dni === "42.190.455"
       ? SUBJECTS_SOFIA
-      : student.id === "mateo_garcia"
+      : student.dni === "43.100.229"
         ? SUBJECTS_MATEO
         : [];
 
@@ -126,102 +131,70 @@ export default function AdminStudentView({
 
       <div className="bg-white border border-brand-outline-variant rounded p-6 shadow-xs flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="relative shrink-0">
-            <img
-              alt={`${student.firstNames} ${student.lastNames}`}
-              referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-full border border-brand-outline-variant object-cover shadow-sm"
-              src={student.avatarUrl}
-            />
-            <span
-              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                student.riskLevel === "CRÍTICO"
-                  ? "bg-[#ba1a1a]"
-                  : student.riskLevel === "MEDIO"
-                    ? "bg-amber-500"
-                    : "bg-[#006a6a]"
-              }`}
-            />
+          <div
+            className={`w-16 h-16 rounded-full border-2 flex items-center justify-center text-white text-lg font-bold shrink-0 ${
+              riskLevel === "CRÍTICO"
+                ? "bg-[#ba1a1a] border-[#ba1a1a]"
+                : riskLevel === "MEDIO"
+                  ? "bg-amber-500 border-amber-500"
+                  : "bg-[#006a6a] border-[#006a6a]"
+            }`}
+          >
+            {student.nombre.charAt(0)}{student.apellido.charAt(0)}
           </div>
           <div>
             <h3 className="text-xl font-black text-brand-primary">
-              {student.lastNames}, {student.firstNames}
+              {student.apellido}, {student.nombre}
             </h3>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
               <span className="text-[11px] text-[#43474f] font-semibold">
                 DNI: {student.dni}
               </span>
-              <span className="text-[11px] text-[#43474f] font-semibold">
-                Legajo: {student.legajo}
-              </span>
               <span className="bg-[#edeeef] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
-                TRAMO {student.tramo}
+                {student.etapa}
               </span>
             </div>
             <p className="text-xs text-brand-outline font-semibold mt-1.5">
-              {student.career} — {student.year}° Año
+              {student.carrera}
             </p>
           </div>
         </div>
         <div className="flex flex-col gap-2 items-start md:items-end shrink-0">
           <div className="flex flex-wrap gap-2">
-            {riskBadge(student.riskLevel)}
-            {getAlertPill(student.statusAlerta)}
+            {riskBadge(riskLevel)}
+            {getAlertPill(student.estado_alerta)}
           </div>
           <span className="text-xs font-medium text-[#43474f]">
-            Último recálculo: {student.lastRecalculation}
+            Último recálculo: {student.ultima_fecha_recalculo ?? "-"}
+          </span>
+          <span className="text-xs font-medium text-[#43474f]">
+            % Carrera: {student.porcentaje_carrera?.toFixed(1) ?? "-"}%
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-2 gap-4 mt-6">
         <div className="bg-white border border-brand-outline-variant rounded p-4 shadow-xs">
           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
-            PROMEDIO GENERAL
+            ÍNDICE DE RIESGO
           </span>
           <span className="text-2xl font-black text-brand-primary mt-1 block">
-            {student.gpa.toFixed(2)}
+            {student.indice_riesgo?.toFixed(2) ?? "-"}
           </span>
           <p className="text-[10px] text-brand-outline mt-0.5 font-medium">
-            Rendimiento acumulado
+            Score de riesgo calculado
           </p>
         </div>
         <div className="bg-white border border-brand-outline-variant rounded p-4 shadow-xs">
           <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
-            MATERIAS APROBADAS
+            % CARRERA
           </span>
           <span className="text-2xl font-black text-brand-primary mt-1 block">
-            {student.subjectsApproved}/{student.subjectsTotal}
+            {student.porcentaje_carrera?.toFixed(1) ?? "-"}%
           </span>
-          <div className="w-full bg-[#edeeef] rounded-full h-1.5 mt-1">
-            <div
-              className="bg-brand-primary h-1.5 rounded-full transition-all"
-              style={{
-                width: `${(student.subjectsApproved / student.subjectsTotal) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-        <div className="bg-white border border-brand-outline-variant rounded p-4 shadow-xs">
-          <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider block">
-            ENGAGEMENT CAMPUS
-          </span>
-          <span
-            className={`text-2xl font-black mt-1 block ${
-              student.engagement === "Bajo"
-                ? "text-brand-error"
-                : student.engagement === "Medio"
-                  ? "text-amber-600"
-                  : "text-[#006a6a]"
-            }`}
-          >
-            {student.engagement}
-          </span>
-          {student.engagement === "Bajo" && (
-            <span className="bg-[#ffdad6] text-[#93000a] text-[10px] font-bold px-1.5 py-0.5 rounded inline-block mt-1">
-              Alerta de Inactividad
-            </span>
-          )}
+          <p className="text-[10px] text-brand-outline mt-0.5 font-medium">
+            Porcentaje de carrera aprobado
+          </p>
         </div>
       </div>
 

@@ -27,7 +27,7 @@ import {
   useRevisionesPendientes,
   useAprobarRevision,
 } from "../../hooks/queries/useTutorQueries.ts";
-import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { mapToStudent } from "../../utils/studentMapping.ts";
 
 interface TutorPanelProps {
   onLogout: () => void;
@@ -62,9 +62,9 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
       prev
         ? {
             ...prev,
-            year: datosGenerales.anio,
-            subjectsApproved: datosGenerales.materias_aprobadas,
-            subjectsTotal: datosGenerales.materias_totales,
+            porcentaje_carrera: datosGenerales.materias_totales > 0
+              ? (datosGenerales.materias_aprobadas / datosGenerales.materias_totales) * 100
+              : prev.porcentaje_carrera,
           }
         : prev,
     );
@@ -169,57 +169,20 @@ export default function TutorPanel({ onLogout }: TutorPanelProps) {
     const api = tutorEstudiantes.find((s) => s.dni === dni);
     let student: Student;
     if (api) {
-      student = {
-        id: api.dni,
-        dni: api.dni,
-        firstNames: api.nombre,
-        lastNames: api.apellido,
-        fullName: `${api.nombre} ${api.apellido}`,
-        email: "",
-        avatarUrl: "",
-        career: api.carrera,
-        year: 0,
-        legajo: "",
-        riskLevel: getRiskLevel(api.indice_riesgo),
-        riskValue: api.indice_riesgo ?? 0,
-        tramo: "INICIAL" as const,
-        lastRecalculation:
-          api.ultima_fecha_recalculo === null
-            ? "-"
-            : typeof api.ultima_fecha_recalculo === "string"
-              ? api.ultima_fecha_recalculo
-              : api.ultima_fecha_recalculo.toISOString(),
-        statusAlerta: api.estado_alerta ?? "SIN ALERTA",
-        gpa: 0,
-        subjectsApproved: 0,
-        subjectsTotal: 0,
-        engagement: "Medio",
-        phone: "",
-      };
+      student = mapToStudent(api);
     } else {
       const iv = intervenciones.find((x) => x.estudiante_dni === dni);
       if (!iv) return;
       student = {
-        id: dni,
+        nombre: iv.estudiante_nombre,
+        apellido: iv.estudiante_apellido,
         dni,
-        firstNames: iv.estudiante_nombre,
-        lastNames: iv.estudiante_apellido,
-        fullName: `${iv.estudiante_nombre} ${iv.estudiante_apellido}`,
-        email: "",
-        avatarUrl: "",
-        career: "",
-        year: 0,
-        legajo: "",
-        riskLevel: "BAJO",
-        riskValue: 0,
-        tramo: "INICIAL" as const,
-        lastRecalculation: "-",
-        statusAlerta: "SIN ALERTA",
-        gpa: 0,
-        subjectsApproved: 0,
-        subjectsTotal: 0,
-        engagement: "Medio",
-        phone: "",
+        carrera: "",
+        etapa: "",
+        porcentaje_carrera: null,
+        indice_riesgo: null,
+        estado_alerta: null,
+        ultima_fecha_recalculo: null,
       };
     }
     setSelectedEstudianteId(estudiante_id);

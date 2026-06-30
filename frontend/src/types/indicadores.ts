@@ -37,3 +37,10 @@ export type AHPRequest = {
     comparaciones_por_nodo: Record<number, comparacion[]>;
     configuracion: datosConfiguracion;
 };
+
+export interface ConfiguracionAhpResponse {
+    id_configuracion: number;
+    configuracion: datosConfiguracion;
+    pesos_globales: Record<number, number>;
+    consistencia_matrices: Record<number, number>;
+}
