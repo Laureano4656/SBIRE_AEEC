@@ -1,3 +1,4 @@
+import asyncio
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
@@ -25,7 +26,8 @@ Categoriza el motivo principal y tu nivel de confianza en la evaluación.
 async def analizar_comentario(pregunta: str, comentario: str) -> AnalisisDesercion:
     prompt = f"Pregunta original: {pregunta}\nRespuesta: {comentario}"
     
-    response = await client.models.generate_content(
+    response = await asyncio.to_thread(
+        client.models.generate_content,
         model='gemini-2.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
