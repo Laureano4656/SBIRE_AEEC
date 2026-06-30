@@ -80,3 +80,13 @@ class UsuarioService(CrudService[Usuario]):
             token_type="bearer",
             usuario=UsuarioResponse.model_validate(usuario),
         )
+
+    async def asignar_carrera(self, user_id: int, carrera_id: int) -> Usuario:
+        usuario_repo = cast(UsuarioRepository, self.repo)
+        usuario = await usuario_repo.get_by_id(user_id)
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado.",
+            )
+        return await usuario_repo.update_carrera(user_id, carrera_id)

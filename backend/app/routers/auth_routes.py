@@ -17,7 +17,7 @@ from app.api.deps import get_conn, get_current_user
 
 from app.services.usuarios_service import UsuarioService
 
-from app.models.usuario import Usuario
+from app.models.usuario import Usuario, RolUsuario
 from app.core.config import settings
 logger = logging.getLogger(__name__)
 
@@ -212,6 +212,33 @@ async def lti_login(request: Request, response: Response):
 #             "carrera_id": current_user.carrera_id,
 #         },
 #     )
+
+
+class CarreraRequest(BaseModel):
+    carrera_id: int
+
+
+@router.put("/carrera")
+async def asignar_carrera(
+    body: CarreraRequest,
+    current_user: Usuario = Depends(get_current_user),
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> dict:
+    """
+    Asigna una carrera al usuario autenticado (estudiante).
+    """
+    if current_user.rol != RolUsuario.estudiante:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los estudiantes pueden asignarse una carrera.",
+        )
+    service = UsuarioService(conn)
+    usuario = await service.asignar_carrera(current_user.id, body.carrera_id)
+    return {
+        "id": usuario.id,
+        "carrera_id": usuario.carrera_id,
+        "rol": usuario.rol.value,
+    }
 
 
 @router.get("/me")

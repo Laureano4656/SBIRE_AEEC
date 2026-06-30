@@ -77,3 +77,16 @@ class UsuarioRepository(CrudRepository[Usuario]):
             max_casos_activos,
         )
         return self._map(row)  # type: ignore[return-value]
+
+    async def update_carrera(self, user_id: int, carrera_id: int) -> Usuario:
+        row = await self.conn.fetchrow(
+            f"""
+            UPDATE {self.config.table_name}
+            SET carrera_id = $1, actualizado_en = NOW()
+            WHERE id = $2
+            RETURNING {self._select_clause()}
+            """,
+            carrera_id,
+            user_id,
+        )
+        return self._map(row)
