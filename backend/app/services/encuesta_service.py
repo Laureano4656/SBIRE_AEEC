@@ -64,7 +64,7 @@ class EncuestaService:
         )
 
         nombre_evento = await self.repo.get_evento_disparador(evento)
-
+        print("Nombre del evento:", nombre_evento)
         # 5. Distribuir según evento
         EVENTOS_GENERALES = {"unica_vez", "cuatrimestral", "anual"}
 
@@ -85,8 +85,8 @@ class EncuestaService:
             formulario.bloques_academicos = self._armar_bloques(
                 materias, preguntas_crudas, dicc_opciones, dicc_respuestas
             )
-
         elif nombre_evento == "inicio_cuatrimestre_acad":
+            print("Obteniendo materias disponibles para estudiante_id:", estudiante_id)
             materias = await self.repo.get_materias_disponibles(estudiante_id)
             formulario.bloques_academicos = self._armar_bloques(
                 materias, preguntas_crudas, dicc_opciones, dicc_respuestas
@@ -128,10 +128,10 @@ class EncuestaService:
         dicc_opciones: dict,
         dicc_respuestas: dict,
     ) -> PreguntaParaEncuesta:
-        #print("pregunta", p.id)
-        #print("materia_id", materia_id)
-        #print("respuestas previas", dicc_respuestas)
-        #print("respuesta previa", dicc_respuestas.get((p.id, materia_id)))
+        # print("pregunta", p.id)
+        # print("materia_id", materia_id)
+        # print("respuestas previas", dicc_respuestas)
+        # print("respuesta previa", dicc_respuestas.get((p.id, materia_id)))
         return PreguntaParaEncuesta(
             **p.model_dump(),
             opciones=dicc_opciones.get(p.id, []),
@@ -230,11 +230,11 @@ class EncuestaService:
         respuestas_bulk = await self.repo.get_respuestas_previas_bulk(asignacion_ids)
 
         dicc_respuestas_por_asignacion = {asig_id: {} for asig_id in asignacion_ids}
-        
+
         for r in respuestas_bulk:
             if r["pregunta_id"] is None:
                 continue
-                
+
             dicc_respuestas_por_asignacion[r["asignacion_id"]][
                 (r["pregunta_id"], r["materia_id"])
             ] = RespuestaPrevia(**dict(r))
@@ -268,17 +268,20 @@ class EncuestaService:
             # B. Preguntas Académicas (El cruce por materia que pediste)
             else:
                 materias = []
+                print("Nombre del evento:", nombre_evento)
+                print("Estudiante ID:", estudiante_id)
                 if nombre_evento == "fin_cuatrimestre_acad":
                     materias = await self.repo.get_materias_cursando(estudiante_id)
                 elif nombre_evento == "llamado_final_acad":
                     materias = await self.repo.get_materias_con_final(estudiante_id)
                 elif nombre_evento == "inicio_cuatrimestre_acad":
                     materias = await self.repo.get_materias_disponibles(estudiante_id)
-
+                print("Materias obtenidas:", materias)
                 # Reutilizamos tu armador de bloques intacto
                 formulario.bloques_academicos = self._armar_bloques(
                     materias, preguntas_crudas, dicc_opciones, dicc_resp
                 )
+                print("Bloques académicos armados:", formulario.bloques_academicos)
 
             resultado.append(formulario)
 

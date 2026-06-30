@@ -3,7 +3,7 @@ from dataclasses import fields
 from app.schemas.encuesta import AsignacionEncuestaResponse
 from app.repositories.crud_repository import CrudRepository, CrudTableConfig
 import asyncpg
-
+from datetime import datetime
 from app.schemas.encuesta import (
     EstadisticaEventoResponse,
     OpcionEncuestaResponse,
@@ -20,7 +20,7 @@ class EncuestasRepository:
         self.conn = conn
 
     async def _obtener_materias_alumno(
-        self, estudiante_id: int, estado: str
+        self, estudiante_id: int, estado: list[str]
     ) -> list[MateriaResponse]:
         """
         Busca materias en las que el estudiante ya tiene una inscripción activa
@@ -32,7 +32,7 @@ class EncuestasRepository:
                 FROM cursadas c
                 JOIN materias m ON c.materia_id = m.id
                 WHERE c.estudiante_id = $1 
-                AND c.estado = $2::public.enum_estado_cursada
+                AND c.estado = ANY($2::public.enum_estado_cursada[])
             """,
             estudiante_id,
             estado,
@@ -66,7 +66,7 @@ class EncuestasRepository:
                   FROM cursadas c 
                   WHERE c.estudiante_id = e.id 
                     AND c.materia_id = m.id 
-                    AND c.estado IN ('aprobada', 'aprobada falta final', 'cursando')
+                    AND c.estado IN ('aprobada', 'aprobada_falta_final')
               )
               AND NOT EXISTS (
                   SELECT 1
@@ -77,7 +77,7 @@ class EncuestasRepository:
                         FROM cursadas c2
                         WHERE c2.estudiante_id = e.id
                           AND c2.materia_id = co.requiere_materia_id
-                          AND c2.estado_cursada IN ('aprobada', 'aprobada falta final')
+                          AND c2.estado IN ('aprobada', 'aprobada_falta_final')
                     )
               )
         """
@@ -184,11 +184,11 @@ class EncuestasRepository:
         return row["carrera_id"] if row else None
 
     async def get_materias_cursando(self, estudiante_id: int) -> list[dict]:
-        return await self._obtener_materias_alumno(estudiante_id, "cursando")
+        return await self._obtener_materias_alumno(estudiante_id, ["aprobada"])
 
     async def get_materias_con_final(self, estudiante_id: int) -> list[dict]:
         return await self._obtener_materias_alumno(
-            estudiante_id, "aprobada_falta_final"
+            estudiante_id, ["aprobada_falta_final"]
         )
 
     async def get_materias_disponibles(self, estudiante_id: int) -> list[dict]:

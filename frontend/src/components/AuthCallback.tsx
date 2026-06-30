@@ -17,20 +17,31 @@ export default function AuthCallback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [user, setUser] = useState<Usuario | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  const [auth, setAuth] = useState(false);
 
   const handleValidated = useCallback(() => {
-    if (!user) {
-      navigate("/");
-      return;
+    if (auth) {
+      console.log("Navigating based on role:", params.get("role"));
+      if (params.get("role") === "administrador") {
+        navigate("/admin");
+      } else if (params.get("role") === "estudiante") {
+        navigate("/student");
+      } else if (params.get("role") === "docente_carga") {
+        navigate("/teacher");
+      } else if (params.get("role") === "docente_tutor") {
+        navigate("/tutor");
+      } else {
+        navigate("/");
+      }
     }
-    const route = ROLE_ROUTES[user.rol];
-    navigate(route || "/");
-  }, [navigate, user]);
+  }, [navigate, params, auth]);
 
   useEffect(() => {
     const token = params.get("access_token");
-    if (!token) return;
+    console.log("Access token from URL:", token);
+    if (!token) {
+      return;
+    }
 
     const initSession = async () => {
       await axiosInstance.post("/auth/set-session", {
@@ -38,15 +49,16 @@ export default function AuthCallback() {
       });
       const res = await axiosInstance.get<Usuario>("/auth/me");
       setUser(res.data);
-      setAuthReady(true);
+      setAuth(true);
     };
 
-    initSession().catch(() => {
-      setAuthReady(false);
+    initSession().catch((err) => {
+      console.error("Session init failed:", err);
+      // optionally navigate to /error or /login
     });
   }, [params, navigate]);
 
-  if (!authReady) return null;
+  if (!auth) return null;
 
   return <ValidationScreen user={user} onValidated={handleValidated} />;
 }

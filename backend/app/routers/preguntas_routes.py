@@ -28,7 +28,7 @@ async def obtener_pregunta(
     return PreguntaResponse.model_validate(item)
 
 
-@router.put("/", response_model=PreguntaResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=PreguntaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_pregunta(
     body: PreguntaCreate,
     conn: asyncpg.Connection = Depends(get_conn),

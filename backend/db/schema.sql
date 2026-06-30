@@ -842,6 +842,7 @@ CREATE TABLE public.respuesta_estudiante (
     valor_numerico numeric(10,2),
     valor_texto text,
     riesgo_calculado numeric(3,2),
+    requiere_revision boolean DEFAULT false,
     CONSTRAINT respuesta_estudiante_riesgo_calculado_check CHECK (((riesgo_calculado >= (0)::numeric) AND (riesgo_calculado <= (1)::numeric)))
 );
 
@@ -1723,4 +1724,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260629000001'),
     ('20260629144055'),
     ('20260629151343'),
-    ('20260629153552');
+    ('20260629153552'),
+    ('20260629160000'),
+    ('20260630140001'),
+    ('20260630150001'),
+    ('20260630160001');

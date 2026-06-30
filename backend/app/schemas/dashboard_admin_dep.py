@@ -63,3 +63,22 @@ class DimensionAgrupadaResponse(BaseModel):
 
 class RolUpdate(BaseModel):
     nombre: str
+
+
+class CrearUsuarioRequest(BaseModel):
+    nombre: str
+    apellido: str
+    email: str
+    rol: str
+    carrera_id: int | None = None
+    moodle_id: str | None = None
+
+
+class ActualizarUsuarioRequest(BaseModel):
+    nombre: str | None = None
+    apellido: str | None = None
+    email: str | None = None
+    rol: str | None = None
+    carrera_id: int | None = None
+    moodle_id: str | None = None
+    max_casos_activos: int | None = None

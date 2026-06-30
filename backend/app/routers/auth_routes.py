@@ -14,17 +14,17 @@ from fastapi import APIRouter, Depends, Query, Response, Request, HTTPException,
 from pydantic import BaseModel
 
 from app.api.deps import get_conn, get_current_user
+from app.core.token_manager import TokenManager
 
 from app.services.usuarios_service import UsuarioService
 
 from app.models.usuario import Usuario, RolUsuario
 from app.core.config import settings
+
 logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-
 
 
 @router.post("/lti/launch")
@@ -49,7 +49,7 @@ async def lti_launch(
         usuario_service = UsuarioService(conn)
         auth_response = await usuario_service.upsert_desde_lti(id_token)
 
-        frontend_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={auth_response.access_token}"
+        frontend_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={auth_response.access_token}&role={auth_response.usuario.rol.value}"
         html_content = f"""<!DOCTYPE html>
 <html>
 <head><title>Redirigiendo...</title></head>
@@ -71,7 +71,7 @@ if (window.top !== window.self) {{
         logger.error(f"Error crítico en LTI Launch handling: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error procesando autenticación interna: {e}"
+            detail=f"Error procesando autenticación interna: {e}",
         )
 
 
@@ -86,7 +86,7 @@ async def set_session(payload: SetSessionRequest, response: Response):
     Called by the frontend through the Vite proxy so the cookie
     is associated with the frontend's origin (port 5173).
     """
-    from app.core.token_manager import TokenManager
+
     try:
         TokenManager.validate_session_token(payload.access_token)
     except Exception:
@@ -119,8 +119,6 @@ async def logout(response: Response):
     return {"message": "Sesión cerrada"}
 
 
-
-
 @router.api_route("/lti/login", methods=["GET", "POST"])
 async def lti_login(request: Request, response: Response):
     """
@@ -150,9 +148,9 @@ async def lti_login(request: Request, response: Response):
                     "iss": iss,
                     "login_hint": login_hint,
                     "lti_message_hint": lti_message_hint,
-                    "client_id": client_id
-                }
-            }
+                    "client_id": client_id,
+                },
+            },
         )
 
     # 3. Security state tracking values
@@ -165,13 +163,13 @@ async def lti_login(request: Request, response: Response):
         value=state,
         max_age=300,
         httponly=True,
-        samesite="lax",   # Change from "none" to "lax" for local HTTP cross-port stability
-        secure=False,     # Keep False because we are testing on unencrypted http://
-        path="/"          # Ensure it is accessible across all API endpoints
+        samesite="lax",  # Change from "none" to "lax" for local HTTP cross-port stability
+        secure=False,  # Keep False because we are testing on unencrypted http://
+        path="/",  # Ensure it is accessible across all API endpoints
     )
 
     # 5. Build the exact payload query parameters Moodle expects to verify
-    auth_params : any = {
+    auth_params: any = {
         "scope": "openid",
         "response_type": "id_token",
         "client_id": client_id,
@@ -180,7 +178,7 @@ async def lti_login(request: Request, response: Response):
         "lti_message_hint": lti_message_hint,
         "state": state,
         "nonce": nonce,
-        "response_mode": "form_post"
+        "response_mode": "form_post",
     }
 
     # 6. Execute the redirect back to Moodle

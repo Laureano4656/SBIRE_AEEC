@@ -3,7 +3,9 @@ from contextlib import asynccontextmanager
 
 from app.api.deps import get_current_user
 from app.routers.alertas_routes import router as alertas_router
-from app.routers.asignaciones_encuestas_routes import router as asignaciones_encuestas_router
+from app.routers.asignaciones_encuestas_routes import (
+    router as asignaciones_encuestas_router,
+)
 from app.routers.asistencias_routes import router as asistencias_router
 from app.routers.carreras_routes import router as carreras_router
 from app.routers.correlativas_routes import router as correlativas_router
@@ -21,15 +23,20 @@ from app.routers.importacion_archivo_routes import router as importacion_archivo
 from app.routers.plan_estudios_routes import router as plan_estudios_router
 from app.routers.auth_routes import router as auth_router
 from app.routers.dashboard_admin_dep_routes import router as dashboard_admin_dep_router
-from app.routers.dashboard_estudiante_routes import routes as dashboard_estudiante_router
+from app.routers.dashboard_estudiante_routes import (
+    routes as dashboard_estudiante_router,
+)
 from app.routers.dashboard_tutor_routes import router as dashboard_tutor_router
 from app.routers.indicadores_routes import router as indicadores_router
 from app.routers.reportes_routes import router as reportes_router
 from app.routers.intervenciones_routes import router as intervenciones_router
-from app.routers.entrevista_planificada_routes import router as entrevista_planificada_router
+from app.routers.entrevista_planificada_routes import (
+    router as entrevista_planificada_router,
+)
 from app.routers.evento_disparador_routes import router as evento_disparador_router
 from app.routers.semaforo_routes import router as semaforo_router
 from app.routers.revision_routes import router as revision_router
+from app.routers.dashboard_admin_routes import router as dashboard_admin_router
 from app.core.config import settings
 from app.core.database import init_pool, close_pool
 from app.tasks.scheduler import scheduler, start_scheduler
@@ -47,7 +54,9 @@ async def lifespan(app: FastAPI):
     # Esto establece las conexiones mínimas (DB_POOL_MIN_SIZE) a PostgreSQL
     # antes de recibir el primer request.
     await init_pool()
-    print(f" Pool de conexiones inicializado (min={settings.DB_POOL_MIN_SIZE}, max={settings.DB_POOL_MAX_SIZE})")
+    print(
+        f" Pool de conexiones inicializado (min={settings.DB_POOL_MIN_SIZE}, max={settings.DB_POOL_MAX_SIZE})"
+    )
 
     await start_scheduler()
     print(" Scheduler de tareas periódicas iniciado")
@@ -94,9 +103,9 @@ app.add_middleware(
     allow_origins=[
         "https://campus.fi.mdp.edu.ar",  # producción
         "http://localhost:3000",
-        "http://127.0.0.1:5501",           # desarrollo frontend
-        "http://localhost:8080",           # desarrollo Moodle local
-        settings.FRONTEND_URL,             # desarrollo Vite
+        "http://127.0.0.1:5501",  # desarrollo frontend
+        "http://localhost:8080",  # desarrollo Moodle local
+        settings.FRONTEND_URL,  # desarrollo Vite
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
@@ -105,6 +114,7 @@ app.add_middleware(
 
 
 # ── Root redirect ──────────────────────────────────────────────────────────
+
 
 @app.get("/")
 def read_root():
@@ -119,7 +129,7 @@ def read_root():
 API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=API_PREFIX)
-app.include_router(dashboard_admin_dep_router, prefix=API_PREFIX)
+app.include_router(dashboard_admin_router, prefix=API_PREFIX)
 app.include_router(dashboard_estudiante_router, prefix=API_PREFIX)
 app.include_router(dashboard_tutor_router, prefix=API_PREFIX)
 app.include_router(indicadores_router, prefix=API_PREFIX)
@@ -131,6 +141,7 @@ app.include_router(semaforo_router, prefix=API_PREFIX)
 # protected_router = APIRouter(dependencies=[Depends(get_current_user)])
 protected_router = APIRouter()
 
+protected_router.include_router(dashboard_admin_dep_router)
 protected_router.include_router(carreras_router)
 protected_router.include_router(materias_router)
 protected_router.include_router(correlativas_router)
@@ -159,9 +170,10 @@ app.include_router(protected_router, prefix=API_PREFIX)
 # Endpoint mínimo para que el servidor de producción (nginx, Docker)
 # verifique que la app está viva. No requiere autenticación.
 
+
 @app.get("/health", tags=["Sistema"], include_in_schema=False)
-async def health_check() -> dict: # type: ignore[return-value]
-    return { # type: ignore[return-value]
+async def health_check() -> dict:  # type: ignore[return-value]
+    return {  # type: ignore[return-value]
         "status": "ok",
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
