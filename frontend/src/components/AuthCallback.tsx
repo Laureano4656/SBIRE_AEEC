@@ -1,17 +1,26 @@
 import { useEffect, useCallback, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../libs/axios";
+import type { Usuario } from "../contexts/AuthContext";
 import ValidationScreen from "./ValidationScreen";
+
+const ROLE_ROUTES: Record<string, string> = {
+  estudiante: "/student",
+  administrador: "/superadmin",
+  admin_departamental: "/admin",
+  docente_carga: "/teacher",
+  docente_tutor: "/tutor",
+  asesor_par: "/tutor",
+};
 
 export default function AuthCallback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [Auth, setAuth] = useState(false);
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [auth, setAuth] = useState(false);
 
   const handleValidated = useCallback(() => {
-    console.log("Validated, navigating based on role...");
-    console.log(Auth);
-    if (Auth) {
+    if (auth) {
       console.log("Navigating based on role:", params.get("role"));
       if (params.get("role") === "administrador") {
         navigate("/admin");
@@ -25,7 +34,7 @@ export default function AuthCallback() {
         navigate("/");
       }
     }
-  }, [navigate, params, Auth]);
+  }, [navigate, params, auth]);
 
   useEffect(() => {
     const token = params.get("access_token");
@@ -35,14 +44,11 @@ export default function AuthCallback() {
     }
 
     const initSession = async () => {
-      // 1. Exchange the URL token for an httpOnly cookie via the proxy
       await axiosInstance.post("/auth/set-session", {
         access_token: token,
       });
-
-      // 2. Cookie is now set on localhost:5173 — verify it with /auth/me
-      await axiosInstance.get("/auth/me");
-
+      const res = await axiosInstance.get<Usuario>("/auth/me");
+      setUser(res.data);
       setAuth(true);
     };
 
@@ -52,5 +58,7 @@ export default function AuthCallback() {
     });
   }, [params, navigate]);
 
-  return <ValidationScreen onValidated={handleValidated} />;
+  if (!auth) return null;
+
+  return <ValidationScreen user={user} onValidated={handleValidated} />;
 }
