@@ -25,9 +25,12 @@ DECLARE
     p_apoyo_familiar INT;
     
     -- Opciones
-    o_secundario INT;
-    o_terciario INT;
-    o_universitario INT;
+    o_secundario_madre INT;
+    o_terciario_madre INT;
+    o_universitario_madre INT;
+    o_secundario_padre INT;
+    o_terciario_padre INT;
+    o_universitario_padre INT;
     o_escuela_publica INT;
     o_escuela_privada INT;
 
@@ -53,6 +56,7 @@ DECLARE
     p_contacto_equipo INT;
 
     -- Opciones
+    o_empece_este_cuatrimestre INT;
     o_carga_menos INT;
     o_carga_igual INT;
     o_carga_mas INT;
@@ -175,9 +179,13 @@ BEGIN
     SELECT id INTO p_apoyo_familiar FROM pregunta WHERE texto_pregunta ILIKE '%entorno familiar apoya%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- Cargar opciones
-    SELECT id INTO o_secundario FROM opcion_pregunta WHERE texto_opcion = 'Secundario' AND pregunta_id = p_madre;
-    SELECT id INTO o_terciario FROM opcion_pregunta WHERE texto_opcion = 'Terciario' AND pregunta_id = p_madre;
-    SELECT id INTO o_universitario FROM opcion_pregunta WHERE texto_opcion = 'Universitario' AND pregunta_id = p_padre;
+    SELECT id INTO o_secundario_madre FROM opcion_pregunta WHERE texto_opcion = 'Secundario' AND pregunta_id = p_madre;
+    SELECT id INTO o_terciario_madre FROM opcion_pregunta WHERE texto_opcion = 'Terciario' AND pregunta_id = p_madre;
+    SELECT id INTO o_universitario_madre FROM opcion_pregunta WHERE texto_opcion = 'Universitario' AND pregunta_id = p_padre;
+    SELECT id INTO o_secundario_padre FROM opcion_pregunta WHERE texto_opcion = 'Secundario' AND pregunta_id = p_padre;
+    SELECT id INTO o_terciario_padre FROM opcion_pregunta WHERE texto_opcion = 'Terciario' AND pregunta_id = p_padre;
+    SELECT id INTO o_universitario_padre FROM opcion_pregunta WHERE texto_opcion = 'Universitario' AND pregunta_id = p_padre;
+    
     SELECT id INTO o_escuela_publica FROM opcion_pregunta WHERE texto_opcion = 'Escuela Publica' AND pregunta_id = p_tipo_institucion;
     SELECT id INTO o_escuela_privada FROM opcion_pregunta WHERE texto_opcion = 'Escuela Privada' AND pregunta_id = p_tipo_institucion;
 
@@ -193,7 +201,7 @@ BEGIN
     SELECT id INTO p_trabajo_rendimiento FROM pregunta WHERE texto_pregunta ILIKE '%trabajo interfiere%' AND carrera_id = carrera_e1 LIMIT 1;
     SELECT id INTO p_horas_trabajo     FROM pregunta WHERE texto_pregunta ILIKE '%horas trabajas por semana%' AND carrera_id = carrera_e1 LIMIT 1;
     SELECT id INTO p_situacion_economica FROM pregunta WHERE texto_pregunta ILIKE '%situación económica%' AND carrera_id = carrera_e1 LIMIT 1;
-    SELECT id INTO p_rendimiento_academico FROM pregunta WHERE texto_pregunta ILIKE '%rendimiento académico%' AND carrera_id = carrera_e1 LIMIT 1;
+    SELECT id INTO p_rendimiento_academico FROM pregunta WHERE texto_pregunta ILIKE '%calificarías tu rendimiento académico%' AND carrera_id = carrera_e1 LIMIT 1;
     SELECT id INTO p_objetivos         FROM pregunta WHERE texto_pregunta ILIKE '%objetivos académicos%' AND carrera_id = carrera_e1 LIMIT 1;
     SELECT id INTO p_materia_dificultad FROM pregunta WHERE texto_pregunta ILIKE '%materia en que tuviste%' AND carrera_id = carrera_e1 LIMIT 1;
     SELECT id INTO p_recursos_facultad FROM pregunta WHERE texto_pregunta ILIKE '%facultad te brinda los recursos%' AND carrera_id = carrera_e1 LIMIT 1;
@@ -201,21 +209,22 @@ BEGIN
     SELECT id INTO p_contacto_equipo   FROM pregunta WHERE texto_pregunta ILIKE '%contactado por alguien%' AND carrera_id = carrera_e1 LIMIT 1;
 
     -- ======== CARGAR OPCIONES EVENTO 2 ========
-    SELECT id INTO o_carga_menos       FROM opcion_pregunta WHERE texto_opcion = 'Menos'                    AND pregunta_id = p_carga_laboral;
-    SELECT id INTO o_carga_igual       FROM opcion_pregunta WHERE texto_opcion = 'Igual'                    AND pregunta_id = p_carga_laboral;
-    SELECT id INTO o_carga_mas         FROM opcion_pregunta WHERE texto_opcion = 'Más'                      AND pregunta_id = p_carga_laboral;
-    SELECT id INTO o_abandonar_si      FROM opcion_pregunta WHERE texto_opcion = 'Sí'                       AND pregunta_id = p_pensaste_abandonar;
+    SELECT id INTO o_empece_este_cuatrimestre FROM opcion_pregunta WHERE texto_opcion = 'Empecé a trabajar este cuatrimestre' AND pregunta_id = p_carga_laboral;
+    SELECT id INTO o_carga_menos       FROM opcion_pregunta WHERE texto_opcion = 'Disminuyó'                    AND pregunta_id = p_carga_laboral;
+    SELECT id INTO o_carga_igual       FROM opcion_pregunta WHERE texto_opcion = 'Se mantuvo igual'                    AND pregunta_id = p_carga_laboral;
+    SELECT id INTO o_carga_mas         FROM opcion_pregunta WHERE texto_opcion = 'Aumentó'                      AND pregunta_id = p_carga_laboral;
+    SELECT id INTO o_abandonar_si      FROM opcion_pregunta WHERE texto_opcion = 'Si'                       AND pregunta_id = p_pensaste_abandonar;
     SELECT id INTO o_abandonar_lo_pense FROM opcion_pregunta WHERE texto_opcion = 'Lo pensé pero lo descarte' AND pregunta_id = p_pensaste_abandonar;
     SELECT id INTO o_abandonar_no      FROM opcion_pregunta WHERE texto_opcion = 'No'                       AND pregunta_id = p_pensaste_abandonar;
-    SELECT id INTO o_dejar_si          FROM opcion_pregunta WHERE texto_opcion = 'Sí'                       AND pregunta_id = p_dejar_proximo;
+    SELECT id INTO o_dejar_si          FROM opcion_pregunta WHERE texto_opcion = 'Si'                       AND pregunta_id = p_dejar_proximo;
     SELECT id INTO o_dejar_no_se       FROM opcion_pregunta WHERE texto_opcion = 'No lo sé'                 AND pregunta_id = p_dejar_proximo;
     SELECT id INTO o_dejar_no          FROM opcion_pregunta WHERE texto_opcion = 'No'                       AND pregunta_id = p_dejar_proximo;
-    SELECT id INTO o_economica_si      FROM opcion_pregunta WHERE texto_opcion = 'Sí'                       AND pregunta_id = p_situacion_economica;
+    SELECT id INTO o_economica_si      FROM opcion_pregunta WHERE texto_opcion = 'Si'                       AND pregunta_id = p_situacion_economica;
     SELECT id INTO o_economica_parcialmente FROM opcion_pregunta WHERE texto_opcion = 'Parcialmente'        AND pregunta_id = p_situacion_economica;
     SELECT id INTO o_economica_no      FROM opcion_pregunta WHERE texto_opcion = 'No'                       AND pregunta_id = p_situacion_economica;
     SELECT id INTO o_recursos_no       FROM opcion_pregunta WHERE texto_opcion = 'No'                       AND pregunta_id = p_conocias_recursos;
     SELECT id INTO o_recursos_este_cuatri FROM opcion_pregunta WHERE texto_opcion = 'Los conocí este cuatrimestre' AND pregunta_id = p_conocias_recursos;
-    SELECT id INTO o_recursos_si       FROM opcion_pregunta WHERE texto_opcion = 'Sí'                       AND pregunta_id = p_conocias_recursos;
+    SELECT id INTO o_recursos_si       FROM opcion_pregunta WHERE texto_opcion = 'Si'                       AND pregunta_id = p_conocias_recursos;
 
     -- ======== CARGAR PREGUNTAS EVENTO 3 ========
     SELECT id INTO p_localidad          FROM pregunta WHERE texto_pregunta ILIKE '%localidad vivís%' AND carrera_id = carrera_e1 LIMIT 1;
@@ -290,8 +299,8 @@ BEGIN
 
     -- Estudiante 1 - Evento 1
     INSERT INTO respuesta_estudiante (asignacion_id, pregunta_id, materia_id, opcion_seleccionada_id, valor_numerico, valor_texto, riesgo_calculado) VALUES
-    (asig_e1[1], p_madre,                 NULL, o_secundario,      NULL, NULL, 0.6),
-    (asig_e1[1], p_padre,                 NULL, o_secundario,      NULL, NULL, 0.6),
+    (asig_e1[1], p_madre,                 NULL, o_secundario_madre,      NULL, NULL, 0.6),
+    (asig_e1[1], p_padre,                 NULL, o_secundario_padre,      NULL, NULL, 0.6),
     (asig_e1[1], p_familia_vive,          NULL, NULL,              NULL, 'no', 1),
     (asig_e1[1], p_familia_oriunda,       NULL, NULL,              NULL, 'no', 1),
     (asig_e1[1], p_horas_viaje,           NULL, NULL,              3,    NULL, 0.6),
@@ -305,8 +314,8 @@ BEGIN
 
     -- Estudiante 2 - Evento 1
     INSERT INTO respuesta_estudiante (asignacion_id, pregunta_id, materia_id, opcion_seleccionada_id, valor_numerico, valor_texto, riesgo_calculado) VALUES
-    (asig_e2[1], p_madre,                 NULL, o_terciario,       NULL, NULL, 0.3),
-    (asig_e2[1], p_padre,                 NULL, o_universitario,   NULL, NULL, 0),
+    (asig_e2[1], p_madre,                 NULL, o_terciario_madre,       NULL, NULL, 0.3),
+    (asig_e2[1], p_padre,                 NULL, o_universitario_padre,   NULL, NULL, 0),
     (asig_e2[1], p_familia_vive,          NULL, NULL,              NULL, 'si', 0),
     (asig_e2[1], p_familia_oriunda,       NULL, NULL,              NULL, 'si', 0),
     (asig_e2[1], p_horas_viaje,           NULL, NULL,              0,    NULL, 0),

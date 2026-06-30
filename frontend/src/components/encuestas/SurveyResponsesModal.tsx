@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useRespuestasUltimoAnio } from "../../hooks/queries/useEncuestasQueries.ts";
-import type { EstadisticasEventos } from "../../types/encuestas.ts";
+import type { EstadisticasEventos, RespuestasHistoricas } from "../../types/encuestas.ts";
 
 interface SurveyResponsesModalProps {
   onClose: () => void;
@@ -33,57 +33,69 @@ export default function SurveyResponsesModal({
       texto: q.texto_pregunta,
       tipo: q.tipo_pregunta,
     }));
-    const bloques = responses[0].bloques_academicos.flatMap((b) =>
-      b.preguntas.map((q) => ({
-        key: `b-${b.materia_id}-${q.id}`,
-        id: q.id,
-        texto: q.texto_pregunta.replace("{MATERIA}", b.materia_nombre),
-        tipo: q.tipo_pregunta,
-        materia_id: b.materia_id,
-        materia_nombre: b.materia_nombre,
-      })),
-    );
+    const bloques: Array<{
+      key: string;
+      id: number;
+      texto: string;
+      tipo: string;
+      materia_id: number;
+      materia_nombre: string;
+    }> = [];
+    const seen = new Set<string>();
+    for (const response of responses) {
+      for (const b of response.bloques_academicos) {
+        for (const q of b.preguntas) {
+          const key = `b-${b.materia_id}-${q.id}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            bloques.push({
+              key,
+              id: q.id,
+              texto: q.texto_pregunta.replace("{MATERIA}", b.materia_nombre),
+              tipo: q.tipo_pregunta,
+              materia_id: b.materia_id,
+              materia_nombre: b.materia_nombre,
+            });
+          }
+        }
+      }
+    }
+    bloques.sort((a, b) => a.materia_id - b.materia_id || a.id - b.id);
     return [...generales, ...bloques];
   }, [responses]);
 
-  const responsesByQuestion = useMemo(() => {
-    if (!responses || responses.length === 0) return {};
-    const result: Record<string, string[]> = {};
-    for (const response of responses) {
-      const allAnswers = [
-        ...response.preguntas_generales.map((q) => ({
-          questionKey: `g-${q.id}`,
-          answer:
-            q.respuesta_previa?.valor_texto ??
-            q.opciones.find(
-              (o) => o.id === q.respuesta_previa?.opcion_seleccionada_id,
-            )?.texto_opcion ??
-            q.respuesta_previa?.valor_numerico?.toString() ??
-            "",
-        })),
-        ...response.bloques_academicos.flatMap((b) =>
-          b.preguntas.map((q) => ({
-            questionKey: `b-${b.materia_id}-${q.id}`,
-            answer:
-              q.respuesta_previa?.valor_texto ??
-              q.opciones.find(
-                (o) => o.id === q.respuesta_previa?.opcion_seleccionada_id,
-              )?.texto_opcion ??
-              q.respuesta_previa?.valor_numerico?.toString() ??
-              "",
-          })),
-        ),
-      ];
-      for (const ans of allAnswers) {
-        if (!result[ans.questionKey]) {
-          result[ans.questionKey] = [];
-        }
-        result[ans.questionKey].push(ans.answer);
-      }
+  function getStudentAnswer(
+    resp: RespuestasHistoricas,
+    q: { key: string; id: number; materia_id?: number },
+  ): string {
+    if (q.key.startsWith("g-")) {
+      const pregunta = resp.preguntas_generales.find((p) => p.id === q.id);
+      if (!pregunta) return "Sin respuesta";
+      return (
+        pregunta.respuesta_previa?.valor_texto ??
+        pregunta.opciones.find(
+          (o) => o.id === pregunta.respuesta_previa?.opcion_seleccionada_id,
+        )?.texto_opcion ??
+        pregunta.respuesta_previa?.valor_numerico?.toString() ??
+        "Sin respuesta"
+      );
     }
-    return result;
-  }, [responses, questions]);
-  console.log("responsesByQuestion:", responsesByQuestion); // Debugging line
+    const bloque = resp.bloques_academicos.find(
+      (b) => b.materia_id === q.materia_id,
+    );
+    if (!bloque) return "Sin respuesta";
+    const pregunta = bloque.preguntas.find((p) => p.id === q.id);
+    if (!pregunta) return "Sin respuesta";
+    return (
+      pregunta.respuesta_previa?.valor_texto ??
+      pregunta.opciones.find(
+        (o) => o.id === pregunta.respuesta_previa?.opcion_seleccionada_id,
+      )?.texto_opcion ??
+      pregunta.respuesta_previa?.valor_numerico?.toString() ??
+      "Sin respuesta"
+    );
+  }
+
   const tasaDeRespuesta = useMemo(() => {
     if (!responses || responses.length === 0) return 0;
     return (responses.length / survey.total_asignadas) * 100;
@@ -153,7 +165,7 @@ export default function SurveyResponsesModal({
             </div>
           ) : (
             <div className="space-y-6">
-              {questions && questions.length > 0 && (
+              {questions?.some((q) => q.key.startsWith("g-")) && (
                 <div className="bg-[#f8f9fa] border border-brand-outline-variant rounded p-4">
                   <h4 className="text-[10px] font-extrabold text-brand-outline uppercase tracking-wider mb-3">
                     Preguntas de la encuesta
@@ -201,7 +213,7 @@ export default function SurveyResponsesModal({
                   </div>
                 )}
 
-                {filteredResponses.map((resp, index) => (
+                {filteredResponses.map((resp) => (
                   <div
                     key={resp.asignacion_id}
                     className="border border-brand-outline-variant rounded overflow-hidden"
@@ -215,7 +227,15 @@ export default function SurveyResponsesModal({
                       </span> */}
                     </div>
                     <div className="divide-y divide-brand-outline-variant">
-                      {questions.map((q, idx) => (
+                      {questions
+                        .filter(
+                          (q: { key: string; materia_id?: number }) =>
+                            q.key.startsWith("g-") ||
+                            resp.bloques_academicos.some(
+                              (b) => b.materia_id === q.materia_id,
+                            ),
+                        )
+                        .map((q, idx) => (
                         <div
                           key={q.key}
                           className="px-4 py-2.5 flex items-start gap-3"
@@ -228,8 +248,7 @@ export default function SurveyResponsesModal({
                               {q.texto}
                             </p>
                             <p className="text-xs font-bold text-brand-primary mt-0.5">
-                              {responsesByQuestion[q.key]?.[index] ??
-                                "Sin respuesta"}
+                              {getStudentAnswer(resp, q)}
                             </p>
                           </div>
                         </div>
