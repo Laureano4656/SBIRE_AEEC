@@ -144,6 +144,19 @@ class PesoCriteriosRepository(BaseRepository[PesoCriterios]):
         """
         return await self.conn.fetchval(query, carrera_id, etapa)
 
+    async def get_ultima_configuracion(self, carrera_id: int, etapa: str) -> dict | None:
+        query = """
+            SELECT id, carrera_id, etapa, umbral_amarillo, umbral_rojo,
+                   factor_extension, descripcion, activo, actualizado_en,
+                   actualizado_por, valores_saaty_crudos
+            FROM configuracion_indicador
+            WHERE carrera_id = $1 AND etapa = $2::public.etapa_desercion_enum
+            ORDER BY actualizado_en DESC
+            LIMIT 1;
+        """
+        row = await self.conn.fetchrow(query, carrera_id, etapa)
+        return dict(row) if row else None
+
     async def get_indicadores_por_carrera(self, carrera_id: int) -> list[dict]:
         """
         Trae la lista de indicadores (subcriterios) actuales para una carrera.

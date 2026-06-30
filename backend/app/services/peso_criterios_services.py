@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 
 from app.models.comparacion import Comparacion
 from app.repositories.peso_criterios_repository import PesoCriteriosRepository
-from app.models.configuracion import DatosConfiguracion, PreguntaResponse, IndicadorResponse, DimensionResponse, AHPRequest
+from app.models.configuracion import DatosConfiguracion, PreguntaResponse, IndicadorResponse, DimensionResponse, AHPRequest, ConfiguracionIndicadorResponse
 
 
 class PesoCriteriosServices:
@@ -120,6 +120,10 @@ class PesoCriteriosServices:
         self, carrera_id: int
     ) -> list[DimensionResponse]:
         return await self.repo.get_arbol_dimensiones_preguntas(carrera_id)
+
+    async def obtener_ultima_configuracion(self, carrera_id: int, etapa: str) -> ConfiguracionIndicadorResponse | None:
+        data = await self.repo.get_ultima_configuracion(carrera_id, etapa)
+        return ConfiguracionIndicadorResponse(**data) if data else None
 
     async def obtener_valores_iniciales_saaty(self, carrera_id: int, etapa: str) -> dict:
         json_crudo = await self.repo.get_ultimo_saaty_crudo(carrera_id, etapa)

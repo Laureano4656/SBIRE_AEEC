@@ -1,5 +1,6 @@
+from datetime import datetime
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict, List, Any
 from app.models.comparacion import Comparacion
 
 class DatosConfiguracion(BaseModel):
@@ -36,3 +37,16 @@ class DimensionResponse(BaseModel):
     id: int
     nombre: str
     indicadores: list[IndicadorResponse] = []
+
+class ConfiguracionIndicadorResponse(BaseModel):
+    id: int
+    carrera_id: int
+    etapa: str
+    umbral_amarillo: float
+    umbral_rojo: float
+    factor_extension: float
+    descripcion: str | None = None
+    activo: bool
+    actualizado_en: datetime
+    actualizado_por: int | None = None
+    valores_saaty_crudos: dict[str, Any] | None = None

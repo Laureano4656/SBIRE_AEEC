@@ -38,7 +38,7 @@ class dashboardAdminRepository:
                     FROM score_total 
                     WHERE estudiante_id = e.id
                 )
-            WHERE s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = e.carrera_id LIMIT 1) 
+            WHERE s.valor > ((SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = e.carrera_id LIMIT 1) + 0.1)
             AND e.carrera_id = $1 AND e.activo = TRUE
             """,
             carrera_id,
@@ -81,10 +81,10 @@ class dashboardAdminRepository:
                 --e.anio_ingreso, 
                 CASE
                     WHEN s.valor IS NULL THEN 'bajo'
-                    WHEN s.valor > 0.8 then 'critico'
-                    WHEN  s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'alto' 
+                    WHEN s.valor > ((SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) + 0.1) THEN 'critico'
+                    WHEN  s.valor < ((SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) + 0.1) AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'alto' 
                     WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) THEN 'medio'
-                    ELSE 'alto'
+                    ELSE 'bajo'
                 END AS tipo_riesgo,
                 COUNT(*) AS count
             FROM estudiantes e
@@ -104,16 +104,16 @@ class dashboardAdminRepository:
 
     async def monthly_evolution_score(
         self, anio: int, carrera_id: int | None = None
-    ) -> dict[int, float]:
+    ) -> dict[int, int]:
         rows = await self.conn.fetch(
             """
             SELECT
-                date_part('month', s.creado_en) AS month,
-                AVG(s.valor) AS average_score
-            FROM score_total s
-            INNER JOIN estudiantes e ON s.estudiante_id = e.id
+                date_part('month', a.generada_en) AS month,
+                COUNT(*) AS count
+            FROM alertas a
+            INNER JOIN estudiantes e ON a.estudiante_id = e.id
             WHERE e.activo = TRUE
-            AND date_part('year', s.creado_en) = $1
+            AND date_part('year', a.generada_en) = $1
             AND ($2::int IS NULL OR e.carrera_id = $2)
             GROUP BY month
             ORDER BY month
@@ -122,7 +122,7 @@ class dashboardAdminRepository:
             carrera_id,
         )
 
-        return {int(row["month"]): row["average_score"] for row in rows}
+        return {int(row["month"]): row["count"] for row in rows}
 
     async def get_student_by_dni(
         self, dni: str
@@ -263,8 +263,8 @@ class dashboardAdminRepository:
                 )
             WHERE 
                 CASE
-                    WHEN s.valor > 0.8 THEN 'critico'
-                    WHEN ( s.valor < 0.8 AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE  carrera_id = $1 LIMIT 1) ) THEN 'alto'
+                    WHEN s.valor > ((SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) + 0.1) THEN 'critico'
+                    WHEN ( s.valor < ((SELECT umbral_rojo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1) + 0.1) AND s.valor > (SELECT umbral_rojo FROM configuracion_indicador WHERE  carrera_id = $1 LIMIT 1) ) THEN 'alto'
                     WHEN s.valor > (SELECT umbral_amarillo FROM configuracion_indicador WHERE carrera_id = $1 LIMIT 1)  THEN 'medio'
                     ELSE 'bajo'
                 END = $1 AND e.activo = TRUE AND ($2::int IS NULL OR e.carrera_id = $2)

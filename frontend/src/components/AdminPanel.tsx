@@ -17,6 +17,7 @@ import PanelView from "./panel/PanelView.tsx";
 import MisEstudiantesView from "./estudiantes/MisEstudiantesView.tsx";
 import EncuestasView from "./encuestas/EncuestasView.tsx";
 import { useAuth } from "../hooks/useAuth.ts";
+import { useRiskConfig } from "../hooks/useRiskConfig.ts";
 import { useEstudiantesPorCarrera } from "../hooks/queries/useAdminDepQueries.ts";
 import { mapToStudent, getRiskLevel } from "../utils/studentMapping.ts";
 
@@ -31,6 +32,7 @@ export default function AdminPanel({ onLogout }: AdminPanelProps) {
   const navigate = useNavigate();
 
   const carreraId = useAuth().user?.carrera_id ?? 1;
+  const { umbralRojo, umbralAmarillo } = useRiskConfig();
 
   const { data: apiStudents, isLoading, isError } = useEstudiantesPorCarrera(carreraId);
 
@@ -57,7 +59,7 @@ export default function AdminPanel({ onLogout }: AdminPanelProps) {
         const matchesCareer =
           filterCareer === "Todas" ||
           s.carrera.toLowerCase().includes(filterCareer.toLowerCase());
-        const riskLevel = getRiskLevel(s.indice_riesgo);
+        const riskLevel = getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo);
         const matchesRisk =
           filterRisk === "TODOS" ||
           (filterRisk === "CRÍTICO" && riskLevel === "CRÍTICO") ||

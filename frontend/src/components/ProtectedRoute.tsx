@@ -31,6 +31,8 @@ export default function ProtectedRoute({
   }
 
   if (!user || user.carrera_id === null) {
+    console.log("User is not authenticated or carrera_id is null, redirecting to /");
+    console.log("User object:", user);
     return <Navigate to="/" replace />;
   }
 

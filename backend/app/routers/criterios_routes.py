@@ -7,6 +7,7 @@ from app.models.configuracion import (
     PreguntaResponse,
     IndicadorResponse,
     DimensionResponse,
+    ConfiguracionIndicadorResponse,
 )
 from app.services.peso_criterios_services import PesoCriteriosServices
 from app.services.riesgo_service import RiesgoService
@@ -81,3 +82,16 @@ async def obtener_inputs_saaty(
     datos_crudos = await service.obtener_valores_iniciales_saaty(carrera_id, etapa)
     
     return JSONResponse(content=datos_crudos)
+
+@router.get(
+    "/configuracion/{carrera_id}/{etapa}",
+    response_model=ConfiguracionIndicadorResponse | None,
+    status_code=status.HTTP_200_OK,
+)
+async def obtener_ultima_configuracion(
+    carrera_id: int,
+    etapa: str,
+    conn: asyncpg.Connection = Depends(get_conn),
+) -> ConfiguracionIndicadorResponse | None:
+    service = PesoCriteriosServices(conn)
+    return await service.obtener_ultima_configuracion(carrera_id, etapa)

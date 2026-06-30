@@ -4,7 +4,8 @@ import type { Alerta } from "./types";
 import StudentProfileView from "../student/StudentProfileView";
 import { riskBadge, getFilteredStudents } from "./helpers";
 import { useTutorEstudiantes } from "../../hooks/queries/useTutorQueries.ts";
-import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { getRiskLevel, mapToStudent } from "../../utils/studentMapping.ts";
+import { useRiskConfig } from "../../hooks/useRiskConfig.ts";
 
 interface EstudiantesViewProps {
   tutorId?: number;
@@ -27,6 +28,7 @@ export default function EstudiantesView({
   onAbrirEntrevista,
   onVerAlertas,
 }: EstudiantesViewProps) {
+  const { umbralRojo, umbralAmarillo } = useRiskConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRisk, setFilterRisk] = useState<
     "TODOS" | "CRÍTICO" | "MEDIO" | "BAJO"
@@ -36,44 +38,18 @@ export default function EstudiantesView({
 
   const students: Student[] = useMemo(() => {
     if (apiEstudiantes && apiEstudiantes.length > 0) {
-      return apiEstudiantes.map((api) => ({
-        id: api.dni,
-        dni: api.dni,
-        firstNames: api.nombre,
-        lastNames: api.apellido,
-        fullName: `${api.nombre} ${api.apellido}`,
-        email: "",
-        avatarUrl: "",
-        career: api.carrera,
-        year: 0,
-        legajo: "",
-        riskLevel: getRiskLevel(api.indice_riesgo),
-        riskValue: api.indice_riesgo ?? 0,
-        tramo: "INICIAL" as const,
-        lastRecalculation:
-          api.ultima_fecha_recalculo === null
-            ? "-"
-            : typeof api.ultima_fecha_recalculo === "string"
-              ? api.ultima_fecha_recalculo
-              : api.ultima_fecha_recalculo.toISOString(),
-        statusAlerta: api.estado_alerta ?? "SIN ALERTA",
-        gpa: 0,
-        subjectsApproved: 0,
-        subjectsTotal: 0,
-        engagement: "Medio" as const,
-        phone: "",
-      }));
+      return apiEstudiantes.map(mapToStudent);
     }
     return mockStudents;
   }, [apiEstudiantes, mockStudents]);
 
-  const selectedStudent = students.find((s) => s.id === selectedStudentId);
+  const selectedStudent = students.find((s) => s.dni === selectedStudentId);
   const filteredStudents = useMemo(
-    () => getFilteredStudents(students, searchQuery, filterRisk),
+    () => getFilteredStudents(students, searchQuery, filterRisk, umbralRojo, umbralAmarillo),
     [students, searchQuery, filterRisk],
   );
 
-  const criticos = students.filter((s) => s.riskLevel === "CRÍTICO").length;
+  const criticos = students.filter((s) => getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo) === "CRÍTICO").length;
 
   if (selectedStudent) {
     return (
@@ -235,38 +211,39 @@ export default function EstudiantesView({
               <tbody className="divide-y divide-brand-outline-variant">
                 {filteredStudents.map((s) => {
                   const alertasDelEstudiante = alertas.filter(
-                    (a) => a.studentId === s.id && a.estado !== "RESUELTA",
+                    (a) => a.studentId === s.dni && a.estado !== "RESUELTA",
                   ).length;
+                  const riskLevel = getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo);
                   return (
                     <tr
-                      key={s.id}
+                      key={s.dni}
                       className="hover:bg-[#f8f9fa] transition-colors"
                     >
                       <td className="p-3 pl-5">
                         <button
-                          onClick={() => onSelectStudent(s.id)}
+                          onClick={() => onSelectStudent(s.dni)}
                           className="font-bold text-brand-primary hover:underline text-left cursor-pointer"
                         >
-                          {s.lastNames}, {s.firstNames}
+                          {s.apellido}, {s.nombre}
                         </button>
                         <div className="text-[10px] text-brand-outline font-semibold">
-                          DNI: {s.dni} | {s.career}
+                          DNI: {s.dni} | {s.carrera}
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <span className="bg-[#edeeef] text-[#43474f] px-2 py-0.5 rounded text-[10px] font-bold">
-                          TRAMO {s.tramo}
+                          {s.etapa}
                         </span>
                       </td>
                       <td className="p-3 text-center">
                         <span
-                          className={`font-black text-xs ${s.riskValue >= 7.5 ? "text-[#ba1a1a]" : s.riskValue >= 4 ? "text-amber-600" : "text-[#006e6e]"}`}
+                          className={`font-black text-xs ${(s.indice_riesgo ?? 0) >= 7.5 ? "text-[#ba1a1a]" : (s.indice_riesgo ?? 0) >= 4 ? "text-amber-600" : "text-[#006e6e]"}`}
                         >
-                          {s.riskValue.toFixed(2)}
+                          {s.indice_riesgo?.toFixed(2) ?? "-"}
                         </span>
                       </td>
                       <td className="p-3 text-center">
-                        {riskBadge(s.riskLevel)}
+                        {riskBadge(riskLevel)}
                       </td>
                       <td className="p-3 text-center">
                         {alertasDelEstudiante > 0 ? (

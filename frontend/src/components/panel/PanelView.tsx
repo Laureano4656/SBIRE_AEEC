@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { Student } from "../../types/types.ts";
+import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { useUltimaConfiguracion } from "../../hooks/queries/useIndicadoresQueries.ts";
 import {
   useConteoEstudiantes,
   useConteoPorRiesgo,
@@ -24,7 +26,11 @@ export default function PanelView({
   onSelectStudent,
   onViewAllCriticos,
 }: PanelViewProps) {
-  const [evolucionAnio, setEvolucionAnio] = useState<number>(2022);
+  const { data: configActual } = useUltimaConfiguracion(carreraId, "temprana");
+  const umbralRojo = configActual?.configuracion?.umbral_rojo ?? 7.5;
+  const umbralAmarillo = configActual?.configuracion?.umbral_amarillo ?? 4.0;
+
+  const [evolucionAnio, setEvolucionAnio] = useState<number>(2026);
   const [historialStudentId, setHistorialStudentId] = useState<string | null>(
     null,
   );
@@ -55,9 +61,15 @@ export default function PanelView({
     isError: errorRiesgo,
   } = useConteoPorRiesgo(carreraId);
 
-  const donutRojo = conteoPorRiesgo?.rojo ?? 0;
-  const donutAmarillo = conteoPorRiesgo?.amarillo ?? 0;
-  const donutVerde = conteoPorRiesgo?.verde ?? 100;
+  const donutRojo = conteoPorRiesgo?.critico ?? 0;
+  const donutNaranja = conteoPorRiesgo?.alto ?? 0;
+  const donutAmarillo = conteoPorRiesgo?.medio ?? 0;
+  const donutVerde = conteoPorRiesgo?.bajo ?? 0;
+  const donutTotal = donutRojo + donutNaranja + donutAmarillo + donutVerde;
+  const pctRojo = donutTotal > 0 ? (donutRojo / donutTotal) * 100 : 0;
+  const pctNaranja = donutTotal > 0 ? (donutNaranja / donutTotal) * 100 : 0;
+  const pctAmarillo = donutTotal > 0 ? (donutAmarillo / donutTotal) * 100 : 0;
+  const pctVerde = donutTotal > 0 ? (donutVerde / donutTotal) * 100 : 0;
 
   const {
     data: evolucionScore,
@@ -123,7 +135,7 @@ export default function PanelView({
     return { data, pts, linePath, areaPath, n };
   };
 
-  const criticalStudents = students.filter((s) => s.riskLevel === "CRÍTICO");
+  const criticalStudents = students.filter((s) => getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo) === "CRÍTICO");
 
   return (
     <div className="space-y-8 animate-fade-in z-0">
@@ -245,8 +257,18 @@ export default function PanelView({
                     r="15.915"
                     stroke="#ba1a1a"
                     strokeWidth="3.2"
-                    strokeDasharray={`${donutRojo} 100`}
+                    strokeDasharray={`${pctRojo} 100`}
                     strokeDashoffset="0"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    fill="transparent"
+                    r="15.915"
+                    stroke="#ea6d1e"
+                    strokeWidth="3.2"
+                    strokeDasharray={`${pctNaranja} 100`}
+                    strokeDashoffset={`-${pctRojo}`}
                   />
                   <circle
                     cx="18"
@@ -255,8 +277,8 @@ export default function PanelView({
                     r="15.915"
                     stroke="#d97706"
                     strokeWidth="3.2"
-                    strokeDasharray={`${donutAmarillo} 100`}
-                    strokeDashoffset={`-${donutRojo}`}
+                    strokeDasharray={`${pctAmarillo} 100`}
+                    strokeDashoffset={`-${pctRojo + pctNaranja}`}
                   />
                   <circle
                     cx="18"
@@ -265,8 +287,8 @@ export default function PanelView({
                     r="15.915"
                     stroke="#006a6a"
                     strokeWidth="3.2"
-                    strokeDasharray={`${donutVerde} 100`}
-                    strokeDashoffset={`-${donutRojo + donutAmarillo}`}
+                    strokeDasharray={`${pctVerde} 100`}
+                    strokeDashoffset={`-${pctRojo + pctNaranja + pctAmarillo}`}
                   />
                 </svg>
                 <div className="absolute inset-x-0 top-18 flex flex-col items-center justify-center">
@@ -280,23 +302,29 @@ export default function PanelView({
                   </span>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-3 gap-2 text-center">
+              <div className="mt-4 pt-4 border-t border-brand-outline-variant grid grid-cols-4 gap-2 text-center">
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-[#006a6a] mx-auto mb-1" />
                   <p className="text-[10px] font-bold text-brand-primary">
-                    {donutVerde}% Seguro
+                    {pctVerde.toFixed(1)}% Bajo
                   </p>
                 </div>
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mx-auto mb-1" />
                   <p className="text-[10px] font-bold text-brand-primary">
-                    {donutAmarillo}% Medio
+                    {pctAmarillo.toFixed(1)}% Medio
+                  </p>
+                </div>
+                <div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ea6d1e] mx-auto mb-1" />
+                  <p className="text-[10px] font-bold text-[#ea6d1e]">
+                    {pctNaranja.toFixed(1)}% Alto
                   </p>
                 </div>
                 <div>
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ba1a1a] mx-auto mb-1" />
                   <p className="text-[10px] font-bold text-[#ba1a1a]">
-                    {donutRojo}% Crítico
+                    {pctRojo.toFixed(1)}% Crítico
                   </p>
                 </div>
               </div>
@@ -313,15 +341,14 @@ export default function PanelView({
               Evolución de Alertas por Cohorte
             </h4>
             <div className="flex gap-1.5">
-              {[2022, 2023, 2024].map((year) => (
+              {[2022, 2023, 2024, 2025, 2026].map((year) => (
                 <button
                   key={year}
                   onClick={() => setEvolucionAnio(year)}
-                  className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${
-                    evolucionAnio === year
-                      ? "bg-brand-primary text-white border border-brand-primary font-extrabold"
-                      : "bg-[#f3f4f5] text-[#43474f] border border-brand-outline-variant font-semibold hover:bg-[#e0e1e5]"
-                  }`}
+                  className={`px-2 py-0.5 rounded text-[10px] cursor-pointer ${evolucionAnio === year
+                    ? "bg-brand-primary text-white border border-brand-primary font-extrabold"
+                    : "bg-[#f3f4f5] text-[#43474f] border border-brand-outline-variant font-semibold hover:bg-[#e0e1e5]"
+                    }`}
                 >
                   {year}
                 </button>
@@ -435,7 +462,9 @@ export default function PanelView({
             <thead>
               <tr className="bg-[#edeeef] text-[#43474f] font-bold uppercase tracking-wider">
                 <th className="p-3 pl-6">Estudiante</th>
-                <th className="p-3">Carrera / Año</th>
+                <th className="p-3">Carrera / Etapa</th>
+                <th className="p-3 text-center">% Carrera</th>
+                <th className="p-3 text-center">Estado Alerta</th>
                 <th className="p-3 text-center">Nivel Riesgo</th>
                 <th className="p-3 text-center">Último Recálculo</th>
                 <th className="p-3 text-center">Acción</th>
@@ -443,32 +472,47 @@ export default function PanelView({
             </thead>
             <tbody className="divide-y divide-brand-outline-variant">
               {criticalStudents.slice(0, 5).map((s) => (
-                <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors">
+                <tr key={s.dni} className="hover:bg-[#f8f9fa] transition-colors">
                   <td className="p-3 pl-6 font-bold text-brand-primary">
-                    {s.lastNames}, {s.firstNames}
+                    {s.apellido}, {s.nombre}
                   </td>
                   <td className="p-3 font-medium">
-                    {s.career} ({s.year}° Año)
+                    {s.carrera} ({s.etapa})
+                  </td>
+                  <td className="p-3 text-center font-medium">
+                    {s.porcentaje_carrera?.toFixed(1) ?? "-"}%
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${s.estado_alerta === "NUEVA"
+                      ? "bg-[#ffdad6] text-[#93000a]"
+                      : s.estado_alerta === "EN REVISIÓN"
+                        ? "bg-amber-100 text-amber-800"
+                        : s.estado_alerta === "INTERVENIDA"
+                          ? "bg-[#e2f3f5] text-[#006e6e]"
+                          : "bg-[#f3f4f5] text-[#43474f]"
+                      }`}>
+                      {s.estado_alerta ?? "SIN ALERTA"}
+                    </span>
                   </td>
                   <td className="p-3 text-center">
                     <span className="bg-[#ffdad6] text-[#93000a] text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                       <span className="w-1.5 h-1.5 bg-[#ba1a1a] rounded-full" />
-                      CRÍTICO ({s.riskValue.toFixed(1)})
+                      CRÍTICO ({s.indice_riesgo?.toFixed(1) ?? "-"})
                     </span>
                   </td>
                   <td className="p-3 text-center text-brand-outline font-medium">
-                    {s.lastRecalculation}
+                    {s.ultima_fecha_recalculo ?? "-"}
                   </td>
                   <td className="p-3 text-center">
                     <div className="flex justify-center items-center gap-2">
                       <button
-                        onClick={() => setHistorialStudentId(s.id)}
+                        onClick={() => setHistorialStudentId(s.dni)}
                         className="text-brand-secondary hover:underline font-bold"
                       >
                         Historial
                       </button>
                       <button
-                        onClick={() => onSelectStudent(s.id)}
+                        onClick={() => onSelectStudent(s.dni)}
                         className="text-brand-primary hover:underline font-bold"
                       >
                         Intervenir
@@ -480,7 +524,7 @@ export default function PanelView({
               {criticalStudents.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={7}
                     className="p-8 text-center text-brand-outline font-medium"
                   >
                     No hay alertas críticas activas.
@@ -494,7 +538,7 @@ export default function PanelView({
 
       {historialStudentId &&
         (() => {
-          const selected = students.find((s) => s.id === historialStudentId);
+          const selected = students.find((s) => s.dni === historialStudentId);
           return (
             <div className="bg-white border border-brand-outline-variant rounded shadow-xs overflow-hidden">
               <div className="bg-[#f8f9fa] border-b border-brand-outline-variant px-6 py-4 flex justify-between items-center">
@@ -502,8 +546,8 @@ export default function PanelView({
                   <span className="material-symbols-outlined text-lg">
                     timeline
                   </span>
-                  Historial de Alertas — {selected?.lastNames},{" "}
-                  {selected?.firstNames}
+                  Historial de Alertas — {selected?.apellido},{" "}
+                  {selected?.nombre}
                 </h4>
                 <button
                   onClick={() => setHistorialStudentId(null)}

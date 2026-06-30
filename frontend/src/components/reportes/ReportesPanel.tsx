@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { RiskLevel, Student } from "../types/types"; // ajustá la ruta si tu carpeta es distinta
+import type { Student } from "../types/types";
+import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { useRiskConfig } from "../../hooks/useRiskConfig.ts";
 
 // ---------- Props ----------
 type ReportesPanelProps = {
@@ -9,17 +11,14 @@ type ReportesPanelProps = {
 };
 
 // ---------- Helpers ----------
-const RISK_BADGE: Record<RiskLevel, string> = {
+const RISK_BADGE: Record<string, string> = {
   CRÍTICO: "bg-red-50 text-red-700 border-red-200",
   MEDIO: "bg-amber-50 text-amber-700 border-amber-200",
   BAJO: "bg-blue-50 text-blue-700 border-blue-200",
-  SEGURO: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
-const formatCursada = (year: number) => `${year}° Año`;
-
-function escapeCsvField(value: string | number): string {
-  const str = String(value);
+function escapeCsvField(value: string | number | null): string {
+  const str = value === null ? "" : String(value);
   if (str.includes(",") || str.includes('"') || str.includes("\n")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
@@ -27,77 +26,72 @@ function escapeCsvField(value: string | number): string {
 }
 
 const CSV_HEADERS = [
-  "Legajo",
   "DNI",
   "Apellido y Nombre",
   "Carrera",
-  "Cursada",
-  "Tramo",
+  "Etapa",
+  "% Carrera",
+  "Índice de Riesgo",
   "Nivel de Riesgo",
-  "Promedio",
-  "Materias Aprobadas",
-  "Materias Totales",
   "Estado de Alerta",
+  "Último Recálculo",
 ];
 
-function studentToRow(s: Student): (string | number)[] {
+function studentToRow(s: Student, umbralRojo?: number, umbralAmarillo?: number): (string | number | null)[] {
   return [
-    s.legajo,
     s.dni,
-    s.fullName,
-    s.career,
-    formatCursada(s.year),
-    s.tramo,
-    s.riskLevel,
-    s.gpa.toFixed(2),
-    s.subjectsApproved,
-    s.subjectsTotal,
-    s.statusAlerta,
+    `${s.apellido}, ${s.nombre}`,
+    s.carrera,
+    s.etapa,
+    s.porcentaje_carrera,
+    s.indice_riesgo,
+    getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo),
+    s.estado_alerta,
+    s.ultima_fecha_recalculo,
   ];
 }
 
 export default function ReportesPanel({ students }: ReportesPanelProps) {
+  const { umbralRojo, umbralAmarillo } = useRiskConfig();
   const [filtroCarrera, setFiltroCarrera] = useState("TODAS");
-  const [filtroAnio, setFiltroAnio] = useState("TODAS");
+  const [filtroEtapa, setFiltroEtapa] = useState("TODAS");
   const [filtroRiesgo, setFiltroRiesgo] = useState("TODOS");
   const [busqueda, setBusqueda] = useState("");
 
   const carrerasDisponibles = useMemo(
-    () => Array.from(new Set(students.map((s) => s.career))).sort(),
+    () => Array.from(new Set(students.map((s) => s.carrera))).sort(),
     [students],
   );
 
-  const aniosDisponibles = useMemo(
-    () =>
-      Array.from(new Set(students.map((s) => s.year))).sort((a, b) => a - b),
+  const etapasDisponibles = useMemo(
+    () => Array.from(new Set(students.map((s) => s.etapa))).sort(),
     [students],
   );
 
   const estudiantesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     return students.filter((s) => {
-      if (filtroCarrera !== "TODAS" && s.career !== filtroCarrera) return false;
-      if (filtroAnio !== "TODAS" && String(s.year) !== filtroAnio) return false;
-      if (filtroRiesgo !== "TODOS" && s.riskLevel !== filtroRiesgo)
+      if (filtroCarrera !== "TODAS" && s.carrera !== filtroCarrera) return false;
+      if (filtroEtapa !== "TODAS" && s.etapa !== filtroEtapa) return false;
+      const level = getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo);
+      if (filtroRiesgo !== "TODOS" && level !== filtroRiesgo)
         return false;
       if (
         q &&
-        !s.fullName.toLowerCase().includes(q) &&
-        !s.legajo.toLowerCase().includes(q) &&
+        !`${s.apellido} ${s.nombre}`.toLowerCase().includes(q) &&
         !s.dni.includes(q)
       ) {
         return false;
       }
       return true;
     });
-  }, [students, filtroCarrera, filtroAnio, filtroRiesgo, busqueda]);
+  }, [students, filtroCarrera, filtroEtapa, filtroRiesgo, busqueda]);
 
-  const resumenFiltros = `Carrera: ${filtroCarrera === "TODAS" ? "Todas" : filtroCarrera} · Cursada: ${filtroAnio === "TODAS" ? "Todas" : formatCursada(Number(filtroAnio))
-    } · Riesgo: ${filtroRiesgo === "TODOS" ? "Todos" : filtroRiesgo} · Resultados: ${estudiantesFiltrados.length
+  const resumenFiltros = `Carrera: ${filtroCarrera === "TODAS" ? "Todas" : filtroCarrera} · Etapa: ${filtroEtapa === "TODAS" ? "Todas" : filtroEtapa} · Riesgo: ${filtroRiesgo === "TODOS" ? "Todos" : filtroRiesgo} · Resultados: ${estudiantesFiltrados.length
     }`;
 
   const exportarCSV = () => {
-    const filas = estudiantesFiltrados.map(studentToRow);
+    const filas = estudiantesFiltrados.map((s) => studentToRow(s, umbralRojo, umbralAmarillo));
     const csvContent = [CSV_HEADERS, ...filas]
       .map((fila) => fila.map(escapeCsvField).join(","))
       .join("\n");
@@ -127,26 +121,24 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
       startY: 26,
       head: [
         [
-          "Legajo",
+          "DNI",
           "Apellido y Nombre",
           "Carrera",
-          "Cursada",
+          "Etapa",
           "Riesgo",
-          "Prom.",
-          "Aprobadas",
+          "Estado Alerta",
         ],
       ],
       body: estudiantesFiltrados.map((s) => [
-        s.legajo,
-        s.fullName,
-        s.career,
-        formatCursada(s.year),
-        s.riskLevel,
-        s.gpa.toFixed(2),
-        `${s.subjectsApproved}/${s.subjectsTotal}`,
+        s.dni,
+        `${s.apellido}, ${s.nombre}`,
+        s.carrera,
+        s.etapa,
+        getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo),
+        s.estado_alerta ?? "-",
       ]),
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [79, 70, 229] }, // reemplazá por el hex real de --color-brand-primary si difiere
+      headStyles: { fillColor: [79, 70, 229] },
     });
 
     doc.save(`reporte_estudiantes_${Date.now()}.pdf`);
@@ -187,17 +179,17 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-extrabold text-brand-outline uppercase tracking-wider">
-              Cursada (Año)
+              Etapa
             </label>
             <select
-              value={filtroAnio}
-              onChange={(e) => setFiltroAnio(e.target.value)}
+              value={filtroEtapa}
+              onChange={(e) => setFiltroEtapa(e.target.value)}
               className="w-full border border-brand-outline-variant rounded p-2 text-xs"
             >
               <option value="TODAS">Todas</option>
-              {aniosDisponibles.map((a) => (
-                <option key={a} value={a}>
-                  {formatCursada(a)}
+              {etapasDisponibles.map((e) => (
+                <option key={e} value={e}>
+                  {e}
                 </option>
               ))}
             </select>
@@ -272,7 +264,7 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
             <thead>
               <tr className="bg-[#f8f9fa] border-b border-brand-outline-variant">
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
-                  Legajo
+                  DNI
                 </th>
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
                   Apellido y Nombre
@@ -281,16 +273,16 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
                   Carrera
                 </th>
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
-                  Cursada
+                  Etapa
                 </th>
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
                   Riesgo
                 </th>
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
-                  Promedio
+                  Estado Alerta
                 </th>
                 <th className="text-left font-extrabold text-brand-outline uppercase tracking-wider p-3">
-                  Aprobadas
+                  Últ. Recálculo
                 </th>
               </tr>
             </thead>
@@ -300,25 +292,27 @@ export default function ReportesPanel({ students }: ReportesPanelProps) {
                   key={s.id}
                   className="border-b border-brand-outline-variant last:border-b-0"
                 >
-                  <td className="p-3 text-[#43474f] font-semibold">
-                    {s.legajo}
-                  </td>
-                  <td className="p-3 text-[#43474f]">{s.fullName}</td>
-                  <td className="p-3 text-[#43474f]">{s.career}</td>
-                  <td className="p-3 text-[#43474f]">
-                    {formatCursada(s.year)}
-                  </td>
-                  <td className="p-3">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded border text-[10px] font-bold ${RISK_BADGE[s.riskLevel]}`}
-                    >
-                      {s.riskLevel}
-                    </span>
-                  </td>
-                  <td className="p-3 text-[#43474f]">{s.gpa.toFixed(2)}</td>
-                  <td className="p-3 text-[#43474f]">
-                    {s.subjectsApproved}/{s.subjectsTotal}
-                  </td>
+                    <td className="p-3 text-[#43474f] font-semibold">
+                      {s.dni}
+                    </td>
+                    <td className="p-3 text-[#43474f]">
+                      {s.apellido}, {s.nombre}
+                    </td>
+                    <td className="p-3 text-[#43474f]">{s.carrera}</td>
+                    <td className="p-3 text-[#43474f]">{s.etapa}</td>
+                    <td className="p-3">
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded border text-[10px] font-bold ${RISK_BADGE[getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo)]}`}
+                      >
+                        {getRiskLevel(s.indice_riesgo, umbralRojo, umbralAmarillo)}
+                      </span>
+                    </td>
+                    <td className="p-3 text-[#43474f]">
+                      {s.estado_alerta ?? "-"}
+                    </td>
+                    <td className="p-3 text-[#43474f]">
+                      {s.ultima_fecha_recalculo ?? "-"}
+                    </td>
                 </tr>
               ))}
             </tbody>

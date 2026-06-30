@@ -1,43 +1,33 @@
 import type { Student } from "../types/types.ts";
 import type { EstudianteDashboardAdminResponse } from "../types/admin_dep.ts";
 
-export function getRiskLevel(ir: number | null): "CRÍTICO" | "MEDIO" | "BAJO" {
+export function getRiskLevel(
+  ir: number | null,
+  umbralRojo = 7.5,
+  umbralAmarillo = 4.0,
+): "CRÍTICO" | "MEDIO" | "BAJO" {
   if (ir === null) return "BAJO";
-  return ir >= 7.5 ? "CRÍTICO" : ir >= 4.0 ? "MEDIO" : "BAJO";
+  return ir >= umbralRojo ? "CRÍTICO" : ir >= umbralAmarillo ? "MEDIO" : "BAJO";
+}
+
+function formatDate(d: Date | string | null): string | null {
+  if (d === null) return null;
+  if (typeof d === "string") return d;
+  return d.toISOString();
 }
 
 export function mapToStudent(
   api: EstudianteDashboardAdminResponse,
 ): Student {
   return {
-    id: api.dni,
+    nombre: api.nombre,
+    apellido: api.apellido,
     dni: api.dni,
-    firstNames: api.nombre,
-    lastNames: api.apellido,
-    fullName: `${api.nombre} ${api.apellido}`,
-    email: "",
-    avatarUrl: "",
-    career: api.carrera,
-    year: parseInt(api.etapa) || 0,
-    legajo: "",
-    riskLevel: getRiskLevel(api.indice_riesgo),
-    riskValue: api.indice_riesgo ?? 0,
-    tramo: "INICIAL" as const,
-    lastRecalculation:
-      api.ultima_fecha_recalculo === null
-        ? "-"
-        : typeof api.ultima_fecha_recalculo === "string"
-          ? api.ultima_fecha_recalculo
-          : api.ultima_fecha_recalculo.toISOString(),
-    statusAlerta: (api.estado_alerta ?? "SIN ALERTA") as
-      | "NUEVA"
-      | "EN REVISIÓN"
-      | "INTERVENIDA"
-      | "SIN ALERTA",
-    gpa: 0,
-    subjectsApproved: 0,
-    subjectsTotal: 0,
-    engagement: "Medio" as const,
-    phone: "",
+    carrera: api.carrera,
+    etapa: api.etapa,
+    porcentaje_carrera: api.porcentaje_carrera ?? null,
+    indice_riesgo: api.indice_riesgo,
+    estado_alerta: api.estado_alerta,
+    ultima_fecha_recalculo: formatDate(api.ultima_fecha_recalculo),
   };
 }

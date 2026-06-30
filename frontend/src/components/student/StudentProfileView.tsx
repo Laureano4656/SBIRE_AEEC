@@ -1,4 +1,6 @@
 import type { Student } from "../../types/types.ts";
+import { getRiskLevel } from "../../utils/studentMapping.ts";
+import { useRiskConfig } from "../../hooks/useRiskConfig.ts";
 
 interface StudentProfileViewProps {
   student: Student;
@@ -10,6 +12,9 @@ export default function StudentProfileView({
   student,
   onBack,
 }: StudentProfileViewProps) {
+  const { umbralRojo, umbralAmarillo } = useRiskConfig();
+  const riskLevel = getRiskLevel(student.indice_riesgo, umbralRojo, umbralAmarillo);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -26,7 +31,7 @@ export default function StudentProfileView({
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-brand-primary">
-              {student.fullName}
+              {student.apellido}, {student.nombre}
             </h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#43474f] mt-1">
               <span className="flex items-center gap-1 font-medium">
@@ -39,16 +44,14 @@ export default function StudentProfileView({
                 <span className="material-symbols-outlined text-base">
                   school
                 </span>
-                {student.career}
+                {student.carrera}
               </span>
-              {student.year > 0 && (
-                <span className="flex items-center gap-1 font-medium text-brand-secondary font-bold">
-                  <span className="material-symbols-outlined text-base">
-                    calendar_today
-                  </span>
-                  {student.year}° Año
+              <span className="flex items-center gap-1 font-medium text-brand-secondary font-bold">
+                <span className="material-symbols-outlined text-base">
+                  calendar_today
                 </span>
-              )}
+                {student.etapa}
+              </span>
             </div>
           </div>
         </div>
@@ -58,12 +61,10 @@ export default function StudentProfileView({
             Nivel de Riesgo
           </span>
           <span className="text-sm font-semibold text-brand-outline-variant">
-            {student.statusAlerta === "SIN ALERTA"
-              ? "SEGURO"
-              : student.riskLevel}
+            {riskLevel}
           </span>
           <span className="text-2xl font-black text-brand-error tracking-tight mt-1">
-            {student.riskValue.toFixed(1)}/10
+            {student.indice_riesgo?.toFixed(1) ?? "-"}/10
           </span>
         </div>
       </div>
@@ -72,18 +73,18 @@ export default function StudentProfileView({
         <div className="bg-white border border-brand-outline-variant rounded p-4 text-center shadow-sm flex flex-col justify-between">
           <div>
             <span className="text-[10px] font-bold text-brand-outline uppercase tracking-wider">
-              MATERIAS APROBADAS
+              % CARRERA
             </span>
             <p className="text-2xl font-black text-brand-primary mt-1">
-              {student.subjectsApproved} / {student.subjectsTotal}
+              {student.porcentaje_carrera?.toFixed(1) ?? "-"}%
             </p>
           </div>
-          {student.subjectsTotal > 0 && (
+          {student.porcentaje_carrera !== null && (
             <div className="w-full bg-[#edeeef] h-2 rounded mt-2 overflow-hidden">
               <div
                 className="bg-brand-primary h-full rounded"
                 style={{
-                  width: `${(student.subjectsApproved / student.subjectsTotal) * 100}%`,
+                  width: `${Math.min(student.porcentaje_carrera, 100)}%`,
                 }}
               ></div>
             </div>

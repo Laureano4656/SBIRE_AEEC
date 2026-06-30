@@ -7,6 +7,7 @@ import EncuestasView from "./student/EncuestasView.tsx";
 import type { StudentSurvey } from "./student/EncuestasView.tsx";
 import SoporteView from "./student/SoporteView.tsx";
 import { useEncuestasPendientes } from "../hooks/queries/useEstudianteQueries.ts";
+import { useAuth } from "../hooks/useAuth.ts";
 
 interface StudentPanelProps {
   onLogout: () => void;
@@ -26,6 +27,8 @@ interface ChatMessage {
 
 export default function StudentPanel({ onLogout }: StudentPanelProps) {
   const { pathname } = useLocation();
+
+  //const { user } = useAuth();
 
   const [estudianteId] = useState(1);
 
@@ -129,13 +132,12 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
         <div
           role="status"
           aria-live="polite"
-          className={`fixed top-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-xs font-bold shadow-lg flex items-start gap-2 animate-fade-in ${
-            toast.variant === "success"
-              ? "bg-emerald-600 text-white"
-              : toast.variant === "error"
-                ? "bg-red-600 text-white"
-                : "bg-slate-800 text-white"
-          }`}
+          className={`fixed top-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-xs font-bold shadow-lg flex items-start gap-2 animate-fade-in ${toast.variant === "success"
+            ? "bg-emerald-600 text-white"
+            : toast.variant === "error"
+              ? "bg-red-600 text-white"
+              : "bg-slate-800 text-white"
+            }`}
         >
           <span className="material-symbols-outlined text-base">
             {toast.variant === "success" ? "check_circle" : toast.variant === "error" ? "error" : "info"}
@@ -218,11 +220,10 @@ export default function StudentPanel({ onLogout }: StudentPanelProps) {
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`max-w-[85%] p-3 rounded-2xl ${
-                  msg.sender === "user"
-                    ? "ml-auto bg-brand-primary text-white rounded-br-none text-right"
-                    : "mr-auto bg-white border border-slate-200 text-slate-800 rounded-bl-none"
-                }`}
+                className={`max-w-[85%] p-3 rounded-2xl ${msg.sender === "user"
+                  ? "ml-auto bg-brand-primary text-white rounded-br-none text-right"
+                  : "mr-auto bg-white border border-slate-200 text-slate-800 rounded-bl-none"
+                  }`}
               >
                 <p className="whitespace-pre-line text-left">{msg.text}</p>
                 <span className="text-[9px] text-slate-400 block mt-1.5 text-right font-bold">
